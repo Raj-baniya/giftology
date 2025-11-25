@@ -5,8 +5,8 @@ import { Icons } from '../components/ui/Icons';
 
 // Hardcoded Categories for Instant Display
 const DISPLAY_CATEGORIES = [
-  { id: '1', name: 'For Him', slug: 'for-him', imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3_2kU1JWL3w73Y_E7gij3RxDrQiT4B53X-Q&s' },
-  { id: '2', name: 'For Her', slug: 'for-her', imageUrl: 'https://img.freepik.com/free-photo/portrait-anime-character-with-stars_23-2151556365.jpg?w=800' },
+  { id: '1', name: 'For Him', slug: 'for-him', imageUrl: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?auto=format&fit=crop&w=800&q=80' },
+  { id: '2', name: 'For Her', slug: 'for-her', imageUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80' },
   { id: '3', name: 'Anniversary', slug: 'anniversary', imageUrl: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80' },
   { id: '4', name: 'Birthdays', slug: 'birthdays', imageUrl: 'https://images.unsplash.com/photo-1558636508-e0db3814bd1d?auto=format&fit=crop&w=800&q=80' },
   { id: '5', name: 'For Kids', slug: 'for-kids', imageUrl: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=800&q=80' },
@@ -60,7 +60,7 @@ export const Home = () => {
           <div
             className="w-full h-full bg-cover bg-center animate-slow-zoom"
             style={{
-              backgroundImage: 'url(https://images.pexels.com/photos/264771/pexels-photo-264771.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&dpr=2)'
+              backgroundImage: 'url(https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&w=1920&q=80)'
             }}
           />
         </div>

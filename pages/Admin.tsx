@@ -19,6 +19,11 @@ export const Admin = () => {
     const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'leads'>('inventory');
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
+    // Filter & Search State
+    const [categoryFilter, setCategoryFilter] = useState<string>('all');
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -318,6 +323,38 @@ export const Admin = () => {
                 {/* Content */}
                 {activeTab === 'inventory' ? (
                     <>
+                        {/* Filter & Search Bar */}
+                        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+                            <div className="flex flex-col md:flex-row gap-4">
+                                {/* Category Filter */}
+                                <div className="flex-1">
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Filter by Category</label>
+                                    <select
+                                        value={categoryFilter}
+                                        onChange={(e) => setCategoryFilter(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900"
+                                    >
+                                        <option value="all">All Categories</option>
+                                        {categories.map(cat => <option key={cat.id} value={cat.slug}>{cat.name}</option>)}
+                                    </select>
+                                </div>
+                                {/* Search Input */}
+                                <div className="flex-1">
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Search Products</label>
+                                    <div className="relative">
+                                        <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            placeholder="Search by name..."
+                                            className="w-full border border-gray-300 rounded-lg p-2.5 pl-10 focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Desktop Table */}
                         <div className="hidden md:block bg-white rounded-xl shadow-sm overflow-hidden">
                             <table className="w-full text-left">
@@ -333,51 +370,84 @@ export const Admin = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y">
-                                    {products.map(product => (
-                                        <tr key={product.id} className="hover:bg-gray-50">
-                                            <td className="p-4"><img src={product.imageUrl} alt={product.name} className="w-12 h-12 rounded-md object-cover bg-gray-200" /></td>
-                                            <td className="p-4 font-medium">{product.name}</td>
-                                            <td className="p-4"><span className="bg-primary/20 text-primary-dark px-2 py-1 rounded text-xs font-bold uppercase">{product.category.replace('-', ' ')}</span></td>
-                                            <td className="p-4" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{product.price.toLocaleString()}</td>
-                                            <td className="p-4 font-medium">{product.stock ?? 0}</td>
-                                            <td className="p-4">{product.trending && <span className="inline-flex items-center gap-1 text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-full"><Icons.TrendingUp className="w-3 h-3" /> Trending</span>}</td>
-                                            <td className="p-4 text-right space-x-2">
-                                                <button onClick={() => openModal(product)} className="text-blue-600 hover:bg-blue-50 p-2 rounded"><Icons.Edit2 className="w-4 h-4" /></button>
-                                                <button onClick={() => deleteProduct(product.id)} className="text-red-600 hover:bg-red-50 p-2 rounded"><Icons.Trash2 className="w-4 h-4" /></button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {products
+                                        .filter(product => {
+                                            // Category filter
+                                            if (categoryFilter !== 'all' && product.category !== categoryFilter) return false;
+                                            // Search filter
+                                            if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                                            return true;
+                                        })
+                                        .map(product => (
+                                            <tr key={product.id} className="hover:bg-gray-50">
+                                                <td className="p-4"><img src={product.imageUrl} alt={product.name} className="w-12 h-12 rounded-md object-cover bg-gray-200" /></td>
+                                                <td className="p-4 font-medium">{product.name}</td>
+                                                <td className="p-4"><span className="bg-primary/20 text-primary-dark px-2 py-1 rounded text-xs font-bold uppercase">{product.category.replace('-', ' ')}</span></td>
+                                                <td className="p-4" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{product.price.toLocaleString()}</td>
+                                                <td className="p-4 font-medium">{product.stock ?? 0}</td>
+                                                <td className="p-4">{product.trending && <span className="inline-flex items-center gap-1 text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-full"><Icons.TrendingUp className="w-3 h-3" /> Trending</span>}</td>
+                                                <td className="p-4 text-right space-x-2">
+                                                    <button onClick={() => openModal(product)} className="text-blue-600 hover:bg-blue-50 p-2 rounded"><Icons.Edit2 className="w-4 h-4" /></button>
+                                                    <button onClick={() => deleteProduct(product.id)} className="text-red-600 hover:bg-red-50 p-2 rounded"><Icons.Trash2 className="w-4 h-4" /></button>
+                                                </td>
+                                            </tr>
+                                        ))}
                                 </tbody>
                             </table>
                         </div>
                         {/* Mobile List */}
                         <div className="md:hidden space-y-4">
-                            {products.map(product => (
-                                <div key={product.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                                    <div className="flex gap-4 mb-3">
-                                        <img src={product.imageUrl} alt={product.name} className="w-20 h-20 rounded-lg object-cover bg-gray-100 shrink-0" />
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="font-bold text-gray-900 line-clamp-2 mb-1 pr-2">{product.name}</h3>
-                                                {product.trending && <Icons.TrendingUp className="w-4 h-4 text-orange-500 shrink-0" />}
-                                            </div>
-                                            <p className="text-xs text-gray-500 uppercase font-bold mb-1">{product.category.replace('-', ' ')}</p>
-                                            <div className="flex justify-between items-center">
-                                                <p className="font-bold text-lg text-gray-900" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{product.price.toLocaleString()}</p>
-                                                <p className="text-sm text-gray-600">Stock: {product.stock ?? 0}</p>
+                            {products
+                                .filter(product => {
+                                    // Category filter
+                                    if (categoryFilter !== 'all' && product.category !== categoryFilter) return false;
+                                    // Search filter
+                                    if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                                    return true;
+                                })
+                                .map(product => (
+                                    <div key={product.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                                        <div className="flex gap-4 mb-3">
+                                            <img src={product.imageUrl} alt={product.name} className="w-20 h-20 rounded-lg object-cover bg-gray-100 shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <h3 className="font-bold text-gray-900 line-clamp-2 mb-1 pr-2">{product.name}</h3>
+                                                    {product.trending && <Icons.TrendingUp className="w-4 h-4 text-orange-500 shrink-0" />}
+                                                </div>
+                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">{product.category.replace('-', ' ')}</p>
+                                                <div className="flex justify-between items-center">
+                                                    <p className="font-bold text-lg text-gray-900" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{product.price.toLocaleString()}</p>
+                                                    <p className="text-sm text-gray-600">Stock: {product.stock ?? 0}</p>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div className="flex gap-3 pt-3 border-t border-gray-50">
+                                            <button onClick={() => openModal(product)} className="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 py-2.5 rounded-lg font-bold text-sm active:bg-blue-100 transition-colors"><Icons.Edit2 className="w-4 h-4" /> Edit</button>
+                                            <button onClick={() => deleteProduct(product.id)} className="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-700 py-2.5 rounded-lg font-bold text-sm active:bg-red-100 transition-colors"><Icons.Trash2 className="w-4 h-4" /> Delete</button>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-3 pt-3 border-t border-gray-50">
-                                        <button onClick={() => openModal(product)} className="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 py-2.5 rounded-lg font-bold text-sm active:bg-blue-100 transition-colors"><Icons.Edit2 className="w-4 h-4" /> Edit</button>
-                                        <button onClick={() => deleteProduct(product.id)} className="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-700 py-2.5 rounded-lg font-bold text-sm active:bg-red-100 transition-colors"><Icons.Trash2 className="w-4 h-4" /> Delete</button>
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
                         </div>
                     </>
                 ) : activeTab === 'orders' ? (
                     <>
+                        {/* Order Status Filter */}
+                        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+                            <label className="block text-sm font-bold text-gray-700 mb-2">Filter by Status</label>
+                            <select
+                                value={orderStatusFilter}
+                                onChange={(e) => setOrderStatusFilter(e.target.value)}
+                                className="w-full md:w-64 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900"
+                            >
+                                <option value="all">All Orders</option>
+                                <option value="priority">🔥 Highest Priority (Fast Delivery)</option>
+                                <option value="processing">⏳ Processing</option>
+                                <option value="shipped">📦 Shipped</option>
+                                <option value="delivered">✅ Delivered</option>
+                                <option value="cancelled">❌ Cancelled</option>
+                            </select>
+                        </div>
+
                         {orders.length === 0 ? (
                             <div className="text-center py-20 bg-white rounded-xl shadow-sm">
                                 <Icons.Package className="w-16 h-16 text-gray-200 mx-auto mb-4" />
@@ -402,162 +472,174 @@ export const Admin = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y">
-                                            {orders.map(order => (
-                                                <React.Fragment key={order.id}>
-                                                    <tr
-                                                        onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
-                                                        className={`hover:bg-gray-50 cursor-pointer transition-colors ${order.deliveryType === 'Fast Delivery' ? 'bg-red-50/50' : ''}`}
-                                                    >
-                                                        <td className="p-4">
-                                                            <div className="font-mono text-sm font-bold flex items-center gap-2">
-                                                                {expandedOrderId === order.id ? <Icons.ChevronDown className="w-4 h-4" /> : <Icons.ChevronRight className="w-4 h-4" />}
-                                                                {order.id.slice(0, 8)}...
-                                                                {order.deliveryType === 'Fast Delivery' && <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-1.5 py-0.5 rounded border border-yellow-200">FAST</span>}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 pl-6">{new Date(order.date).toLocaleDateString()}</div>
-                                                        </td>
-                                                        <td className="p-4">
-                                                            <div className="font-bold text-sm">{order.customerName || 'Guest'}</div>
-                                                            <div className="text-xs text-gray-500">{order.phone}</div>
-                                                            <div className="text-xs text-blue-500">{order.email}</div>
-                                                        </td>
-                                                        <td className="p-4 text-sm max-w-xs truncate" title={order.address}>{order.address || 'N/A'}</td>
-                                                        <td className="p-4 max-w-xs">
-                                                            <p className="text-sm truncate">{order.items.length} items</p>
-                                                        </td>
-                                                        <td className="p-4">
-                                                            <div className="uppercase text-xs font-bold bg-gray-100 px-2 py-1 rounded w-fit mb-1">{order.paymentMethod || 'N/A'}</div>
-                                                            {order.screenshot && <a href={order.screenshot} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-xs text-blue-600 hover:underline flex items-center gap-1"><Icons.Image className="w-3 h-3" /> View Proof</a>}
-                                                        </td>
-                                                        <td className="p-4 font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</td>
-                                                        <td className="p-4">
-                                                            <span className={`text-xs font-bold px-2 py-1 rounded ${order.deliveryType === 'Fast Delivery' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                                {order.deliveryType || 'Standard'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="p-4" onClick={(e) => e.stopPropagation()}>
-                                                            <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value as any)} className={`border-none text-sm font-bold rounded-lg px-3 py-1.5 cursor-pointer outline-none ${order.status === 'Delivered' ? 'bg-green-100 text-green-800' : order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' : order.status === 'Cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                                                <option value="processing">Processing</option>
-                                                                <option value="shipped">Shipped</option>
-                                                                <option value="delivered">Delivered</option>
-                                                                <option value="cancelled">Cancelled</option>
-                                                            </select>
-                                                        </td>
-                                                    </tr>
-                                                    {expandedOrderId === order.id && (
-                                                        <tr>
-                                                            <td colSpan={8} className="bg-gray-50 p-4 border-b shadow-inner">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                                    <div>
-                                                                        <h4 className="font-bold text-sm mb-3 text-gray-700 uppercase tracking-wide">Order Items</h4>
-                                                                        <div className="space-y-3">
-                                                                            {order.items.map((item: any, idx: number) => (
-                                                                                <div key={idx} className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-100">
-                                                                                    {item.imageUrl ? (
-                                                                                        <img src={item.imageUrl} alt={item.name} className="w-12 h-12 rounded object-cover bg-gray-100" />
-                                                                                    ) : (
-                                                                                        <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-400">
-                                                                                            <Icons.Package className="w-6 h-6" />
+                                            {orders
+                                                .filter(order => {
+                                                    if (orderStatusFilter === 'all') return true;
+                                                    if (orderStatusFilter === 'priority') return order.deliveryType === 'Fast Delivery';
+                                                    return order.status.toLowerCase() === orderStatusFilter;
+                                                })
+                                                .map(order => (
+                                                    <React.Fragment key={order.id}>
+                                                        <tr
+                                                            onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                                                            className={`hover:bg-gray-50 cursor-pointer transition-colors ${order.deliveryType === 'Fast Delivery' ? 'bg-red-50/50' : ''}`}
+                                                        >
+                                                            <td className="p-4">
+                                                                <div className="font-mono text-sm font-bold flex items-center gap-2">
+                                                                    {expandedOrderId === order.id ? <Icons.ChevronDown className="w-4 h-4" /> : <Icons.ChevronRight className="w-4 h-4" />}
+                                                                    {order.id.slice(0, 8)}...
+                                                                    {order.deliveryType === 'Fast Delivery' && <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-1.5 py-0.5 rounded border border-yellow-200">FAST</span>}
+                                                                </div>
+                                                                <div className="text-xs text-gray-500 pl-6">{new Date(order.date).toLocaleDateString()}</div>
+                                                            </td>
+                                                            <td className="p-4">
+                                                                <div className="font-bold text-sm">{order.customerName || 'Guest'}</div>
+                                                                <div className="text-xs text-gray-500">{order.phone}</div>
+                                                                <div className="text-xs text-blue-500">{order.email}</div>
+                                                            </td>
+                                                            <td className="p-4 text-sm max-w-xs truncate" title={order.address}>{order.address || 'N/A'}</td>
+                                                            <td className="p-4 max-w-xs">
+                                                                <p className="text-sm truncate">{order.items.length} items</p>
+                                                            </td>
+                                                            <td className="p-4">
+                                                                <div className="uppercase text-xs font-bold bg-gray-100 px-2 py-1 rounded w-fit mb-1">{order.paymentMethod || 'N/A'}</div>
+                                                                {order.screenshot && <a href={order.screenshot} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-xs text-blue-600 hover:underline flex items-center gap-1"><Icons.Image className="w-3 h-3" /> View Proof</a>}
+                                                            </td>
+                                                            <td className="p-4 font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</td>
+                                                            <td className="p-4">
+                                                                <span className={`text-xs font-bold px-2 py-1 rounded ${order.deliveryType === 'Fast Delivery' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                                    {order.deliveryType || 'Standard'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                                                                <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value as any)} className={`border-none text-sm font-bold rounded-lg px-3 py-1.5 cursor-pointer outline-none ${order.status === 'Delivered' ? 'bg-green-100 text-green-800' : order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' : order.status === 'Cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                                                    <option value="processing">Processing</option>
+                                                                    <option value="shipped">Shipped</option>
+                                                                    <option value="delivered">Delivered</option>
+                                                                    <option value="cancelled">Cancelled</option>
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                        {expandedOrderId === order.id && (
+                                                            <tr>
+                                                                <td colSpan={8} className="bg-gray-50 p-4 border-b shadow-inner">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                        <div>
+                                                                            <h4 className="font-bold text-sm mb-3 text-gray-700 uppercase tracking-wide">Order Items</h4>
+                                                                            <div className="space-y-3">
+                                                                                {order.items.map((item: any, idx: number) => (
+                                                                                    <div key={idx} className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-100">
+                                                                                        {item.imageUrl ? (
+                                                                                            <img src={item.imageUrl} alt={item.name} className="w-12 h-12 rounded object-cover bg-gray-100" />
+                                                                                        ) : (
+                                                                                            <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-400">
+                                                                                                <Icons.Package className="w-6 h-6" />
+                                                                                            </div>
+                                                                                        )}
+                                                                                        <div className="flex-1">
+                                                                                            <p className="font-medium text-sm text-gray-900">{item.name}</p>
+                                                                                            <p className="text-xs text-gray-500">Qty: {item.quantity} x <span style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{item.price.toLocaleString()}</span></p>
                                                                                         </div>
-                                                                                    )}
-                                                                                    <div className="flex-1">
-                                                                                        <p className="font-medium text-sm text-gray-900">{item.name}</p>
-                                                                                        <p className="text-xs text-gray-500">Qty: {item.quantity} x <span style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{item.price.toLocaleString()}</span></p>
+                                                                                        <p className="font-bold text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{(item.price * item.quantity).toLocaleString()}</p>
                                                                                     </div>
-                                                                                    <p className="font-bold text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{(item.price * item.quantity).toLocaleString()}</p>
-                                                                                </div>
-                                                                            ))}
+                                                                                ))}
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                    <div>
-                                                                        <h4 className="font-bold text-sm mb-3 text-gray-700 uppercase tracking-wide">Shipping Details</h4>
-                                                                        <div className="bg-white p-4 rounded-lg border border-gray-100 space-y-2 text-sm">
-                                                                            <p><span className="text-gray-500">Name:</span> <span className="font-medium">{order.customerName}</span></p>
-                                                                            <p><span className="text-gray-500">Address:</span> <span className="font-medium">{order.address}</span></p>
-                                                                            <p><span className="text-gray-500">Phone:</span> <span className="font-medium">{order.phone}</span></p>
-                                                                            <p><span className="text-gray-500">Email:</span> <span className="font-medium">{order.email}</span></p>
-                                                                            <div className="border-t pt-2 mt-2">
-                                                                                <p><span className="text-gray-500">City:</span> <span className="font-medium">{order.city || 'N/A'}</span></p>
-                                                                                <p><span className="text-gray-500">State:</span> <span className="font-medium">{order.state || 'N/A'}</span></p>
-                                                                                <p><span className="text-gray-500">Zip:</span> <span className="font-medium">{order.zipCode || 'N/A'}</span></p>
+                                                                        <div>
+                                                                            <h4 className="font-bold text-sm mb-3 text-gray-700 uppercase tracking-wide">Shipping Details</h4>
+                                                                            <div className="bg-white p-4 rounded-lg border border-gray-100 space-y-2 text-sm">
+                                                                                <p><span className="text-gray-500">Name:</span> <span className="font-medium">{order.customerName}</span></p>
+                                                                                <p><span className="text-gray-500">Address:</span> <span className="font-medium">{order.address}</span></p>
+                                                                                <p><span className="text-gray-500">Phone:</span> <span className="font-medium">{order.phone}</span></p>
+                                                                                <p><span className="text-gray-500">Email:</span> <span className="font-medium">{order.email}</span></p>
+                                                                                <div className="border-t pt-2 mt-2">
+                                                                                    <p><span className="text-gray-500">City:</span> <span className="font-medium">{order.city || 'N/A'}</span></p>
+                                                                                    <p><span className="text-gray-500">State:</span> <span className="font-medium">{order.state || 'N/A'}</span></p>
+                                                                                    <p><span className="text-gray-500">Zip:</span> <span className="font-medium">{order.zipCode || 'N/A'}</span></p>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                </React.Fragment>
-                                            ))}
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                    </React.Fragment>
+                                                ))}
                                         </tbody>
                                     </table>
                                 </div>
                                 {/* Mobile Orders */}
                                 <div className="md:hidden space-y-4">
-                                    {orders.map(order => (
-                                        <div key={order.id} className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${order.deliveryType === 'Fast Delivery' ? 'border-l-4 border-l-red-500' : ''}`}>
-                                            <div
-                                                onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
-                                                className="p-5 cursor-pointer"
-                                            >
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div>
-                                                        <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                                                            {expandedOrderId === order.id ? <Icons.ChevronDown className="w-4 h-4" /> : <Icons.ChevronRight className="w-4 h-4" />}
-                                                            Order #{order.id}
-                                                            {order.deliveryType === 'Fast Delivery' && <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-1.5 py-0.5 rounded border border-yellow-200">FAST</span>}
-                                                        </h3>
-                                                        <p className="text-xs text-gray-500 pl-6">{new Date(order.date).toLocaleDateString()}</p>
+                                    {orders
+                                        .filter(order => {
+                                            if (orderStatusFilter === 'all') return true;
+                                            if (orderStatusFilter === 'priority') return order.deliveryType === 'Fast Delivery';
+                                            return order.status.toLowerCase() === orderStatusFilter;
+                                        })
+                                        .map(order => (
+                                            <div key={order.id} className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${order.deliveryType === 'Fast Delivery' ? 'border-l-4 border-l-red-500' : ''}`}>
+                                                <div
+                                                    onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                                                    className="p-5 cursor-pointer"
+                                                >
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div>
+                                                            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                                                                {expandedOrderId === order.id ? <Icons.ChevronDown className="w-4 h-4" /> : <Icons.ChevronRight className="w-4 h-4" />}
+                                                                Order #{order.id}
+                                                                {order.deliveryType === 'Fast Delivery' && <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-1.5 py-0.5 rounded border border-yellow-200">FAST</span>}
+                                                            </h3>
+                                                            <p className="text-xs text-gray-500 pl-6">{new Date(order.date).toLocaleDateString()}</p>
+                                                        </div>
+                                                        <span className="font-bold text-lg" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
                                                     </div>
-                                                    <span className="font-bold text-lg" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
+
+                                                    <div className="flex items-center justify-between gap-4 mt-2 pl-6">
+                                                        <span className="text-sm font-bold text-gray-600">Status:</span>
+                                                        <div onClick={(e) => e.stopPropagation()} className="flex-1 text-right">
+                                                            <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value as any)} className={`appearance-none font-bold text-sm bg-transparent outline-none cursor-pointer ${order.status === 'Delivered' ? 'text-green-600' : order.status === 'Shipped' ? 'text-blue-600' : order.status === 'Cancelled' ? 'text-red-600' : 'text-yellow-600'}`}>
+                                                                <option value="processing">Processing</option>
+                                                                <option value="shipped">Shipped</option>
+                                                                <option value="delivered">Delivered</option>
+                                                                <option value="cancelled">Cancelled</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
-                                                <div className="flex items-center justify-between gap-4 mt-2 pl-6">
-                                                    <span className="text-sm font-bold text-gray-600">Status:</span>
-                                                    <div onClick={(e) => e.stopPropagation()} className="flex-1 text-right">
-                                                        <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value as any)} className={`appearance-none font-bold text-sm bg-transparent outline-none cursor-pointer ${order.status === 'Delivered' ? 'text-green-600' : order.status === 'Shipped' ? 'text-blue-600' : order.status === 'Cancelled' ? 'text-red-600' : 'text-yellow-600'}`}>
-                                                            <option value="processing">Processing</option>
-                                                            <option value="shipped">Shipped</option>
-                                                            <option value="delivered">Delivered</option>
-                                                            <option value="cancelled">Cancelled</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {expandedOrderId === order.id && (
-                                                <div className="bg-gray-50 p-5 border-t border-gray-100">
-                                                    <h4 className="font-bold text-xs uppercase text-gray-500 mb-3">Order Items</h4>
-                                                    <div className="space-y-3 mb-4">
-                                                        {order.items.map((item: any, idx: number) => (
-                                                            <div key={idx} className="flex items-center gap-3 bg-white p-2 rounded border border-gray-100">
-                                                                {item.imageUrl ? (
-                                                                    <img src={item.imageUrl} alt={item.name} className="w-10 h-10 rounded object-cover bg-gray-100" />
-                                                                ) : (
-                                                                    <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-400">
-                                                                        <Icons.Package className="w-5 h-5" />
+                                                {expandedOrderId === order.id && (
+                                                    <div className="bg-gray-50 p-5 border-t border-gray-100">
+                                                        <h4 className="font-bold text-xs uppercase text-gray-500 mb-3">Order Items</h4>
+                                                        <div className="space-y-3 mb-4">
+                                                            {order.items.map((item: any, idx: number) => (
+                                                                <div key={idx} className="flex items-center gap-3 bg-white p-2 rounded border border-gray-100">
+                                                                    {item.imageUrl ? (
+                                                                        <img src={item.imageUrl} alt={item.name} className="w-10 h-10 rounded object-cover bg-gray-100" />
+                                                                    ) : (
+                                                                        <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-400">
+                                                                            <Icons.Package className="w-5 h-5" />
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="font-medium text-sm text-gray-900 truncate">{item.name}</p>
+                                                                        <p className="text-xs text-gray-500">x{item.quantity}</p>
                                                                     </div>
-                                                                )}
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className="font-medium text-sm text-gray-900 truncate">{item.name}</p>
-                                                                    <p className="text-xs text-gray-500">x{item.quantity}</p>
+                                                                    <span className="font-bold text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{(item.price * item.quantity).toLocaleString()}</span>
                                                                 </div>
-                                                                <span className="font-bold text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{(item.price * item.quantity).toLocaleString()}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                            ))}
+                                                        </div>
 
-                                                    <h4 className="font-bold text-xs uppercase text-gray-500 mb-2">Customer</h4>
-                                                    <div className="text-sm text-gray-700 space-y-1 bg-white p-3 rounded border border-gray-100">
-                                                        <p className="font-bold">{order.customerName}</p>
-                                                        <p>{order.address}</p>
-                                                        <p>{order.city}, {order.state} {order.zipCode}</p>
-                                                        <p className="text-blue-600">{order.phone}</p>
+                                                        <h4 className="font-bold text-xs uppercase text-gray-500 mb-2">Customer</h4>
+                                                        <div className="text-sm text-gray-700 space-y-1 bg-white p-3 rounded border border-gray-100">
+                                                            <p className="font-bold">{order.customerName}</p>
+                                                            <p>{order.address}</p>
+                                                            <p>{order.city}, {order.state} {order.zipCode}</p>
+                                                            <p className="text-blue-600">{order.phone}</p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
+                                                )}
+                                            </div>
+                                        ))}
                                 </div>
                             </div>
                         )}
