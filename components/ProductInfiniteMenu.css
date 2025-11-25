@@ -1,0 +1,282 @@
+/* Product Infinite Menu Styles - Mobile Optimized with Rupee Symbol Support */
+
+#infinite-grid-menu-canvas {
+    cursor: grab;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    outline: none;
+    touch-action: none;
+}
+
+#infinite-grid-menu-canvas:active {
+    cursor: grabbing;
+}
+
+.action-button {
+    position: absolute;
+    left: 50%;
+    z-index: 10;
+    width: 60px;
+    height: 60px;
+    display: grid;
+    place-items: center;
+    background: #E94E77;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 5px solid #000;
+}
+
+.action-button-icon {
+    user-select: none;
+    position: relative;
+    color: #fff;
+    top: 2px;
+    font-size: 26px;
+}
+
+/* Mobile-First Product Title */
+.face-title {
+    user-select: none;
+    position: absolute;
+    font-weight: 900;
+    font-size: 1.5rem;
+    left: 50%;
+    top: 15%;
+    transform: translateX(-50%);
+    color: #FFFFFF;
+    font-family: 'Playfair Display', serif;
+    max-width: 90%;
+    line-height: 1.2;
+    text-align: center;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+}
+
+.face-title.active {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.5s ease;
+}
+
+.face-title.inactive {
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+/* Mobile-Optimized Price Container */
+.face-price-container {
+    user-select: none;
+    position: absolute;
+    left: 50%;
+    bottom: 20%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    z-index: 10;
+}
+
+.face-price-container.active {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.5s ease;
+}
+
+.face-price-container.inactive {
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+/* Rupee Symbol Optimized Pricing */
+.price-main {
+    font-weight: bold;
+    font-size: 2rem;
+    color: #E94E77;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.5px;
+}
+
+.price-market {
+    font-size: 1.2rem;
+    color: #999;
+    text-decoration: line-through;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.5px;
+}
+
+.price-save {
+    background: #10B981;
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.5);
+    letter-spacing: 0.3px;
+}
+
+/* Mobile-Optimized Discount Badge */
+.discount-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateY(-120px) translateX(-100px);
+    background: linear-gradient(135deg, #E94E77 0%, #D63D65 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 15px rgba(233, 78, 119, 0.6);
+    z-index: 5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.discount-badge svg {
+    width: 16px;
+    height: 16px;
+}
+
+.discount-badge.active {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.5s ease;
+}
+
+.discount-badge.inactive {
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+.action-button.active {
+    bottom: 2em;
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+    transition: 0.5s ease;
+}
+
+.action-button.inactive {
+    bottom: -80px;
+    transform: translateX(-50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.1s ease;
+}
+
+/* Tablet View (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .face-title {
+        font-size: 2rem;
+        top: 12%;
+    }
+
+    .price-main {
+        font-size: 2.5rem;
+    }
+
+    .price-market {
+        font-size: 1.4rem;
+    }
+
+    .discount-badge {
+        font-size: 1.1rem;
+        transform: translate(-50%, -50%) translateY(-140px) translateX(-120px);
+    }
+}
+
+/* Desktop View (1025px+) - Show on sides */
+@media (min-width: 1025px) {
+    .face-title {
+        font-size: clamp(1.5rem, 4vw, 3rem);
+        left: 3%;
+        top: 40%;
+        transform: translateY(-50%);
+        max-width: 30%;
+        text-align: left;
+    }
+
+    .face-price-container {
+        left: 3%;
+        top: calc(40% + 5rem);
+        bottom: auto;
+        transform: none;
+        align-items: flex-start;
+    }
+
+    .price-main {
+        font-size: clamp(1.8rem, 4vw, 3rem);
+    }
+
+    .price-market {
+        font-size: clamp(1rem, 2.5vw, 1.5rem);
+    }
+
+    .price-save {
+        font-size: clamp(0.85rem, 2vw, 1.1rem);
+    }
+
+    .discount-badge {
+        transform: translate(-50%, -50%) translateX(-200px) translateY(-150px);
+        font-size: clamp(0.9rem, 2vw, 1.2rem);
+    }
+}
+
+/* Small Mobile (< 375px) */
+@media (max-width: 374px) {
+    .face-title {
+        font-size: 1.2rem;
+        top: 12%;
+    }
+
+    .price-main {
+        font-size: 1.6rem;
+    }
+
+    .price-market {
+        font-size: 1rem;
+    }
+
+    .price-save {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.8rem;
+    }
+
+    .discount-badge {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+        transform: translate(-50%, -50%) translateY(-100px) translateX(-80px);
+    }
+
+    .action-button {
+        width: 50px;
+        height: 50px;
+        border-width: 3px;
+        bottom: 1.5em;
+    }
+
+    .action-button-icon {
+        font-size: 20px;
+    }
+}
+
+/* Large Mobile (375px - 767px) */
+@media (min-width: 375px) and (max-width: 767px) {
+    .action-button {
+        width: 55px;
+        height: 55px;
+    }
+}

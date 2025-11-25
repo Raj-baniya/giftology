@@ -40,7 +40,8 @@ import {
   MapPin,
   Filter,
   DollarSign,
-  Sparkles
+  Sparkles,
+  Info
 } from 'lucide-react';
 
 export const Icons = {
@@ -85,5 +86,6 @@ export const Icons = {
   MapPin,
   Filter,
   DollarSign,
-  Sparkles
+  Sparkles,
+  Info
 };

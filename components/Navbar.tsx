@@ -23,7 +23,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-accent/30 shadow-sm transition-all duration-300">
+    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-accent/30 shadow-sm transition-all duration-300 animate-fade-in-down">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20 gap-2 md:gap-4">
 
@@ -35,16 +35,16 @@ export const Navbar = () => {
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center space-x-8 flex-shrink-0">
-            <Link to="/gift-guide" className="flex items-center gap-1.5 text-textMain hover:text-primary font-medium transition-colors">
-              <Icons.Sparkles className="w-4 h-4" />
+            <Link to="/gift-guide" className="flex items-center gap-1.5 text-textMain hover:text-primary font-medium smooth-transition hover-lift">
+              <Icons.Sparkles className="w-4 h-4 smooth-transition" />
               Gift Guide
             </Link>
-            <Link to="/shop" className="flex items-center gap-1.5 text-textMain hover:text-primary font-medium transition-colors">
-              <Icons.ShoppingBag className="w-4 h-4" />
+            <Link to="/shop" className="flex items-center gap-1.5 text-textMain hover:text-primary font-medium smooth-transition hover-lift">
+              <Icons.ShoppingBag className="w-4 h-4 smooth-transition" />
               Shop
             </Link>
-            <Link to="/shop?category=trending" className="flex items-center gap-1.5 text-textMain hover:text-primary font-medium transition-colors">
-              <Icons.TrendingUp className="w-4 h-4" />
+            <Link to="/shop?category=trending" className="flex items-center gap-1.5 text-textMain hover:text-primary font-medium smooth-transition hover-lift">
+              <Icons.TrendingUp className="w-4 h-4 smooth-transition" />
               Trending Now
             </Link>
 
@@ -77,19 +77,19 @@ export const Navbar = () => {
                   </form>
                 </div>
               ) : (
-                <button onClick={() => setIsSearchOpen(true)} className="p-2 hover:bg-gray-100 rounded-full">
-                  <Icons.Search className="w-5 h-5 md:w-6 md:h-6 text-textMain" />
+                <button onClick={() => setIsSearchOpen(true)} className="p-2 hover:bg-gray-100 rounded-full smooth-transition hover-scale">
+                  <Icons.Search className="w-5 h-5 md:w-6 md:h-6 text-textMain smooth-transition" />
                 </button>
               )}
             </div>
 
             <button
               onClick={() => setCartOpen(true)}
-              className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="relative p-2 hover:bg-gray-100 rounded-full smooth-transition hover-scale"
             >
-              <Icons.ShoppingBag className="w-5 h-5 md:w-6 md:h-6 text-textMain" />
+              <Icons.ShoppingBag className="w-5 h-5 md:w-6 md:h-6 text-textMain smooth-transition" />
               {cartCount > 0 && (
-                <span className="absolute top-0 right-0 bg-primary text-white text-[10px] font-bold w-4 h-4 md:w-5 md:h-5 flex items-center justify-center rounded-full animate-pulse shadow-sm">
+                <span className="absolute top-0 right-0 bg-primary text-white text-[10px] font-bold w-4 h-4 md:w-5 md:h-5 flex items-center justify-center rounded-full animate-heartbeat shadow-sm">
                   {cartCount}
                 </span>
               )}
@@ -134,7 +134,7 @@ export const Navbar = () => {
                 </div>
               </div>
             ) : (
-              <Link to="/login" className="hidden md:block ml-2 px-4 py-2 bg-black text-white rounded-full text-sm font-bold hover:bg-gray-800 transition-all">
+              <Link to="/login" className="hidden md:block ml-2 px-4 py-2 bg-black text-white rounded-full text-sm font-bold hover:bg-gray-800 smooth-transition hover-lift btn-animated">
                 Sign In
               </Link>
             )}
@@ -152,18 +152,18 @@ export const Navbar = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-background border-t border-gray-100 animate-in slide-in-from-top-5 absolute w-full z-40 shadow-xl">
+        <div className="lg:hidden bg-background border-t border-gray-100 animate-slide-in-top absolute w-full z-40 shadow-xl">
           <div className="px-4 pt-4 pb-6 space-y-4">
             <div className="grid grid-cols-2 gap-2">
-              <Link to="/gift-guide" className="flex flex-col items-center justify-center p-4 bg-white rounded-xl border border-gray-100 shadow-sm" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/gift-guide" className="stagger-item flex flex-col items-center justify-center p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover-lift" onClick={() => setIsMenuOpen(false)}>
                 <Icons.Sparkles className="w-6 h-6 text-primary mb-2" />
                 <span className="text-sm font-bold">Gift Guide</span>
               </Link>
-              <Link to="/shop" className="flex flex-col items-center justify-center p-4 bg-white rounded-xl border border-gray-100 shadow-sm" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/shop" className="stagger-item flex flex-col items-center justify-center p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover-lift" onClick={() => setIsMenuOpen(false)}>
                 <Icons.ShoppingBag className="w-6 h-6 text-primary mb-2" />
                 <span className="text-sm font-bold">Shop</span>
               </Link>
-              <Link to="/shop?category=trending" className="flex flex-col items-center justify-center p-4 bg-white rounded-xl border border-gray-100 shadow-sm" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/shop?category=trending" className="stagger-item flex flex-col items-center justify-center p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover-lift" onClick={() => setIsMenuOpen(false)}>
                 <Icons.TrendingUp className="w-6 h-6 text-primary mb-2" />
                 <span className="text-sm font-bold">Trending</span>
               </Link>

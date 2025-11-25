@@ -7,9 +7,11 @@ import { supabase } from '../services/supabaseClient';
 import { Product, Order, Category } from '../types';
 import { Icons } from '../components/ui/Icons';
 import { useForm } from 'react-hook-form';
+import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 
 export const Admin = () => {
     const { user } = useAuth();
+    const { alertState, showAlert, closeAlert } = useCustomAlert();
 
     // State
     const [products, setProducts] = useState<Product[]>([]);
@@ -147,35 +149,67 @@ export const Admin = () => {
 
     // --- Actions ---
     const handleSeed = async () => {
-        if (confirm('Are you sure you want to seed the database? This will add initial products.')) {
-            setSeeding(true);
-            const result = await seedDatabase();
-            if (result.success) {
-                await loadData();
-                alert('Database seeded successfully!');
-            } else {
-                alert('Seeding completed with errors:\n' + result.errors.join('\n'));
-                await loadData();
+        showAlert(
+            'Seed Database',
+            'Are you sure you want to seed the database? This will add initial products.',
+            'warning',
+            {
+                confirmText: 'Yes, Seed Database',
+                onConfirm: async () => {
+                    setSeeding(true);
+                    const result = await seedDatabase();
+                    if (result.success) {
+                        await loadData();
+                        showAlert('Success', 'Database seeded successfully!', 'success');
+                    } else {
+                        showAlert('Error', 'Seeding completed with errors:\n' + result.errors.join('\n'), 'error');
+                        await loadData();
+                    }
+                    setSeeding(false);
+                },
+                cancelText: 'Cancel'
             }
-            setSeeding(false);
-        }
+        );
     };
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        sessionStorage.removeItem('giftology_admin_auth');
-        window.location.href = '/login';
+        showAlert(
+            'Logout',
+            'Are you sure you want to logout?',
+            'warning',
+            {
+                confirmText: 'Logout',
+                onConfirm: () => {
+                    setTimeout(async () => {
+                        await supabase.auth.signOut();
+                        sessionStorage.removeItem('giftology_admin_auth');
+                        window.location.href = '/login';
+                    }, 0);
+                },
+                cancelText: 'Cancel'
+            }
+        );
     };
 
     const deleteProduct = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
-            try {
-                await store.deleteProduct(id);
-                await loadData();
-            } catch (e) {
-                alert('Failed to delete product');
+        showAlert(
+            'Delete Product',
+            'Are you sure you want to delete this product?',
+            'warning',
+            {
+                confirmText: 'Delete',
+                onConfirm: async () => {
+                    try {
+                        await store.deleteProduct(id);
+                        await loadData();
+                        showAlert('Success', 'Product deleted successfully.', 'success');
+                    } catch (e) {
+                        showAlert('Error', 'Failed to delete product', 'error');
+                    }
+                },
+                cancelText: 'Cancel'
             }
-        }
+        );
     };
 
     const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
@@ -184,7 +218,7 @@ export const Admin = () => {
             await loadData();
         } catch (e: any) {
             console.error(e);
-            alert(`Failed to update order status: ${e.message || e.error_description || JSON.stringify(e)}`);
+            showAlert('Error', `Failed to update order status: ${e.message || e.error_description || JSON.stringify(e)}`, 'error');
         }
     };
 
@@ -218,7 +252,7 @@ export const Admin = () => {
             setIsModalOpen(true);
         } catch (err) {
             console.error("Error opening modal:", err);
-            alert("Failed to open product form.");
+            showAlert('Error', "Failed to open product form.", 'error');
         }
     };
 
@@ -250,10 +284,10 @@ export const Admin = () => {
             }
             await loadData();
             closeModal();
-            alert('Product saved successfully!');
+            showAlert('Success', 'Product saved successfully!', 'success');
         } catch (error: any) {
             console.error("Error saving product:", error);
-            alert(`Failed to save product: ${error.message || error.error_description || 'Unknown error'}`);
+            showAlert('Error', `Failed to save product: ${error.message || error.error_description || 'Unknown error'}`, 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -753,6 +787,18 @@ export const Admin = () => {
                     </div>
                 </div>
             )}
+
+            {/* Custom Alert */}
+            <CustomAlert
+                isOpen={alertState.isOpen}
+                onClose={closeAlert}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+                confirmText={alertState.confirmText}
+                onConfirm={alertState.onConfirm}
+                cancelText={alertState.cancelText}
+            />
         </div>
     );
 };

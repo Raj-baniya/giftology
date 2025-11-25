@@ -5,6 +5,7 @@ import { Icons } from '../components/ui/Icons';
 import { motion } from 'framer-motion';
 import { store } from '../services/store';
 import { Order } from '../types';
+import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
   <button
@@ -99,6 +100,7 @@ const ChangePasswordForm = () => {
 
 export const Account = () => {
   const { user, updateProfile, loading, logout } = useAuth();
+  const { alertState, showAlert, closeAlert } = useCustomAlert();
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
@@ -131,14 +133,25 @@ export const Account = () => {
   }, [user, loading]);
 
   const handleDeleteAddress = async (index: number) => {
-    if (window.confirm('Are you sure you want to delete this address?')) {
-      try {
-        const updated = await store.deleteUserAddress(user!.id, index);
-        setAddresses(updated);
-      } catch (error) {
-        console.error('Failed to delete address', error);
+    showAlert(
+      'Delete Address',
+      'Are you sure you want to delete this address?',
+      'warning',
+      {
+        confirmText: 'Delete',
+        onConfirm: async () => {
+          try {
+            const updated = await store.deleteUserAddress(user!.id, index);
+            setAddresses(updated);
+            showAlert('Success', 'Address deleted successfully.', 'success');
+          } catch (error) {
+            console.error('Failed to delete address', error);
+            showAlert('Error', 'Failed to delete address.', 'error');
+          }
+        },
+        cancelText: 'Cancel'
       }
-    }
+    );
   };
 
   if (loading) {
@@ -197,9 +210,19 @@ export const Account = () => {
           </div>
           <button
             onClick={() => {
-              if (window.confirm('Are you sure you want to sign out?')) {
-                logout();
-              }
+              showAlert(
+                'Sign Out',
+                'Are you sure you want to sign out?',
+                'warning',
+                {
+                  confirmText: 'Sign Out',
+                  onConfirm: () => {
+                    // Wrap in setTimeout to ensure alert closes before component unmounts
+                    setTimeout(() => logout(), 0);
+                  },
+                  cancelText: 'Cancel'
+                }
+              );
             }}
             className="hidden md:flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg font-bold hover:bg-red-100 transition-colors self-start"
           >
@@ -261,18 +284,27 @@ export const Account = () => {
                               {/* Cancel Button for User */}
                               {order.status === 'processing' && (
                                 <button
-                                  onClick={async (e) => {
+                                  onClick={(e) => {
                                     e.stopPropagation();
-                                    if (window.confirm('Are you sure you want to cancel this order?')) {
-                                      try {
-                                        await store.updateOrderStatus(order.id, 'cancelled');
-                                        setOrders(orders.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o));
-                                        alert('Order cancelled successfully.');
-                                      } catch (err) {
-                                        console.error(err);
-                                        alert('Failed to cancel order.');
+                                    showAlert(
+                                      'Cancel Order',
+                                      'Are you sure you want to cancel this order?',
+                                      'warning',
+                                      {
+                                        confirmText: 'Yes, Cancel Order',
+                                        onConfirm: async () => {
+                                          try {
+                                            await store.updateOrderStatus(order.id, 'cancelled');
+                                            setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o));
+                                            showAlert('Success', 'Order cancelled successfully.', 'success');
+                                          } catch (err) {
+                                            console.error(err);
+                                            showAlert('Error', 'Failed to cancel order.', 'error');
+                                          }
+                                        },
+                                        cancelText: 'Keep Order'
                                       }
-                                    }
+                                    );
                                   }}
                                   className="px-3 py-1 text-xs font-bold text-red-600 border border-red-200 rounded hover:bg-red-50 transition-colors"
                                 >
@@ -395,6 +427,18 @@ export const Account = () => {
             ) : null}
           </div>
         </div>
+
+        {/* Custom Alert */}
+        <CustomAlert
+          isOpen={alertState.isOpen}
+          onClose={closeAlert}
+          title={alertState.title}
+          message={alertState.message}
+          type={alertState.type}
+          confirmText={alertState.confirmText}
+          onConfirm={alertState.onConfirm}
+          cancelText={alertState.cancelText}
+        />
       </div>
     </div >
   );

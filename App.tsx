@@ -16,6 +16,7 @@ import { AdminLogin } from './pages/AdminLogin';
 import { ProductDetail } from './pages/ProductDetail';
 import { GiftGuide } from './pages/GiftGuide';
 import { CartDrawer } from './components/CartDrawer';
+import { ClickSpark } from './components/ClickSpark';
 
 
 const App = () => {
@@ -27,6 +28,7 @@ const App = () => {
             <Navbar />
             <CartDrawer />
             <MobileNumberModal />
+            <ClickSpark color="#E94E77" count={8} />
 
             <main className="flex-grow">
               <Routes>

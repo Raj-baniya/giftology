@@ -7,6 +7,8 @@ import { Icons } from '../components/ui/Icons';
 import { store } from '../services/store';
 import { LocationPicker } from '../components/LocationPicker';
 import { sendOrderConfirmationToUser, sendOrderNotificationToAdmin, OrderEmailParams } from '../services/emailService';
+import { AnimatedGradientBackground, DeliveryCarAnimation } from '../components/AnimatedBackgrounds';
+import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 
 const steps = ['Shipping', 'Payment', 'Confirmation'];
 
@@ -14,6 +16,7 @@ export const Checkout = () => {
   const { cart, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { alertState, showAlert, closeAlert } = useCustomAlert();
 
   // State
   const [currentStep, setCurrentStep] = useState(0);
@@ -84,15 +87,15 @@ export const Checkout = () => {
 
     // Validation
     if (formData.phone.length !== 10) {
-      alert('Please enter a valid 10-digit mobile number.');
+      showAlert('Invalid Phone Number', 'Please enter a valid 10-digit mobile number.', 'warning');
       return;
     }
     if (formData.zipCode.length !== 6) {
-      alert('Zip Code must be 6 digits.');
+      showAlert('Invalid Zip Code', 'Zip Code must be 6 digits.', 'warning');
       return;
     }
     if (!formData.deliveryDate) {
-      alert('Please select a delivery date.');
+      showAlert('Delivery Date Required', 'Please select a delivery date.', 'warning');
       return;
     }
 
@@ -104,7 +107,7 @@ export const Checkout = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert('File size too large. Please upload an image under 5MB.');
+        showAlert('File Too Large', 'Please upload an image under 5MB.', 'warning');
         return;
       }
 
@@ -121,7 +124,7 @@ export const Checkout = () => {
     e.preventDefault();
 
     if (paymentMethod === 'upi' && !screenshot) {
-      alert('Please upload the payment screenshot.');
+      showAlert('Screenshot Required', 'Please upload the payment screenshot to confirm your UPI payment.', 'warning');
       return;
     }
 
@@ -244,14 +247,15 @@ export const Checkout = () => {
         errorMessage = error.message;
       }
 
-      alert(errorMessage);
+      showAlert('Order Failed', errorMessage, 'error');
       setProcessing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background py-10 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-background py-10 px-4 relative">
+      <AnimatedGradientBackground />
+      <div className="max-w-4xl mx-auto relative z-10">
 
         {/* Stepper */}
         <div className="flex justify-center mb-10">
@@ -475,6 +479,12 @@ export const Checkout = () => {
                   </motion.div>
                   <h2 className="font-serif text-3xl font-bold mb-2">Order Confirmed!</h2>
                   <p className="text-textMuted mb-4">Thank you for your purchase.</p>
+
+                  {/* Delivery Car Animation */}
+                  <div className="w-full max-w-md mb-6">
+                    <DeliveryCarAnimation />
+                  </div>
+
                   <div className="bg-blue-50 text-blue-700 px-4 py-3 rounded-lg text-sm mb-8">
                     <p className="font-bold">Confirmation Email Sent</p>
                     <p>We've sent the order details to {formData.email}</p>
@@ -507,20 +517,58 @@ export const Checkout = () => {
                 ))}
               </div>
 
-              <div className="border-t border-gray-100 pt-4 space-y-2">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span className="font-medium">&#8377;{cartTotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Shipping ({isFastDelivery ? 'Fast' : 'Standard'})</span>
-                  <span className={`font-medium ${isFastDelivery ? 'text-gray-900' : 'text-green-600'}`}>
-                    {isFastDelivery ? <span>&#8377;100</span> : 'Free'}
-                  </span>
-                </div>
+              <div className="border-t border-gray-200 pt-4 space-y-2">
+                {/* Calculate totals with market prices */}
+                {(() => {
+                  const marketPriceTotal = cart.reduce((sum, item) => {
+                    const marketPrice = item.marketPrice || item.price;
+                    return sum + (marketPrice * item.quantity);
+                  }, 0);
+                  const totalSavings = marketPriceTotal - cartTotal;
+                  const hasDiscount = totalSavings > 0;
+
+                  return (
+                    <>
+                      {/* Market Price Total (if there's a discount) */}
+                      {hasDiscount && (
+                        <div className="flex justify-between text-gray-500">
+                          <span>MRP Total</span>
+                          <span className="line-through">&#8377;{marketPriceTotal.toLocaleString()}</span>
+                        </div>
+                      )}
+
+                      {/* Subtotal (Current Price) */}
+                      <div className="flex justify-between text-gray-600">
+                        <span>Subtotal</span>
+                        <span className="font-medium">&#8377;{cartTotal.toLocaleString()}</span>
+                      </div>
+
+                      {/* Shipping */}
+                      <div className="flex justify-between text-gray-600">
+                        <span>Shipping ({isFastDelivery ? 'Fast' : 'Standard'})</span>
+                        <span className={`font-medium ${isFastDelivery ? 'text-gray-900' : 'text-green-600'}`}>
+                          {isFastDelivery ? <span>&#8377;100</span> : 'Free'}
+                        </span>
+                      </div>
+
+                      {/* You Saved Badge */}
+                      {hasDiscount && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-green-700 font-bold text-sm flex items-center gap-1">
+                              <Icons.CheckCircle className="w-4 h-4" />
+                              You Saved
+                            </span>
+                            <span className="text-green-700 font-bold text-lg">&#8377;{totalSavings.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
-              <div className="border-t border-gray-100 pt-4 mt-4 flex justify-between items-center">
+              <div className="border-t border-gray-200 pt-4 mt-4 flex justify-between items-center">
                 <span className="font-bold text-lg">Total</span>
                 <span className="font-bold text-2xl">&#8377;{finalTotal.toLocaleString()}</span>
               </div>
@@ -528,6 +576,18 @@ export const Checkout = () => {
           )}
         </div>
       </div>
+
+      {/* Custom Alert */}
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        onClose={closeAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        confirmText={alertState.confirmText}
+        onConfirm={alertState.onConfirm}
+        cancelText={alertState.cancelText}
+      />
     </div>
   );
 };

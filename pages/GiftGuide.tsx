@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Icons } from '../components/ui/Icons';
+import { ParticleBackground } from '../components/AnimatedBackgrounds';
 
 export const GiftGuide = () => {
     const navigate = useNavigate();
@@ -97,8 +98,9 @@ export const GiftGuide = () => {
     const isComplete = currentStep === questions.length - 1 && answers[currentQuestion.id];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 py-12 px-4">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 py-12 px-4 relative">
+            <ParticleBackground />
+            <div className="max-w-4xl mx-auto relative z-10">
 
                 {/* Header */}
                 <motion.div
@@ -162,8 +164,8 @@ export const GiftGuide = () => {
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 className={`p-6 rounded-2xl border-2 transition-all text-left ${answers[currentQuestion.id] === option.value
-                                        ? 'border-purple-500 bg-purple-50 shadow-lg'
-                                        : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50/50'
+                                    ? 'border-purple-500 bg-purple-50 shadow-lg'
+                                    : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50/50'
                                     }`}
                             >
                                 <div className="flex items-center gap-4">

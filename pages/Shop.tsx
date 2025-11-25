@@ -5,6 +5,8 @@ import { Product, Category } from '../types';
 import { useCart } from '../contexts/CartContext';
 import { Icons } from '../components/ui/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LoadingSpinner } from '../components/ui/LoadingAnimations';
+import { ProductInfiniteMenu } from '../components/ProductInfiniteMenu';
 
 export const Shop = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -16,6 +18,7 @@ export const Shop = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [priceRange, setPriceRange] = useState(5000);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
+    const [viewMode, setViewMode] = useState<'grid' | 'infinite'>('grid'); // Toggle between grid and infinite menu
 
     const { addToCart } = useCart();
 
@@ -107,11 +110,35 @@ export const Shop = () => {
                 {/* Mobile Filter Toggle */}
                 <button
                     onClick={() => setShowMobileFilters(!showMobileFilters)}
-                    className="lg:hidden w-full mb-6 bg-white border border-gray-200 py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm sticky top-16 z-30"
+                    className="lg:hidden w-full mb-6 bg-white border border-gray-200 py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm sticky top-16 z-30 smooth-transition hover-lift btn-animated"
                 >
                     <Icons.Menu className="w-4 h-4" />
                     {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
                 </button>
+
+                {/* View Mode Toggle */}
+                <div className="mb-6 flex justify-center gap-2">
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        className={`px-6 py-3 rounded-lg font-bold flex items-center gap-2 smooth-transition ${viewMode === 'grid'
+                            ? 'bg-black text-white'
+                            : 'bg-white text-black border border-gray-200 hover:bg-gray-50'
+                            }`}
+                    >
+                        <Icons.Filter className="w-4 h-4" />
+                        Grid View
+                    </button>
+                    <button
+                        onClick={() => setViewMode('infinite')}
+                        className={`px-6 py-3 rounded-lg font-bold flex items-center gap-2 smooth-transition ${viewMode === 'infinite'
+                            ? 'bg-black text-white'
+                            : 'bg-white text-black border border-gray-200 hover:bg-gray-50'
+                            }`}
+                    >
+                        <Icons.Sparkles className="w-4 h-4" />
+                        Fun View
+                    </button>
+                </div>
 
                 <div className="flex flex-col lg:flex-row gap-8">
 
@@ -133,7 +160,7 @@ export const Shop = () => {
                                                 placeholder="Product name..."
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                                className="w-full border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                                                className="w-full border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary smooth-transition"
                                             />
                                             <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                         </div>
@@ -145,7 +172,7 @@ export const Shop = () => {
                                             <select
                                                 value={categoryFilter || 'all'}
                                                 onChange={(e) => handleCategoryClick(e.target.value)}
-                                                className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-10 rounded-lg leading-tight focus:outline-none focus:ring-1 focus:ring-primary transition-colors cursor-pointer text-sm font-medium"
+                                                className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-10 rounded-lg leading-tight focus:outline-none focus:ring-1 focus:ring-primary smooth-transition cursor-pointer text-sm font-medium"
                                             >
                                                 {categoriesList.map(cat => (
                                                     <option key={cat.id} value={cat.slug}>
@@ -182,11 +209,15 @@ export const Shop = () => {
                         )}
                     </AnimatePresence>
 
-                    {/* Product Grid */}
+                    {/* Product Display - Grid or Infinite Menu */}
                     <div className="flex-1">
                         {loading ? (
                             <div className="flex justify-center py-20">
-                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#E94E77]"></div>
+                                <LoadingSpinner size="lg" />
+                            </div>
+                        ) : viewMode === 'infinite' ? (
+                            <div className="w-full h-[600px] md:h-[700px] lg:h-[800px] rounded-2xl overflow-hidden shadow-2xl bg-black mb-8">
+                                <ProductInfiniteMenu products={products} />
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
@@ -197,13 +228,13 @@ export const Shop = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         whileHover={{ y: -5 }}
                                         onClick={() => navigate(`/product/${product.slug || product.id}`)}
-                                        className="bg-white rounded-lg md:rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group border border-gray-100 flex flex-col relative cursor-pointer"
+                                        className="bg-white rounded-lg md:rounded-xl overflow-hidden shadow-sm hover:shadow-xl smooth-transition-slow group border border-gray-100 flex flex-col relative cursor-pointer card-hover"
                                     >
                                         <div className="relative aspect-square overflow-hidden bg-gray-50">
                                             <img
                                                 src={product.imageUrl}
                                                 alt={product.name}
-                                                className="w-full h-full object-cover transition-transform duration-500 md:group-hover:scale-110"
+                                                className="w-full h-full object-cover smooth-transition-slow md:group-hover:scale-110"
                                             />
                                             {product.trending && (
                                                 <div className="absolute top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md flex items-center gap-1 z-10">
@@ -234,9 +265,9 @@ export const Shop = () => {
                                                         addToCart(product);
                                                     }}
                                                     disabled={!product.stock || product.stock <= 0}
-                                                    className={`w-full md:w-auto px-3 py-2 md:px-4 md:py-2 rounded-md text-xs md:text-sm font-bold transition-colors flex items-center justify-center gap-1.5 ${!product.stock || product.stock <= 0
+                                                    className={`w-full md:w-auto px-3 py-2 md:px-4 md:py-2 rounded-md text-xs md:text-sm font-bold smooth-transition flex items-center justify-center gap-1.5 btn-animated ${!product.stock || product.stock <= 0
                                                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                                        : 'bg-[#E94E77] text-white active:bg-[#D63D65]'
+                                                        : 'bg-[#E94E77] text-white active:bg-[#D63D65] hover-lift'
                                                         }`}
                                                 >
                                                     <Icons.ShoppingBag className="w-3 h-3 md:w-4 md:h-4" />

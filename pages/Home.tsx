@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Icons } from '../components/ui/Icons';
+import { ProductInfiniteMenu } from '../components/ProductInfiniteMenu';
+import { store } from '../services/store';
+import { Product } from '../types';
 
 // Hardcoded Categories for Instant Display
 const DISPLAY_CATEGORIES = [
@@ -29,8 +32,26 @@ const DISPLAY_CATEGORIES = [
 
 export const Home = () => {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
   // Use hardcoded categories directly
   const categories = DISPLAY_CATEGORIES;
+
+  // Fetch products for the Infinite Menu
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const allProducts = await store.getProducts();
+        setProducts(allProducts);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -85,14 +106,14 @@ export const Home = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center px-4 w-full sm:w-auto">
               <Link
                 to="/shop"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white text-black text-lg font-bold rounded-full hover:bg-primary hover:text-black transition-all transform hover:scale-105 shadow-xl w-full sm:w-auto"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-black text-lg font-bold rounded-full hover:bg-primary hover:text-black smooth-transition hover-lift btn-animated shadow-xl w-full sm:w-auto"
               >
                 Explore Gifts
-                <Icons.Gift className="ml-2 w-5 h-5" />
+                <Icons.Gift className="ml-2 w-5 h-5 smooth-transition" />
               </Link>
               <button
                 onClick={() => scrollToSection('about-us')}
-                className="inline-flex items-center justify-center px-8 py-4 bg-transparent border-2 border-white text-white text-lg font-bold rounded-full hover:bg-white/10 transition-all w-full sm:w-auto"
+                className="inline-flex items-center justify-center px-8 py-4 bg-transparent border-2 border-white text-white text-lg font-bold rounded-full hover:bg-white/10 smooth-transition hover-scale w-full sm:w-auto"
               >
                 About Us
               </button>
@@ -100,6 +121,38 @@ export const Home = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Product Infinite Menu - Fun Way to Explore Products */}
+      {!loadingProducts && products.length > 0 && (
+        <section className="py-12 md:py-20 bg-gradient-to-b from-background to-[#FFF8E1]">
+          <div className="max-w-7xl mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-8"
+            >
+              <h2 className="font-serif text-3xl md:text-5xl font-bold text-textMain mb-3">
+                Explore Products in a <span className="text-primary italic">Fun Way</span>
+              </h2>
+              <p className="text-textMuted text-lg max-w-2xl mx-auto">
+                Spin, explore, and discover our amazing collection in 3D!
+              </p>
+            </motion.div>
+
+            <div className="w-full h-[600px] md:h-[650px] lg:h-[700px] rounded-2xl overflow-hidden shadow-2xl bg-black">
+              <ProductInfiniteMenu products={products} />
+            </div>
+
+            <div className="text-center mt-8">
+              <p className="text-sm text-textMuted mb-4">
+                <Icons.Info className="inline w-4 h-4 mr-1" />
+                Drag to rotate • Click the arrow to view product details
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Categories - Mobile Horizontal Scroll */}
       <section id="categories" className="py-12 md:py-24 bg-background">
@@ -138,18 +191,18 @@ export const Home = () => {
               >
                 <Link
                   to={`/shop?category=${cat.slug}`}
-                  className="block group relative overflow-hidden rounded-2xl aspect-[3/4] shadow-md hover:shadow-xl transition-all duration-500"
+                  className="block group relative overflow-hidden rounded-2xl aspect-[3/4] shadow-md hover:shadow-xl smooth-transition-slow card-hover"
                 >
                   <img
                     src={cat.imageUrl}
                     alt={cat.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:-translate-y-2"
+                    className="w-full h-full object-cover smooth-transition-slow group-hover:scale-110 group-hover:-translate-y-2"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5 transform translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                  <div className="absolute bottom-0 left-0 right-0 p-5 transform translate-y-1 group-hover:translate-y-0 smooth-transition">
                     <h3 className="text-white font-serif text-xl md:text-2xl font-bold mb-1">{cat.name}</h3>
-                    <span className="text-primary text-sm font-bold flex items-center gap-1 opacity-80 group-hover:opacity-100">
-                      Explore <Icons.ChevronRight className="w-3 h-3" />
+                    <span className="text-primary text-sm font-bold flex items-center gap-1 opacity-80 group-hover:opacity-100 smooth-transition">
+                      Explore <Icons.ChevronRight className="w-3 h-3 smooth-transition" />
                     </span>
                   </div>
                 </Link>
@@ -271,8 +324,8 @@ export const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
             {/* Phone */}
-            <div className="flex flex-col items-center p-6 bg-gray-50 rounded-2xl hover:shadow-lg transition-all">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+            <div className="flex flex-col items-center p-6 bg-gray-50 rounded-2xl hover:shadow-lg smooth-transition hover-lift">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 smooth-transition hover-scale">
                 <Icons.Phone className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="font-bold text-lg mb-2">Call Us</h3>
@@ -288,9 +341,9 @@ export const Home = () => {
                 });
                 window.dispatchEvent(event);
               }}
-              className="bg-gray-50 p-8 rounded-2xl text-center hover:shadow-lg transition-all cursor-pointer group"
+              className="bg-gray-50 p-8 rounded-2xl text-center hover:shadow-lg smooth-transition cursor-pointer group hover-lift"
             >
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 smooth-transition">
                 <Icons.Mail className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="font-serif text-xl font-bold mb-2">Email Us</h3>
@@ -302,12 +355,12 @@ export const Home = () => {
               href="https://www.instagram.com/giftology.in_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center p-6 bg-gray-50 rounded-2xl hover:shadow-lg transition-all group cursor-pointer"
+              className="flex flex-col items-center p-6 bg-gray-50 rounded-2xl hover:shadow-lg smooth-transition group cursor-pointer hover-lift"
             >
-              <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-pink-200 transition-colors">
+              <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-pink-200 smooth-transition">
                 <Icons.Instagram className="w-8 h-8 text-pink-600" />
               </div>
-              <h3 className="font-bold text-lg mb-2 group-hover:text-pink-600 transition-colors">Follow Us</h3>
+              <h3 className="font-bold text-lg mb-2 group-hover:text-pink-600 smooth-transition">Follow Us</h3>
               <p className="text-gray-600">@giftology.in_</p>
             </a>
 
