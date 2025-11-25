@@ -148,6 +148,13 @@ export const ProductDetail = () => {
                                             const totalImages = images.length;
                                             const reverseIndex = totalImages - 1 - index;
 
+                                            const handleCardClick = () => {
+                                                // Find current index and go to next
+                                                const currentIndex = images.indexOf(selectedImage);
+                                                const nextIndex = (currentIndex + 1) % images.length;
+                                                setSelectedImage(images[nextIndex]);
+                                            };
+
                                             return (
                                                 <motion.div
                                                     key={index}
@@ -166,7 +173,7 @@ export const ProductDetail = () => {
                                                         stiffness: 300,
                                                         damping: 30,
                                                     }}
-                                                    onClick={() => setSelectedImage(img)}
+                                                    onClick={handleCardClick}
                                                     className={`absolute inset-0 cursor-pointer ${isSelected ? '' : 'hover:scale-[0.98] transition-transform'
                                                         }`}
                                                     style={{
@@ -210,6 +217,14 @@ export const ProductDetail = () => {
                                                         {!isSelected && (
                                                             <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm">
                                                                 {index + 1}/{totalImages}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Click to cycle hint */}
+                                                        {isSelected && (
+                                                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-sm flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <Icons.ArrowRight className="w-3 h-3" />
+                                                                Click to see next
                                                             </div>
                                                         )}
                                                     </div>
