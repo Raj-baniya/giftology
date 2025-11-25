@@ -30,6 +30,7 @@ export const Shop = () => {
             ]);
 
             setCategories(allCategories);
+            console.log('All Products:', allProducts);
 
             let filtered = allProducts;
 

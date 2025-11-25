@@ -39,13 +39,14 @@ export const getProducts = async () => {
     const { data, error } = await supabase
         .from('products')
         .select('*, categories(name, slug)')
-        .eq('is_active', true)
+        // .eq('is_active', true)
         .order('created_at', { ascending: false });
 
     if (error) {
         console.error('Error fetching products:', error);
         return [];
     }
+    console.log('Fetched products:', data);
     return data;
 };
 
@@ -166,7 +167,7 @@ export const createOrder = async (orderData: any, orderItems: any[]) => {
 export const getAdminOrders = async () => {
     const { data, error } = await supabase
         .from('orders')
-        .select('*, order_items(*, products(name, images))')
+        .select('*, order_items(*, products(name, images)), profiles(full_name, email, phone_number)')
         .order('created_at', { ascending: false });
 
     if (error) {

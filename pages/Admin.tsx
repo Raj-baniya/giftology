@@ -177,8 +177,9 @@ export const Admin = () => {
         try {
             await store.updateOrderStatus(orderId, newStatus);
             await loadData();
-        } catch (e) {
-            alert('Failed to update order status');
+        } catch (e: any) {
+            console.error(e);
+            alert(`Failed to update order status: ${e.message || e.error_description || JSON.stringify(e)}`);
         }
     };
 
@@ -436,10 +437,10 @@ export const Admin = () => {
                                                         </td>
                                                         <td className="p-4" onClick={(e) => e.stopPropagation()}>
                                                             <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value as any)} className={`border-none text-sm font-bold rounded-lg px-3 py-1.5 cursor-pointer outline-none ${order.status === 'Delivered' ? 'bg-green-100 text-green-800' : order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' : order.status === 'Cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                                                <option value="Processing">Processing</option>
-                                                                <option value="Shipped">Shipped</option>
-                                                                <option value="Delivered">Delivered</option>
-                                                                <option value="Cancelled">Cancelled</option>
+                                                                <option value="processing">Processing</option>
+                                                                <option value="shipped">Shipped</option>
+                                                                <option value="delivered">Delivered</option>
+                                                                <option value="cancelled">Cancelled</option>
                                                             </select>
                                                         </td>
                                                     </tr>
@@ -515,10 +516,10 @@ export const Admin = () => {
                                                     <span className="text-sm font-bold text-gray-600">Status:</span>
                                                     <div onClick={(e) => e.stopPropagation()} className="flex-1 text-right">
                                                         <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value as any)} className={`appearance-none font-bold text-sm bg-transparent outline-none cursor-pointer ${order.status === 'Delivered' ? 'text-green-600' : order.status === 'Shipped' ? 'text-blue-600' : order.status === 'Cancelled' ? 'text-red-600' : 'text-yellow-600'}`}>
-                                                            <option value="Processing">Processing</option>
-                                                            <option value="Shipped">Shipped</option>
-                                                            <option value="Delivered">Delivered</option>
-                                                            <option value="Cancelled">Cancelled</option>
+                                                            <option value="processing">Processing</option>
+                                                            <option value="shipped">Shipped</option>
+                                                            <option value="delivered">Delivered</option>
+                                                            <option value="cancelled">Cancelled</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -593,7 +594,7 @@ export const Admin = () => {
                                                         {lead.email && <span className="flex items-center gap-2 text-sm text-blue-600"><Icons.Mail className="w-3 h-3" /><a href={`mailto:${lead.email}`} className="hover:underline">{lead.email}</a></span>}
                                                     </div>
                                                 </td>
-                                                <td className="p-4"><span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${lead.source === 'mobile_modal' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>{lead.source === 'mobile_modal' ? 'Popup' : lead.source || 'Web'}</span></td>
+                                                <td className="p-4"><span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${lead.source === 'mobile_modal' ? 'bg-purple-100 text-purple-700' : lead.source === 'feedback_modal' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>{lead.source === 'mobile_modal' ? 'Popup' : lead.source === 'feedback_modal' ? 'Feedback Form' : lead.source || 'Web'}</span></td>
                                                 <td className="p-4 text-sm text-gray-600 max-w-xs truncate">{lead.message}</td>
                                             </tr>
                                         ))}
@@ -626,6 +627,7 @@ export const Admin = () => {
                                     {errors.price && <span className="text-red-500 text-xs">{errors.price.message}</span>}
                                 </div>
                                 <div>
+                                    <label className="block text-sm font-bold mb-1">Market Price (<span style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;</span>)</label>
                                     <input type="number" {...register('marketPrice', { min: 0 })} className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" placeholder="Optional" />
                                 </div>
                             </div>

@@ -26,6 +26,7 @@ const App = () => {
           <div className="flex flex-col min-h-screen bg-background font-sans text-textMain">
             <Navbar />
             <CartDrawer />
+            <MobileNumberModal />
 
             <main className="flex-grow">
               <Routes>

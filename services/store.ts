@@ -160,23 +160,19 @@ class StoreService {
     return currentAddresses;
   }
 
-  // --- Orders ---
   async createOrder(userId: string, items: any[], total: number, details: any): Promise<Order> {
     const orderData: any = {
-      total: total,
-      status: 'Processing',
-      shipping_address: {
-        ...details.shippingAddress,
-        // HACK: Storing screenshot and extra details in shipping_address JSONB to ensure they are saved
-        // without needing a schema migration (if the table is strict)
-        payment_proof: details.screenshot,
-        customer_name: details.customerName,
-        customer_phone: details.phone,
-        customer_email: details.email,
-        delivery_type: details.deliveryType,
-        delivery_date: details.deliveryDate
-      },
+      total_amount: total,
+      status: 'processing',
       payment_method: details.paymentMethod,
+      delivery_date: details.deliveryDate, // Add delivery_date at order level
+      shipping_address: {
+        street: details.shippingAddress.street,
+        city: details.shippingAddress.city,
+        zipCode: details.shippingAddress.zipCode,
+        state: details.shippingAddress.state,
+        country: details.shippingAddress.country
+      },
       guest_info: !userId ? details.guestInfo : null
     };
 
@@ -184,8 +180,13 @@ class StoreService {
       orderData.user_id = userId;
     }
 
+    console.log('Creating order with data:', orderData);
+
     const result = await supabaseService.createOrder(orderData, items);
-    if (!result.success) throw result.error;
+    if (!result.success) {
+      console.error('Supabase createOrder failed:', result.error);
+      throw result.error;
+    }
 
     // Return a frontend-compatible Order object
     return {
@@ -242,21 +243,21 @@ class StoreService {
           quantity: i.quantity,
           imageUrl: i.products?.images?.[0] || ''
         })),
-        total: o.total,
+        total: o.total_amount,
         status: o.status,
         shippingAddress: shipping,
 
-        // Map the new fields
-        customerName: shipping.customer_name || (guest.firstName ? `${guest.firstName} ${guest.lastName}` : 'Unknown'),
-        phone: shipping.customer_phone || guest.phone,
-        email: shipping.customer_email || guest.email,
+        // Map customer info from guest_info or user profile
+        customerName: guest.firstName ? `${guest.firstName} ${guest.lastName}` : (o.profiles?.full_name || 'Unknown'),
+        phone: guest.phone || o.profiles?.phone_number || '',
+        email: guest.email || o.profiles?.email || '',
         address: `${shipping.street || ''}, ${shipping.city || ''} - ${shipping.zipCode || ''}`,
         city: shipping.city,
         state: shipping.state,
         zipCode: shipping.zipCode,
         paymentMethod: o.payment_method,
-        screenshot: shipping.payment_proof, // Retrieve screenshot
-        deliveryType: shipping.delivery_type
+        deliveryDate: o.delivery_date,
+        deliveryType: 'Standard Delivery' // Default, can be enhanced later
       };
     });
   }

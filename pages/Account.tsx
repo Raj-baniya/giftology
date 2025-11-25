@@ -250,23 +250,23 @@ export const Account = () => {
                               <p className="text-sm text-textMuted">Placed on {new Date(order.date).toLocaleDateString()}</p>
                             </div>
                             <div className="flex justify-between items-center w-full sm:w-auto gap-3">
-                              <span className={`px-2 py-1 text-[10px] md:text-xs font-bold rounded-full ${order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
-                                order.status === 'Shipped' ? 'bg-blue-100 text-blue-700' :
-                                  order.status === 'Cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                              <span className={`px-2 py-1 text-[10px] md:text-xs font-bold rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                                order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                                  order.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
                                 }`}>
-                                {order.status}
+                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                               </span>
                               <span className="font-bold text-sm hidden sm:block" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
 
                               {/* Cancel Button for User */}
-                              {order.status === 'Processing' && (
+                              {order.status === 'processing' && (
                                 <button
                                   onClick={async (e) => {
                                     e.stopPropagation();
                                     if (window.confirm('Are you sure you want to cancel this order?')) {
                                       try {
-                                        await store.updateOrderStatus(order.id, 'Cancelled');
-                                        setOrders(orders.map(o => o.id === order.id ? { ...o, status: 'Cancelled' } : o));
+                                        await store.updateOrderStatus(order.id, 'cancelled');
+                                        setOrders(orders.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o));
                                         alert('Order cancelled successfully.');
                                       } catch (err) {
                                         console.error(err);

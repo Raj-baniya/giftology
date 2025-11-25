@@ -14,14 +14,19 @@ export const Checkout = () => {
   const { cart, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // State
   const [currentStep, setCurrentStep] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cod'>('upi');
   const [isFastDelivery, setIsFastDelivery] = useState(false);
+  const [screenshot, setScreenshot] = useState<string | null>(null);
 
-  const finalTotal = cartTotal + (isFastDelivery ? 100 : 0);
+  // Address Management
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [saveAddress, setSaveAddress] = useState(true);
 
-  // Form State
+  // Form Data
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -34,22 +39,35 @@ export const Checkout = () => {
     deliveryDate: ''
   });
 
-  // UPI Screenshot State
-  const [screenshot, setScreenshot] = useState<string | null>(null);
+  const finalTotal = cartTotal + (isFastDelivery ? 100 : 0);
 
-  // Address Management
-  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
-  const [saveAddress, setSaveAddress] = useState(true);
-
+  // Load saved addresses for logged-in users
   useEffect(() => {
     if (user) {
-      store.getUserAddresses(user.id).then(setSavedAddresses);
+      store.getUserAddresses(user.id)
+        .then(setSavedAddresses)
+        .catch(err => console.error('Failed to load addresses:', err));
     }
   }, [user]);
 
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (cart.length === 0 && currentStep !== 2) {
+      navigate('/shop');
+    }
+  }, [cart, navigate, currentStep]);
+
+  // Helper: Calculate minimum delivery date (Today + 2 days)
+  const getMinDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 2);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Handler: Select saved address
   const handleAddressSelect = (addr: any) => {
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       firstName: addr.firstName || '',
       lastName: addr.lastName || '',
       phone: addr.phone || '',
@@ -57,48 +75,48 @@ export const Checkout = () => {
       city: addr.city || '',
       state: addr.state || '',
       zipCode: addr.zipCode || ''
-    });
+    }));
   };
 
-  // Redirect if empty cart
-  useEffect(() => {
-    if (cart.length === 0 && currentStep !== 2) {
-      navigate('/shop');
-    }
-  }, [cart, navigate, currentStep]);
-
-  // Calculate minimum date (Today + 2 days)
-  const getMinDate = () => {
-    const date = new Date();
-    date.setDate(date.getDate() + 2);
-    return date.toISOString().split('T')[0];
-  };
-
+  // Handler: Shipping Form Submit
   const handleShippingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Handling Shipping Submit', formData);
 
+    // Validation
     if (formData.phone.length !== 10) {
-      console.log('Validation Failed: Phone length', formData.phone.length);
       alert('Please enter a valid 10-digit mobile number.');
       return;
     }
     if (formData.zipCode.length !== 6) {
-      console.log('Validation Failed: Zip length', formData.zipCode.length);
       alert('Zip Code must be 6 digits.');
       return;
     }
-    // Removed Mumbai restriction
-    // if (formData.city.toLowerCase() !== 'mumbai') {
-    //   console.log('Validation Failed: City', formData.city);
-    //   alert('We currently deliver only in Mumbai.');
-    //   return;
-    // }
+    if (!formData.deliveryDate) {
+      alert('Please select a delivery date.');
+      return;
+    }
 
-    console.log('Validation Passed. Moving to step 1.');
     setCurrentStep(1);
   };
 
+  // Handler: File Upload for UPI
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        alert('File size too large. Please upload an image under 5MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setScreenshot(ev.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handler: Place Order
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -110,21 +128,17 @@ export const Checkout = () => {
     setProcessing(true);
 
     try {
-      // Check if user is a real Supabase user or a mock OTP user
       const isRealUser = user && !user.id.startsWith('otp_');
       const dbUserId = isRealUser ? user.id : null;
 
-      // 1. Create Order in Store (Supabase)
+      // Prepare Order Details
       const orderDetails = {
         customerName: `${formData.firstName} ${formData.lastName}`,
         phone: formData.phone,
         email: formData.email,
-        address: formData.address,
-        city: formData.city,
-        zipCode: formData.zipCode,
+        paymentMethod,
         deliveryDate: formData.deliveryDate,
         deliveryType: isFastDelivery ? 'Fast Delivery' : 'Standard Delivery',
-        paymentMethod,
         screenshot: screenshot || undefined,
         shippingAddress: {
           street: formData.address,
@@ -141,36 +155,58 @@ export const Checkout = () => {
         } : undefined
       };
 
-      // Always create order, pass user.id if logged in (real), otherwise null
-      await store.createOrder(dbUserId, cart, finalTotal, orderDetails);
+      // 1. Create Order in Database
+      console.log('Creating order...', { dbUserId, finalTotal, orderDetails });
 
-      // Save Address if requested and user is logged in
-      if (isRealUser && saveAddress) {
-        await store.saveUserAddress(user.id, {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode
-        });
+      try {
+        await store.createOrder(dbUserId, cart, finalTotal, orderDetails);
+      } catch (err: any) {
+        // Retry as guest if foreign key constraint fails (user profile missing)
+        if (err?.code === '23503' && dbUserId) {
+          console.warn('User profile missing, retrying as guest order...');
+          const guestOrderDetails = {
+            ...orderDetails,
+            guestInfo: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              phone: formData.phone
+            }
+          };
+          await store.createOrder(null, cart, finalTotal, guestOrderDetails);
+        } else {
+          throw err;
+        }
       }
 
-      // Generate HTML for Order Items (Simplified for EmailJS limit)
-      const orderItemsHtml = cart.map(item => `
+      // 2. Save Address (Optional)
+      if (isRealUser && saveAddress) {
+        try {
+          await store.saveUserAddress(user.id, {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zipCode
+          });
+        } catch (addrError) {
+          console.warn('Failed to save address:', addrError);
+          // Don't block order completion for this
+        }
+      }
+
+      // 3. Send Emails
+      try {
+        const orderItemsHtml = cart.map(item => `
             <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
                 <p style="margin: 0; font-weight: bold; font-size: 14px;">${item.name}</p>
-                <p style="margin: 0; color: #666; font-size: 12px;">Qty: ${item.quantity} | Price: <span style="font-family: Arial, sans-serif;">&#8377;</span>${(item.price * item.quantity).toLocaleString()}</p>
+                <p style="margin: 0; color: #666; font-size: 12px;">Qty: ${item.quantity} | Price: &#8377;${(item.price * item.quantity).toLocaleString()}</p>
             </div>
         `).join('');
 
-      // 2. Send Emails using email service
-      try {
-        console.log('Sending order confirmation emails...');
-
-        // Prepare order email parameters
-        const orderParams = {
+        const emailParams: OrderEmailParams = {
           customerName: `${formData.firstName} ${formData.lastName}`,
           customerPhone: formData.phone,
           customerEmail: formData.email,
@@ -180,74 +216,36 @@ export const Checkout = () => {
           orderItems: orderItemsHtml
         };
 
-        // Prepare user email params (needs first name only)
-        const userEmailParams: OrderEmailParams = {
-          customerName: `${formData.firstName} ${formData.lastName}`, // Send Full Name
-          customerPhone: formData.phone,
-          customerEmail: formData.email,
-          orderTotal: finalTotal.toLocaleString(),
-          paymentMethod: paymentMethod,
-          deliveryDetails: `${formData.deliveryDate}`,
-          orderItems: orderItemsHtml
-        };
-
-        // Send to user and admin in parallel
-        const [userResult, adminResult] = await Promise.allSettled([
-          sendOrderConfirmationToUser(userEmailParams),
-          // Promise.resolve({ success: true }), // Mock success removed
-          sendOrderNotificationToAdmin(orderParams)
+        // Send emails in background (don't await strictly if you want faster UI response, 
+        // but here we await to show success/fail alert accurately)
+        await Promise.allSettled([
+          sendOrderConfirmationToUser(emailParams),
+          sendOrderNotificationToAdmin(emailParams)
         ]);
 
-        // Check results
-        if (userResult.status === 'fulfilled' && userResult.value.success) {
-          console.log('✅ User confirmation email sent');
-        } else {
-          console.error('❌ User email failed:', userResult.status === 'rejected' ? userResult.reason : userResult.value.error);
-        }
-
-        if (adminResult.status === 'fulfilled' && adminResult.value.success) {
-          console.log('✅ Admin notification email sent');
-        } else {
-          console.error('❌ Admin email failed:', adminResult.status === 'rejected' ? adminResult.reason : adminResult.value.error);
-        }
-
-        // Show success message if at least one email succeeded
-        if (
-          (userResult.status === 'fulfilled' && userResult.value.success) ||
-          (adminResult.status === 'fulfilled' && adminResult.value.success)
-        ) {
-          alert('Order placed successfully! Check your email for confirmation.');
-        } else {
-          alert('Order placed successfully! However, email notifications may have failed. Please check your order in the account section.');
-        }
-      } catch (emailError: any) {
-        console.error('Failed to send emails:', emailError);
-        alert('Order placed successfully! However, email notifications may have failed. Please check your order in the account section.');
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Continue to success screen even if email fails
       }
 
+      // Success
       setProcessing(false);
       setCurrentStep(2);
       clearCart();
 
     } catch (error: any) {
       console.error('Order processing failed:', error);
-      alert(`Something went wrong: ${error.message || JSON.stringify(error)}. Please try again.`);
+
+      // User-friendly error message
+      let errorMessage = 'Something went wrong. Please try again.';
+      if (error.code === '42501') {
+        errorMessage = 'Permission denied. Please try refreshing the page or contact support.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      alert(errorMessage);
       setProcessing(false);
-    }
-  };
-
-  const handleLocationSelect = (lat: number, lng: number) => {
-    console.log('Location selected:', lat, lng);
-    alert('Location pinned! Please fill in the specific address details.');
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setScreenshot(ev.target?.result as string);
-      };
-      reader.readAsDataURL(e.target.files[0]);
     }
   };
 
@@ -261,8 +259,7 @@ export const Checkout = () => {
             {steps.map((step, index) => (
               <React.Fragment key={step}>
                 <div className={`flex items-center gap-2 ${index <= currentStep ? 'text-primary' : 'text-gray-300'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 ${index <= currentStep ? 'border-primary bg-primary/10' : 'border-gray-300'
-                    }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 ${index <= currentStep ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
                     {index + 1}
                   </div>
                   <span className="hidden sm:block font-medium">{step}</span>
@@ -277,9 +274,11 @@ export const Checkout = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Form Area */}
+          {/* Main Content Area */}
           <div className="lg:col-span-2">
             <AnimatePresence mode='wait'>
+
+              {/* STEP 1: SHIPPING */}
               {currentStep === 0 && (
                 <motion.div
                   key="shipping"
@@ -295,9 +294,7 @@ export const Checkout = () => {
                       <label className="block text-sm font-bold text-gray-700 mb-2">Saved Addresses</label>
                       <select
                         onChange={(e) => {
-                          if (e.target.value) {
-                            handleAddressSelect(savedAddresses[parseInt(e.target.value)]);
-                          }
+                          if (e.target.value) handleAddressSelect(savedAddresses[parseInt(e.target.value)]);
                         }}
                         className="w-full p-3 border rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-primary"
                       >
@@ -313,13 +310,12 @@ export const Checkout = () => {
 
                   <form className="space-y-4" onSubmit={handleShippingSubmit}>
                     <div className="grid grid-cols-2 gap-4">
-                      <input required type="text" placeholder="First Name" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" />
-                      <input required type="text" placeholder="Last Name" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" />
+                      <input required type="text" placeholder="First Name" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      <input required type="text" placeholder="Last Name" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
                     </div>
 
-                    <input required type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" />
+                    <input required type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
 
-                    {/* Phone Number (No OTP) */}
                     <div className="flex-1 flex border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary">
                       <span className="bg-gray-50 px-3 py-3 text-gray-500 border-r flex items-center font-medium">+91</span>
                       <input
@@ -328,27 +324,24 @@ export const Checkout = () => {
                         placeholder="Mobile Number"
                         value={formData.phone}
                         onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
-                        className="flex-1 p-3 outline-none bg-white text-gray-900"
+                        className="flex-1 p-3 outline-none"
                       />
                     </div>
 
-                    {/* Location Picker */}
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-1">Pin Location</label>
-                      <LocationPicker onLocationSelect={handleLocationSelect} />
+                      <LocationPicker onLocationSelect={(lat, lng) => alert('Location pinned! Please fill in address details.')} />
                     </div>
 
-                    <input required type="text" placeholder="Flat / House No / Building / Street" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" />
+                    <input required type="text" placeholder="Flat / House No / Building / Street" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
 
                     <div className="grid grid-cols-2 gap-4">
-                      <input required type="text" placeholder="City" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" />
-                      <input required type="text" placeholder="State" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" />
-                    </div>
-                    <div className="grid grid-cols-1 gap-4">
-                      <input required type="text" placeholder="Zip Code (6 digits)" value={formData.zipCode} onChange={e => setFormData({ ...formData, zipCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" />
+                      <input required type="text" placeholder="City" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      <input required type="text" placeholder="State" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
                     </div>
 
-                    {/* Delivery Date */}
+                    <input required type="text" placeholder="Zip Code (6 digits)" value={formData.zipCode} onChange={e => setFormData({ ...formData, zipCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-1">Delivery Date</label>
                       <input
@@ -357,11 +350,10 @@ export const Checkout = () => {
                         min={getMinDate()}
                         value={formData.deliveryDate}
                         onChange={e => setFormData({ ...formData, deliveryDate: e.target.value })}
-                        className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900"
+                        className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none"
                       />
                     </div>
 
-                    {/* Delivery Type Selection */}
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <p className="font-bold text-sm mb-3">Delivery Speed</p>
                       <div className="space-y-3">
@@ -384,19 +376,14 @@ export const Checkout = () => {
                               <span className="text-xs text-gray-500">Delivered within 24-48 hours</span>
                             </div>
                           </div>
-                          <span className="font-bold text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>+&#8377;100</span>
+                          <span className="font-bold text-sm">+&#8377;100</span>
                         </label>
                       </div>
                     </div>
 
                     {user && (
                       <label className="flex items-center gap-2 mt-4 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={saveAddress}
-                          onChange={(e) => setSaveAddress(e.target.checked)}
-                          className="w-4 h-4 accent-primary"
-                        />
+                        <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} className="w-4 h-4 accent-primary" />
                         <span className="text-sm text-gray-700">Save this address for future orders</span>
                       </label>
                     )}
@@ -406,6 +393,7 @@ export const Checkout = () => {
                 </motion.div>
               )}
 
+              {/* STEP 2: PAYMENT */}
               {currentStep === 1 && (
                 <motion.div
                   key="payment"
@@ -420,38 +408,18 @@ export const Checkout = () => {
                     {/* UPI Option */}
                     <div className={`mb-4 p-4 border rounded-lg cursor-pointer transition-all ${paymentMethod === 'upi' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:bg-gray-50'}`}>
                       <label className="flex items-center gap-3 cursor-pointer w-full">
-                        <input
-                          type="radio"
-                          name="payment"
-                          className="w-5 h-5 text-primary accent-primary"
-                          checked={paymentMethod === 'upi'}
-                          onChange={() => setPaymentMethod('upi')}
-                        />
+                        <input type="radio" name="payment" className="w-5 h-5 text-primary accent-primary" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} />
                         <span className="font-medium flex items-center gap-2"><Icons.Smartphone className="w-5 h-5" /> UPI / QR Code</span>
                       </label>
 
                       {paymentMethod === 'upi' && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          className="mt-4 pl-8 flex flex-col items-center"
-                        >
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="mt-4 pl-8 flex flex-col items-center">
                           <div className="bg-white p-4 rounded-xl border-2 border-gray-100 shadow-sm flex flex-col items-center w-full">
                             <p className="text-sm font-bold text-gray-700 mb-3">Scan to Pay</p>
-                            <img
-                              src="/upi-qr.png"
-                              alt="UPI QR Code"
-                              className="w-48 h-48 mb-4 border-4 border-gray-800 rounded-lg"
-                            />
-
+                            <img src="/upi-qr.png" alt="UPI QR Code" className="w-48 h-48 mb-4 border-4 border-gray-800 rounded-lg" />
                             <div className="w-full border-t pt-4">
                               <label className="block text-sm font-bold text-gray-700 mb-2">Upload Payment Screenshot</label>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-                              />
+                              <input type="file" accept="image/*" onChange={handleFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
                               {screenshot && (
                                 <div className="mt-2">
                                   <p className="text-xs text-green-600 font-bold mb-1">Screenshot Uploaded:</p>
@@ -467,35 +435,21 @@ export const Checkout = () => {
                     {/* COD Option */}
                     <div className={`mb-6 p-4 border rounded-lg cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:bg-gray-50'}`}>
                       <label className="flex items-center gap-3 cursor-pointer w-full">
-                        <input
-                          type="radio"
-                          name="payment"
-                          className="w-5 h-5 text-primary accent-primary"
-                          checked={paymentMethod === 'cod'}
-                          onChange={() => setPaymentMethod('cod')}
-                        />
+                        <input type="radio" name="payment" className="w-5 h-5 text-primary accent-primary" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
                         <span className="font-medium flex items-center gap-2"><Icons.Banknote className="w-5 h-5" /> Cash on Delivery</span>
                       </label>
                       {paymentMethod === 'cod' && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          className="mt-2 pl-8"
-                        >
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="mt-2 pl-8">
                           <p className="text-sm text-gray-600">Pay securely with cash upon delivery.</p>
                         </motion.div>
                       )}
                     </div>
 
-                    <button
-                      type="submit"
-                      disabled={processing}
-                      className="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-                    >
+                    <button type="submit" disabled={processing} className="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
                       {processing ? <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" /> :
                         (paymentMethod === 'cod' ?
-                          <span className="flex items-center gap-1">Place Order - <span style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{finalTotal.toLocaleString()}</span></span> :
-                          <span className="flex items-center gap-1">Confirm Payment - <span style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{finalTotal.toLocaleString()}</span></span>)
+                          <span>Place Order - &#8377;{finalTotal.toLocaleString()}</span> :
+                          <span>Confirm Payment - &#8377;{finalTotal.toLocaleString()}</span>)
                       }
                     </button>
                     <button type="button" onClick={() => setCurrentStep(0)} className="w-full mt-2 text-textMuted hover:underline">Back to Shipping</button>
@@ -503,6 +457,7 @@ export const Checkout = () => {
                 </motion.div>
               )}
 
+              {/* STEP 3: CONFIRMATION */}
               {currentStep === 2 && (
                 <motion.div
                   key="confirmation"
@@ -532,7 +487,7 @@ export const Checkout = () => {
             </AnimatePresence>
           </div>
 
-          {/* Order Summary */}
+          {/* Order Summary Sidebar */}
           {currentStep < 2 && (
             <div className="bg-gray-50 p-6 rounded-xl h-fit">
               <h3 className="font-bold text-lg mb-4">Order Summary</h3>
@@ -547,7 +502,7 @@ export const Checkout = () => {
                       <h4 className="font-medium text-gray-900 line-clamp-2 text-sm">{item.name}</h4>
                       <p className="text-gray-500 text-xs mt-1">{item.category}</p>
                     </div>
-                    <span className="font-bold text-gray-900 text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{(item.price * item.quantity).toLocaleString()}</span>
+                    <span className="font-bold text-gray-900 text-sm">&#8377;{(item.price * item.quantity).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -555,19 +510,19 @@ export const Checkout = () => {
               <div className="border-t border-gray-100 pt-4 space-y-2">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span className="font-medium" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{cartTotal.toLocaleString()}</span>
+                  <span className="font-medium">&#8377;{cartTotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping ({isFastDelivery ? 'Fast' : 'Standard'})</span>
-                  <span className={`font-medium ${isFastDelivery ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'Arial, sans-serif' }}>
-                    {isFastDelivery ? <span style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;100</span> : 'Free'}
+                  <span className={`font-medium ${isFastDelivery ? 'text-gray-900' : 'text-green-600'}`}>
+                    {isFastDelivery ? <span>&#8377;100</span> : 'Free'}
                   </span>
                 </div>
               </div>
 
               <div className="border-t border-gray-100 pt-4 mt-4 flex justify-between items-center">
                 <span className="font-bold text-lg">Total</span>
-                <span className="font-bold text-2xl" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{finalTotal.toLocaleString()}</span>
+                <span className="font-bold text-2xl">&#8377;{finalTotal.toLocaleString()}</span>
               </div>
             </div>
           )}

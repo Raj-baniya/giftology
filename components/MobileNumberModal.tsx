@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icons } from './ui/Icons';
-import { sendFeedbackToAdmin, sendOtpToUser } from '../services/emailService';
 import { submitContactMessage } from '../services/supabaseService';
 
 export const MobileNumberModal = () => {
@@ -14,21 +13,7 @@ export const MobileNumberModal = () => {
   const [error, setError] = useState('');
   const [title, setTitle] = useState('We Value Your Feedback'); // Dynamic title
 
-  // OTP States
-  const [showOtpInput, setShowOtpInput] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState('');
 
-  useEffect(() => {
-    // Check if already submitted in this session (only for auto-popup)
-    const hasSubmitted = sessionStorage.getItem('mobile_submitted');
-    if (!hasSubmitted) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 3000); // Show after 3 seconds
-      return () => clearTimeout(timer);
-    }
-  }, []);
 
   // Listen for custom event to open modal
   useEffect(() => {
@@ -45,7 +30,7 @@ export const MobileNumberModal = () => {
     return () => window.removeEventListener('openFeedbackModal', handleOpenModal);
   }, []);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -64,55 +49,9 @@ export const MobileNumberModal = () => {
 
     setIsSubmitting(true);
 
-    // Generate 6-digit OTP
-    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(newOtp);
-
     try {
-      const result = await sendOtpToUser(name, email.trim(), newOtp);
-
-      if (result.success) {
-        setShowOtpInput(true);
-        alert(`OTP sent to ${email}. Please check your inbox (and spam folder).`);
-      } else {
-        throw new Error(result.error || 'Failed to send OTP email.');
-      }
-    } catch (err: any) {
-      console.error('Error sending OTP:', err);
-      setError(err.message || 'Failed to send OTP. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
-
-    if (otp !== generatedOtp) {
-      setError('Invalid OTP. Please try again.');
-      setIsSubmitting(false);
-      return;
-    }
-
-    // OTP Verified - Submit Data
-    try {
-      // 1. Send Feedback Email to Admin
-      const emailResult = await sendFeedbackToAdmin({
-        name,
-        email,
-        mobileNumber,
-        message
-      });
-
-      if (!emailResult.success) {
-        console.error('Failed to send feedback email:', emailResult.error);
-        // Continue anyway to save to DB
-      }
-
-      // 2. Save to Supabase
-      await submitContactMessage({
+      // Save to Supabase
+      const result = await submitContactMessage({
         name,
         email,
         phone: mobileNumber,
@@ -120,14 +59,24 @@ export const MobileNumberModal = () => {
         source: 'feedback_modal'
       });
 
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Failed to submit feedback.');
+      }
+
       // Success
       sessionStorage.setItem('mobile_submitted', 'true');
       setIsOpen(false);
       alert('Thank you for your feedback!');
 
-    } catch (err) {
+      // Reset form
+      setName('');
+      setMobileNumber('');
+      setEmail('');
+      setMessage('');
+
+    } catch (err: any) {
       console.error('Submission error:', err);
-      setError('Something went wrong. Please try again.');
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -174,114 +123,78 @@ export const MobileNumberModal = () => {
                 </div>
               )}
 
-              {!showOtpInput ? (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
-                    <div className="relative">
-                      <Icons.User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="text"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-                        placeholder="John Doe"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Mobile Number</label>
-                    <div className="relative">
-                      <Icons.Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="tel"
-                        required
-                        value={mobileNumber}
-                        onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-                        placeholder="9876543210"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
-                    <div className="relative">
-                      <Icons.Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-                        placeholder="you@example.com"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Your Feedback</label>
-                    <textarea
-                      required
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all h-24 resize-none"
-                      placeholder="Tell us what you think..."
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
-                  >
-                    {isSubmitting ? (
-                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <span>Send OTP via Email</span>
-                        <Icons.ArrowRight className="w-5 h-5" />
-                      </>
-                    )}
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleVerifyOtp} className="space-y-6">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-4">
-                      We sent a 6-digit code to <span className="font-bold text-black">{email}</span>
-                    </p>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
+                  <div className="relative">
+                    <Icons.User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
                       type="text"
                       required
-                      autoFocus
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      className="w-full text-center text-3xl font-bold tracking-[0.5em] py-4 border-b-2 border-gray-200 focus:border-primary outline-none transition-all bg-transparent"
-                      placeholder="••••••"
-                      maxLength={6}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                      placeholder="John Doe"
                     />
                   </div>
+                </div>
 
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-primary text-black py-4 rounded-xl font-bold text-lg hover:bg-primary-dark transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed shadow-lg"
-                  >
-                    {isSubmitting ? 'Verifying...' : 'Verify & Submit Feedback'}
-                  </button>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Mobile Number</label>
+                  <div className="relative">
+                    <Icons.Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="tel"
+                      required
+                      value={mobileNumber}
+                      onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                      placeholder="9876543210"
+                    />
+                  </div>
+                </div>
 
-                  <button
-                    type="button"
-                    onClick={() => { setShowOtpInput(false); setOtp(''); }}
-                    className="w-full text-sm text-gray-500 hover:text-black transition-colors"
-                  >
-                    Change Details / Resend OTP
-                  </button>
-                </form>
-              )}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
+                  <div className="relative">
+                    <Icons.Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Your Feedback</label>
+                  <textarea
+                    required
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all h-24 resize-none"
+                    placeholder="Tell us what you think..."
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>Submit Feedback</span>
+                      <Icons.ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
           </motion.div>
         </div>

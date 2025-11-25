@@ -30,7 +30,7 @@ export interface Order {
   date: string;
   items: CartItem[];
   total: number;
-  status: 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+  status: 'processing' | 'shipped' | 'delivered' | 'cancelled';
   // New Fields
   customerName?: string;
   phone?: string;
