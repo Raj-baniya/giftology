@@ -41,7 +41,9 @@ import {
   Filter,
   DollarSign,
   Sparkles,
-  Info
+  Info,
+  XCircle,
+  AlertTriangle
 } from 'lucide-react';
 
 export const Icons = {
@@ -87,5 +89,7 @@ export const Icons = {
   Filter,
   DollarSign,
   Sparkles,
-  Info
+  Info,
+  XCircle,
+  AlertTriangle
 };

@@ -64,11 +64,11 @@ export const Search = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group border border-gray-100"
               >
-                <div className="relative aspect-square overflow-hidden bg-gray-50">
+                <div className="relative aspect-square overflow-hidden bg-gray-50 rounded-full">
                   <img
                     src={product.imageUrl}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 rounded-full"
                   />
                 </div>
                 <div className="p-6 flex flex-col h-48">
