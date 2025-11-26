@@ -230,11 +230,11 @@ export const Shop = () => {
                                         onClick={() => navigate(`/product/${product.slug || product.id}`)}
                                         className="bg-white rounded-lg md:rounded-xl overflow-hidden shadow-sm hover:shadow-xl smooth-transition-slow group border border-gray-100 flex flex-col relative cursor-pointer card-hover"
                                     >
-                                        <div className="relative aspect-square overflow-hidden bg-gray-50 rounded-full">
+                                        <div className="relative aspect-square overflow-hidden bg-gray-50">
                                             <img
                                                 src={product.imageUrl}
                                                 alt={product.name}
-                                                className="w-full h-full object-cover smooth-transition-slow md:group-hover:scale-110 rounded-full"
+                                                className="w-full h-full object-contain smooth-transition-slow md:group-hover:scale-110 p-2"
                                             />
                                             {product.trending && (
                                                 <div className="absolute top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md flex items-center gap-1 z-10">

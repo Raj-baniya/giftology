@@ -42,6 +42,7 @@
 - **Inventory Control**: Track stock levels and trending items
 - **Order Management**: View, update, and process orders
 - **User Management**: Track customer orders and spending
+- **Sales Analytics**: Track revenue, costs, and profit margins
 - **Real-time Updates**: Automatic refresh for new orders
 
 ### 📧 **Email Notifications**

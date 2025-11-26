@@ -37,77 +37,21 @@
     font-size: 26px;
 }
 
-/* Mobile-First Product Title */
-.face-title {
-    user-select: none;
-    position: absolute;
-    font-weight: 900;
-    font-size: 1.5rem;
-    left: 50%;
-    top: 15%;
-    transform: translateX(-50%);
-    color: #FFFFFF;
-    font-family: 'Playfair Display', serif;
-    max-width: 90%;
-    line-height: 1.2;
-    text-align: center;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-    z-index: 10;
-}
-
-.face-title.active {
-    opacity: 1;
-    pointer-events: auto;
-    transition: opacity 0.5s ease;
-}
-
-.face-title.inactive {
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.1s ease;
-}
-
-/* Mobile-Optimized Price Container */
-.face-price-container {
-    user-select: none;
-    position: absolute;
-    left: 50%;
-    bottom: 20%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: center;
-    z-index: 10;
-}
-
-.face-price-container.active {
-    opacity: 1;
-    pointer-events: auto;
-    transition: opacity 0.5s ease;
-}
-
-.face-price-container.inactive {
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.1s ease;
-}
-
 /* Rupee Symbol Optimized Pricing */
 .price-main {
     font-weight: bold;
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: #E94E77;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
     letter-spacing: 0.5px;
 }
 
 .price-market {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: #999;
     text-decoration: line-through;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
     letter-spacing: 0.5px;
 }
@@ -115,11 +59,11 @@
 .price-save {
     background: #10B981;
     color: white;
-    padding: 0.4rem 1rem;
+    padding: 0.3rem 0.8rem;
     border-radius: 0.5rem;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.5);
     letter-spacing: 0.3px;
 }
@@ -161,8 +105,53 @@
     transition: opacity 0.1s ease;
 }
 
+/* Product Info Below Image - Safe positioning to avoid overlap */
+.product-info-below {
+    user-select: none;
+    position: absolute;
+    left: 50%;
+    bottom: 3%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+    z-index: 10;
+    max-width: 85%;
+}
+
+.product-info-below.active {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.5s ease;
+}
+
+.product-info-below.inactive {
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+.face-title-below {
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: #FFFFFF;
+    font-family: 'Playfair Display', serif;
+    line-height: 1.1;
+    text-align: center;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    margin: 0;
+}
+
+.face-price-container-below {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+}
+
 .action-button.active {
-    bottom: 2em;
+    bottom: 0.5em;
     transform: translateX(-50%) scale(1);
     opacity: 1;
     pointer-events: auto;
@@ -179,17 +168,16 @@
 
 /* Tablet View (768px - 1024px) */
 @media (min-width: 768px) and (max-width: 1024px) {
-    .face-title {
-        font-size: 2rem;
-        top: 12%;
+    .face-title-below {
+        font-size: 1.8rem;
     }
 
     .price-main {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
     }
 
     .price-market {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
     }
 
     .discount-badge {
@@ -198,35 +186,35 @@
     }
 }
 
-/* Desktop View (1025px+) - Show on sides */
+/* Desktop View (1025px+) */
 @media (min-width: 1025px) {
-    .face-title {
-        font-size: clamp(1.5rem, 4vw, 3rem);
+    .product-info-below {
         left: 3%;
-        top: 40%;
-        transform: translateY(-50%);
-        max-width: 30%;
+        bottom: 25%;
+        transform: none;
+        align-items: flex-start;
+        max-width: 35%;
+    }
+
+    .face-title-below {
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
         text-align: left;
     }
 
-    .face-price-container {
-        left: 3%;
-        top: calc(40% + 5rem);
-        bottom: auto;
-        transform: none;
+    .face-price-container-below {
         align-items: flex-start;
     }
 
     .price-main {
-        font-size: clamp(1.8rem, 4vw, 3rem);
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
     }
 
     .price-market {
-        font-size: clamp(1rem, 2.5vw, 1.5rem);
+        font-size: clamp(1rem, 2.5vw, 1.4rem);
     }
 
     .price-save {
-        font-size: clamp(0.85rem, 2vw, 1.1rem);
+        font-size: clamp(0.85rem, 2vw, 1rem);
     }
 
     .discount-badge {
@@ -237,22 +225,21 @@
 
 /* Small Mobile (< 375px) */
 @media (max-width: 374px) {
-    .face-title {
-        font-size: 1.2rem;
-        top: 12%;
+    .face-title-below {
+        font-size: 1.1rem;
     }
 
     .price-main {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
     }
 
     .price-market {
-        font-size: 1rem;
+        font-size: 0.95rem;
     }
 
     .price-save {
-        font-size: 0.85rem;
-        padding: 0.3rem 0.8rem;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
     }
 
     .discount-badge {
@@ -265,7 +252,6 @@
         width: 50px;
         height: 50px;
         border-width: 3px;
-        bottom: 1.5em;
     }
 
     .action-button-icon {

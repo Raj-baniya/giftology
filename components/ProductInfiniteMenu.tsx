@@ -716,7 +716,32 @@ class InfiniteGridMenu {
             images.forEach((img, i) => {
                 const x = (i % this.atlasSize) * cellSize;
                 const y = Math.floor(i / this.atlasSize) * cellSize;
-                ctx.drawImage(img, x, y, cellSize, cellSize);
+
+                // Calculate aspect ratios to implement object-fit: contain
+                const imgAspect = img.width / img.height;
+                const cellAspect = 1; // cellSize is square
+
+                let drawWidth = cellSize;
+                let drawHeight = cellSize;
+                let offsetX = 0;
+                let offsetY = 0;
+
+                if (imgAspect > cellAspect) {
+                    // Image is wider - fit to width
+                    drawHeight = cellSize / imgAspect;
+                    offsetY = (cellSize - drawHeight) / 2;
+                } else {
+                    // Image is taller - fit to height
+                    drawWidth = cellSize * imgAspect;
+                    offsetX = (cellSize - drawWidth) / 2;
+                }
+
+                // Fill cell with white background first
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(x, y, cellSize, cellSize);
+
+                // Draw image centered with correct aspect ratio
+                ctx.drawImage(img, x + offsetX, y + offsetY, drawWidth, drawHeight);
             });
 
             gl.bindTexture(gl.TEXTURE_2D, this.tex);
@@ -949,21 +974,7 @@ export const ProductInfiniteMenu: React.FC<ProductInfiniteMenuProps> = ({ produc
 
             {activeProduct && (
                 <>
-                    {/* Product Title */}
-                    <h2 className={`face-title ${isMoving ? 'inactive' : 'active'}`}>{activeProduct.name}</h2>
-
-                    {/* Enhanced Price Display */}
-                    <div className={`face-price-container ${isMoving ? 'inactive' : 'active'}`}>
-                        <div className="price-main">₹{activeProduct.price.toLocaleString()}</div>
-                        {activeProduct.marketPrice && activeProduct.marketPrice > activeProduct.price && (
-                            <>
-                                <div className="price-market">₹{activeProduct.marketPrice.toLocaleString()}</div>
-                                <div className="price-save">Save ₹{getSavings(activeProduct).toLocaleString()}</div>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Discount Badge on Image */}
+                    {/* Discount Badge on Image - ONLY THIS ON THE IMAGE */}
                     {getDiscountPercentage(activeProduct) > 0 && (
                         <div className={`discount-badge ${isMoving ? 'inactive' : 'active'}`}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -973,6 +984,23 @@ export const ProductInfiniteMenu: React.FC<ProductInfiniteMenuProps> = ({ produc
                             {getDiscountPercentage(activeProduct)}% OFF
                         </div>
                     )}
+
+                    {/* Product Info Below Image */}
+                    <div className={`product-info-below ${isMoving ? 'inactive' : 'active'}`}>
+                        {/* Product Title */}
+                        <h2 className="face-title-below">{activeProduct.name}</h2>
+
+                        {/* Price Display */}
+                        <div className="face-price-container-below">
+                            <div className="price-main">₹{activeProduct.price.toLocaleString()}</div>
+                            {activeProduct.marketPrice && activeProduct.marketPrice > activeProduct.price && (
+                                <>
+                                    <div className="price-market">₹{activeProduct.marketPrice.toLocaleString()}</div>
+                                    <div className="price-save">Save ₹{getSavings(activeProduct).toLocaleString()}</div>
+                                </>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Action Button */}
                     <div onClick={handleProductClick} className={`action-button ${isMoving ? 'inactive' : 'active'}`}>

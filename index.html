@@ -53,6 +53,13 @@
     .animate-slow-zoom {
       animation: slow-zoom 20s ease-in-out infinite alternate;
     }
+
+    /* Force Arial for Rupee symbol to prevent rendering issues */
+    @font-face {
+      font-family: 'RupeeFallback';
+      src: local('Arial'), local('sans-serif');
+      unicode-range: U+20B9;
+    }
   </style>
   <script>
     tailwind.config = {
@@ -66,8 +73,8 @@
             textMuted: '#78716c',
           },
           fontFamily: {
-            serif: ['"Playfair Display"', 'serif'],
-            sans: ['"PT Sans"', 'sans-serif'],
+            serif: ['RupeeFallback', '"Playfair Display"', 'serif'],
+            sans: ['RupeeFallback', '"PT Sans"', 'Arial', 'sans-serif'],
           }
         }
       }

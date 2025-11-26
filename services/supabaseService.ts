@@ -399,3 +399,88 @@ export const updateUserProfile = async (userId: string, updates: any) => {
     }
     return data;
 };
+
+// --- Sales Analytics ---
+
+export interface SalesAnalytics {
+    totalRevenue: number;
+    totalCost: number;
+    totalProfit: number;
+    profitMargin: number;
+    totalOrders: number;
+    averageOrderValue: number;
+}
+
+export const getSalesAnalytics = async (): Promise<SalesAnalytics> => {
+    try {
+        // Fetch all completed orders
+        const { data: orders, error: ordersError } = await supabase
+            .from('orders')
+            .select('*')
+            .in('status', ['delivered', 'shipped', 'processing']);
+
+        if (ordersError) {
+            console.error('Error fetching orders:', ordersError);
+            throw ordersError;
+        }
+
+        // Fetch all products with cost_price
+        const { data: products, error: productsError } = await supabase
+            .from('products')
+            .select('id, cost_price, price');
+
+        if (productsError) {
+            console.error('Error fetching products:', productsError);
+            throw productsError;
+        }
+
+        // Create a map of product ID to cost/price
+        const productMap = new Map<string, { costPrice: number; price: number }>(
+            products?.map((p: any) => [p.id, { costPrice: p.cost_price || 0, price: p.price }]) || []
+        );
+
+        let totalRevenue = 0;
+        let totalCost = 0;
+        let totalOrders = orders?.length || 0;
+
+        // Calculate revenue and cost from orders
+        orders?.forEach(order => {
+            // Add order total to revenue
+            totalRevenue += order.total || 0;
+
+            // Calculate cost from order items
+            if (order.items && Array.isArray(order.items)) {
+                order.items.forEach((item: any) => {
+                    const productInfo = productMap.get(item.id);
+                    if (productInfo) {
+                        const quantity = item.quantity || 1;
+                        totalCost += productInfo.costPrice * quantity;
+                    }
+                });
+            }
+        });
+
+        const totalProfit = totalRevenue - totalCost;
+        const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+        const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+        return {
+            totalRevenue,
+            totalCost,
+            totalProfit,
+            profitMargin,
+            totalOrders,
+            averageOrderValue
+        };
+    } catch (error) {
+        console.error('Error calculating sales analytics:', error);
+        return {
+            totalRevenue: 0,
+            totalCost: 0,
+            totalProfit: 0,
+            profitMargin: 0,
+            totalOrders: 0,
+            averageOrderValue: 0
+        };
+    }
+};

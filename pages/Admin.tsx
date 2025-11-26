@@ -330,6 +330,9 @@ export const Admin = () => {
                         </div>
                     </div>
                     <div className="flex gap-2 flex-wrap">
+                        <button onClick={() => window.location.href = '/admin/sales'} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:from-purple-700 hover:to-pink-700 shadow-lg transition-transform active:scale-95">
+                            <Icons.TrendingUp className="w-5 h-5" /> Sales Analytics
+                        </button>
                         <button onClick={loadData} className="bg-white text-gray-700 px-4 py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-gray-50 shadow-sm border border-gray-200 transition-transform active:scale-95" title="Refresh Data">
                             <Icons.RefreshCw className="w-5 h-5" />
                         </button>
@@ -747,10 +750,20 @@ export const Admin = () => {
                                     <input type="number" {...register('marketPrice', { min: 0 })} className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" placeholder="Optional" />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold mb-1">Stock Quantity</label>
-                                <input type="number" {...register('stock', { required: 'Stock is required', min: 0 })} className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" />
-                                {errors.stock && <span className="text-red-500 text-xs">{errors.stock.message}</span>}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold mb-1 flex items-center gap-2">
+                                        Cost Price (<span style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;</span>)
+                                        <span className="text-xs font-normal text-gray-500">(For profit calc)</span>
+                                    </label>
+                                    <input type="number" {...register('costPrice', { min: 0 })} className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none bg-purple-50 text-gray-900" placeholder="Optional" />
+                                    <p className="text-xs text-gray-500 mt-1">Admin only - not visible to customers</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold mb-1">Stock Quantity</label>
+                                    <input type="number" {...register('stock', { required: 'Stock is required', min: 0 })} className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary outline-none bg-white text-gray-900" />
+                                    {errors.stock && <span className="text-red-500 text-xs">{errors.stock.message}</span>}
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-bold mb-1">Category</label>

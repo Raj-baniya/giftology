@@ -10,6 +10,7 @@ export interface Product {
   stock?: number;
   images?: string[];
   marketPrice?: number;
+  costPrice?: number; // Admin-only cost price for profit calculation
 }
 
 export interface CartItem extends Product {

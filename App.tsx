@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { MobileNumberModal } from './components/MobileNumberModal';
@@ -15,13 +15,25 @@ import { Search } from './pages/Search';
 import { AdminLogin } from './pages/AdminLogin';
 import { ProductDetail } from './pages/ProductDetail';
 import { GiftGuide } from './pages/GiftGuide';
+import { SalesAnalytics } from './pages/SalesAnalytics';
 import { CartDrawer } from './components/CartDrawer';
 import { ClickSpark } from './components/ClickSpark';
 
+// Scroll to top component
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
 
 const App = () => {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <CartProvider>
           <div className="flex flex-col min-h-screen bg-background font-sans text-textMain">
@@ -40,6 +52,7 @@ const App = () => {
                 <Route path="/admin-login" element={<AdminLogin />} />
                 <Route path="/account" element={<Account />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/sales" element={<SalesAnalytics />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/product/:slug" element={<ProductDetail />} />
 

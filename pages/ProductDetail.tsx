@@ -112,31 +112,31 @@ export const ProductDetail = () => {
             {/* Light Rays Background */}
             <LightRays />
 
-            <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen pt-14 sm:pt-20 pb-6 sm:pb-16 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
                     {/* Breadcrumb / Back */}
                     <motion.button
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         onClick={() => navigate(-1)}
-                        className="inline-flex items-center gap-2 bg-white hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 text-gray-700 hover:text-rose-600 px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-xl border border-gray-100 hover:border-rose-200 transition-all duration-300 group mb-8"
+                        className="inline-flex items-center gap-2 bg-white hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 text-gray-700 hover:text-rose-600 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold shadow-md hover:shadow-xl border border-gray-100 hover:border-rose-200 transition-all duration-300 group mb-2 sm:mb-8"
                     >
-                        <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-rose-100 flex items-center justify-center transition-colors">
-                            <Icons.ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100 group-hover:bg-rose-100 flex items-center justify-center transition-colors">
+                            <Icons.ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
                         </div>
                         <span>Back to Shop</span>
                     </motion.button>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 lg:gap-12">
                         {/* Image Gallery - Left Side */}
                         <motion.div
                             initial={{ opacity: 0, x: -30 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="relative mt-8"
+                            className="relative"
                         >
                             {/* Stacked Image Gallery */}
-                            <div className="relative h-[500px] lg:h-[600px] flex items-center justify-center pt-8">
+                            <div className="relative h-[300px] sm:h-[450px] lg:h-[600px] flex items-center justify-center pt-0 sm:pt-8">
                                 {/* Decorative gradient blob */}
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-200/30 to-purple-200/30 rounded-full blur-3xl -z-0"></div>
 
