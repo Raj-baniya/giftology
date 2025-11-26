@@ -363,7 +363,11 @@ export const ProductDetail = () => {
                                     <Icons.Package className="w-5 h-5 text-rose-500" />
                                     Product Description
                                 </h3>
-                                <p className="text-gray-600 leading-relaxed text-lg">{product.description}</p>
+                                <div className="text-gray-600 leading-relaxed text-lg space-y-4">
+                                    {product.description.split('\n').filter(para => para.trim()).map((paragraph, index) => (
+                                        <p key={index}>{paragraph}</p>
+                                    ))}
+                                </div>
                             </motion.div>
 
                             {/* Features Grid */}
