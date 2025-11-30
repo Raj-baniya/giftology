@@ -29,6 +29,12 @@ export interface OrderEmailParams {
   deliveryDetails: string;
   orderItems?: string;
   view_order_url?: string;
+  // Additional fields for complete order information
+  delivery_date?: string;
+  expected_delivery?: string;
+  delivery_speed?: string;
+  gift_wrapping?: string;
+  shipping_address?: string;
 }
 
 /**
@@ -58,10 +64,14 @@ export const sendOrderConfirmationToUser = async (params: OrderEmailParams): Pro
       delivery_details: params.deliveryDetails,
 
       order_total: params.orderTotal,
-      delivery_date: params.deliveryDetails.split('|')[0]?.trim() || 'TBD',
+      delivery_date: params.delivery_date || params.deliveryDetails.split('|')[0]?.trim() || 'TBD',
+      expected_delivery: params.expected_delivery || '',
+      delivery_speed: params.delivery_speed || 'Standard Delivery',
+      gift_wrapping: params.gift_wrapping || 'No Wrapping',
+      shipping_address: params.shipping_address || '',
       order_items: params.orderItems || '',
       message: `Thank you for your order! We will deliver it as per the scheduled date.`,
-      view_order_url: `${window.location.origin}/account` // Dynamic link to Account page
+      view_order_url: 'https://giftology-in.web.app/account' // Production link to Account page
     };
 
     console.log('📧 User email params:', userEmailParams);
@@ -115,6 +125,11 @@ export const sendOrderNotificationToAdmin = async (params: OrderEmailParams): Pr
       order_total: params.orderTotal,
       payment_method: params.paymentMethod,
       delivery_details: params.deliveryDetails,
+      delivery_date: params.delivery_date || '',
+      expected_delivery: params.expected_delivery || '',
+      delivery_speed: params.delivery_speed || 'Standard Delivery',
+      gift_wrapping: params.gift_wrapping || 'No Wrapping',
+      shipping_address: params.shipping_address || '',
       order_items: params.orderItems || '',
       message: 'New Order Received! Check Admin Panel for details.'
     };

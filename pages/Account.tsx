@@ -108,6 +108,8 @@ export const Account = () => {
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [editingAddressIndex, setEditingAddressIndex] = useState<number | null>(null);
+  const [editFormData, setEditFormData] = useState<any>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -152,6 +154,31 @@ export const Account = () => {
         cancelText: 'Cancel'
       }
     );
+  };
+
+  const handleEditAddress = (index: number, addr: any) => {
+    setEditingAddressIndex(index);
+    setEditFormData({ ...addr });
+  };
+
+  const handleSaveEditedAddress = async () => {
+    if (editingAddressIndex === null || !user) return;
+
+    try {
+      const updated = await store.updateUserAddress(user.id, editingAddressIndex, editFormData);
+      setAddresses(updated);
+      setEditingAddressIndex(null);
+      setEditFormData({});
+      showAlert('Success', 'Address updated successfully.', 'success');
+    } catch (error) {
+      console.error('Failed to update address', error);
+      showAlert('Error', 'Failed to update address.', 'error');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAddressIndex(null);
+    setEditFormData({});
   };
 
   if (loading) {
@@ -263,13 +290,13 @@ export const Account = () => {
                                 {expandedOrderId === order.id ? <Icons.ChevronDown /> : <Icons.Package />}
                               </div>
                               <div className="flex-1 sm:hidden">
-                                <h4 className="font-bold text-sm">Order #{order.id}</h4>
+                                <h4 className="font-bold text-sm">Order #{order.readableId || order.id.slice(0, 8)}</h4>
                                 <span className="font-bold text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
                               </div>
                             </div>
 
                             <div className="flex-1 hidden sm:block">
-                              <h4 className="font-bold">Order #{order.id}</h4>
+                              <h4 className="font-bold">Order #{order.readableId || order.id.slice(0, 8)}</h4>
                               <p className="text-sm text-textMuted">Placed on {new Date(order.date).toLocaleDateString()}</p>
                             </div>
                             <div className="flex justify-between items-center w-full sm:w-auto gap-3">
@@ -320,18 +347,62 @@ export const Account = () => {
                               <h5 className="font-bold text-sm mb-3 text-gray-700">Order Items</h5>
                               <div className="space-y-3">
                                 {order.items.map((item: any, idx: number) => (
-                                  <div key={idx} className="flex justify-between items-center text-sm">
-                                    <div className="flex items-center gap-3">
-                                      <span className="bg-white w-6 h-6 flex items-center justify-center rounded border text-xs font-bold">{item.quantity}x</span>
-                                      <span className="text-gray-800">{item.name}</span>
+                                  <div key={idx} className="flex gap-3 items-start bg-white p-3 rounded-lg border border-gray-100">
+                                    {/* Product Image */}
+                                    <div className="w-16 h-16 shrink-0 border border-gray-200 rounded overflow-hidden">
+                                      <img
+                                        src={item.imageUrl || '/placeholder.png'}
+                                        alt={item.name}
+                                        className="w-full h-full object-cover"
+                                      />
                                     </div>
-                                    <span className="font-medium" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{(item.price * item.quantity).toLocaleString()}</span>
+
+                                    {/* Product Details */}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium text-gray-900 text-sm mb-1">{item.name}</p>
+                                      <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                        <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">Qty: {item.quantity}</span>
+                                        {item.selectedSize && (
+                                          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">Size: {item.selectedSize}</span>
+                                        )}
+                                        {item.selectedColor && (
+                                          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">{item.selectedColor}</span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Price */}
+                                    <span className="font-bold text-gray-900 text-sm shrink-0" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                      &#8377;{(item.price * item.quantity).toLocaleString()}
+                                    </span>
                                   </div>
                                 ))}
                               </div>
-                              <div className="mt-4 pt-3 border-t border-gray-200 flex justify-between items-center text-sm">
-                                <span className="text-gray-500">Delivery Type</span>
-                                <span className="font-bold text-gray-900">{order.deliveryType || 'Standard Delivery'}</span>
+
+                              {/* Order Details */}
+                              <div className="mt-4 pt-3 border-t border-gray-200 space-y-2 text-sm">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-500">Payment Method</span>
+                                  <span className="font-bold text-gray-900">
+                                    {order.paymentMethod === 'upi' ? 'UPI' : order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'N/A'}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-500">Delivery Type</span>
+                                  <span className="font-bold text-gray-900">{order.deliveryType || 'Standard Delivery'}</span>
+                                </div>
+                                {order.deliveryDate && (
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-gray-500">Delivery Date</span>
+                                    <span className="font-bold text-gray-900">
+                                      {new Date(order.deliveryDate).toLocaleDateString('en-IN', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )}
@@ -371,7 +442,7 @@ export const Account = () => {
                       {orders.slice(0, 10).map((order) => (
                         <div key={order.id} className="flex justify-between items-center p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
                           <div>
-                            <p className="font-medium">Order #{order.id}</p>
+                            <p className="font-medium">Order #{order.readableId || order.id.slice(0, 8)}</p>
                             <p className="text-xs text-textMuted">{new Date(order.date).toLocaleDateString()}</p>
                           </div>
                           <p className="font-bold text-lg" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</p>
@@ -393,21 +464,98 @@ export const Account = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {addresses.map((addr, index) => (
                       <div key={index} className="border border-gray-200 rounded-lg p-4 relative hover:border-primary transition-colors">
-                        <button
-                          onClick={() => handleDeleteAddress(index)}
-                          className="absolute top-3 right-3 text-gray-400 hover:text-red-500"
-                        >
-                          <Icons.Trash2 className="w-4 h-4" />
-                        </button>
-                        <div className="flex items-start gap-3">
-                          <Icons.MapPin className="w-5 h-5 text-primary mt-1" />
-                          <div>
-                            <p className="font-bold text-gray-900">{addr.firstName} {addr.lastName}</p>
-                            <p className="text-sm text-gray-600 mt-1">{addr.address}</p>
-                            <p className="text-sm text-gray-600">{addr.city}, {addr.state} - {addr.zipCode}</p>
-                            <p className="text-sm text-gray-600 mt-1">{addr.phone}</p>
+                        {editingAddressIndex === index ? (
+                          // Edit Form
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-2">
+                              <input
+                                value={editFormData.firstName || ''}
+                                onChange={(e) => setEditFormData({ ...editFormData, firstName: e.target.value })}
+                                placeholder="First Name"
+                                className="border rounded p-2 text-sm"
+                              />
+                              <input
+                                value={editFormData.lastName || ''}
+                                onChange={(e) => setEditFormData({ ...editFormData, lastName: e.target.value })}
+                                placeholder="Last Name"
+                                className="border rounded p-2 text-sm"
+                              />
+                            </div>
+                            <input
+                              value={editFormData.phone || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                              placeholder="Phone"
+                              className="border rounded p-2 text-sm w-full"
+                            />
+                            <input
+                              value={editFormData.address || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+                              placeholder="Address"
+                              className="border rounded p-2 text-sm w-full"
+                            />
+                            <div className="grid grid-cols-2 gap-2">
+                              <input
+                                value={editFormData.city || ''}
+                                onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
+                                placeholder="City"
+                                className="border rounded p-2 text-sm"
+                              />
+                              <input
+                                value={editFormData.state || ''}
+                                onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
+                                placeholder="State"
+                                className="border rounded p-2 text-sm"
+                              />
+                            </div>
+                            <input
+                              value={editFormData.zipCode || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, zipCode: e.target.value })}
+                              placeholder="Zip Code"
+                              className="border rounded p-2 text-sm w-full"
+                            />
+                            <div className="flex gap-2 pt-2">
+                              <button
+                                onClick={handleSaveEditedAddress}
+                                className="flex-1 bg-black text-white py-2 rounded text-sm font-bold hover:bg-gray-800"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="flex-1 border border-gray-300 py-2 rounded text-sm font-bold hover:bg-gray-50"
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          // Display Mode
+                          <>
+                            <div className="absolute top-3 right-3 flex gap-2">
+                              <button
+                                onClick={() => handleEditAddress(index, addr)}
+                                className="text-gray-400 hover:text-blue-500"
+                              >
+                                <Icons.Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteAddress(index)}
+                                className="text-gray-400 hover:text-red-500"
+                              >
+                                <Icons.Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Icons.MapPin className="w-5 h-5 text-primary mt-1" />
+                              <div>
+                                <p className="font-bold text-gray-900">{addr.firstName} {addr.lastName}</p>
+                                <p className="text-sm text-gray-600 mt-1">{addr.address}</p>
+                                <p className="text-sm text-gray-600">{addr.city}, {addr.state} - {addr.zipCode}</p>
+                                <p className="text-sm text-gray-600 mt-1">{addr.phone}</p>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>

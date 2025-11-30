@@ -18,19 +18,32 @@ class StoreService {
   async getProducts(): Promise<Product[]> {
     const dbProducts = await supabaseService.getProducts();
     // Map DB product to Frontend Product type
-    return (dbProducts || []).map((p: any) => ({
-      id: this.formatId(p.id), // Format ID
-      name: p.name,
-      slug: p.slug,
-      description: p.description,
-      price: p.price,
-      marketPrice: p.market_price,
-      imageUrl: p.images?.[0] || '',
-      images: p.images || [],
-      category: p.categories?.slug || 'uncategorized',
-      trending: p.is_featured,
-      stock: p.stock_quantity
-    }));
+    return (dbProducts || []).map((p: any) => {
+      const approvedReviews = p.reviews?.filter((r: any) => r.is_approved) || [];
+      const ratingSum = approvedReviews.reduce((sum: number, r: any) => sum + r.rating, 0);
+      const avgRating = approvedReviews.length > 0 ? ratingSum / approvedReviews.length : 0;
+
+      return {
+        id: this.formatId(p.id), // Format ID
+        name: p.name,
+        slug: p.slug,
+        description: p.description,
+        price: p.price,
+        marketPrice: p.market_price,
+        costPrice: p.cost_price,
+        imageUrl: p.images?.[0] || '',
+        images: p.images || [],
+        category: p.categories?.slug || 'uncategorized',
+        subcategory: p.subcategory,
+        color: p.color,
+        colorVariantGroup: p.color_variant_group,
+        trending: p.is_featured,
+        stock: p.stock_quantity,
+        variants: p.product_variants || [],
+        rating: parseFloat(avgRating.toFixed(1)),
+        reviewCount: approvedReviews.length
+      };
+    });
   }
 
   async getAdminProducts(): Promise<Product[]> {
@@ -42,11 +55,16 @@ class StoreService {
       description: p.description,
       price: p.price,
       marketPrice: p.market_price,
+      costPrice: p.cost_price,
       imageUrl: p.images?.[0] || '',
       images: p.images || [],
       category: p.categories?.slug || 'uncategorized',
+      subcategory: p.subcategory,
+      color: p.color,
+      colorVariantGroup: p.color_variant_group,
       trending: p.is_featured,
-      stock: p.stock_quantity
+      stock: p.stock_quantity,
+      variants: p.product_variants || []
     }));
   }
 
@@ -60,16 +78,63 @@ class StoreService {
       description: p.description,
       price: p.price,
       marketPrice: p.market_price,
+      costPrice: p.cost_price,
       imageUrl: p.images?.[0] || '',
       images: p.images || [],
       category: p.categories?.slug || 'uncategorized',
+      subcategory: p.subcategory,
+      color: p.color,
+      colorVariantGroup: p.color_variant_group,
       trending: p.is_featured,
-      stock: p.stock_quantity
+      stock: p.stock_quantity,
+      variants: p.product_variants || []
     };
   }
 
-  async getCategories() {
-    return await supabaseService.getCategories();
+  async getProductById(id: string): Promise<Product | null> {
+    const p = await supabaseService.getProductById(id);
+    if (!p) return null;
+    return {
+      id: this.formatId(p.id),
+      name: p.name,
+      slug: p.slug,
+      description: p.description,
+      price: p.price,
+      marketPrice: p.market_price,
+      costPrice: p.cost_price,
+      imageUrl: p.images?.[0] || '',
+      images: p.images || [],
+      category: p.categories?.slug || 'uncategorized',
+      subcategory: p.subcategory,
+      color: p.color,
+      colorVariantGroup: p.color_variant_group,
+      trending: p.is_featured,
+      stock: p.stock_quantity,
+      variants: p.product_variants || []
+    };
+  }
+
+
+  async getProductsByVariantGroup(groupId: string): Promise<Product[]> {
+    const dbProducts = await supabaseService.getProductsByVariantGroup(groupId);
+    return (dbProducts || []).map((p: any) => ({
+      id: this.formatId(p.id),
+      name: p.name,
+      slug: p.slug,
+      description: p.description,
+      price: p.price,
+      marketPrice: p.market_price,
+      costPrice: p.cost_price,
+      imageUrl: p.images?.[0] || '',
+      images: p.images || [],
+      category: p.categories?.slug || 'uncategorized',
+      subcategory: p.subcategory,
+      color: p.color,
+      colorVariantGroup: p.color_variant_group,
+      trending: p.is_featured,
+      stock: p.stock_quantity,
+      variants: p.product_variants || []
+    }));
   }
 
   async addProduct(product: Omit<Product, 'id'>): Promise<Product> {
@@ -81,9 +146,13 @@ class StoreService {
       description: newProduct.description,
       price: newProduct.price,
       marketPrice: newProduct.market_price,
+      costPrice: newProduct.cost_price,
       imageUrl: newProduct.images?.[0] || '',
       images: newProduct.images || [],
       category: product.category, // Optimistic
+      subcategory: product.subcategory,
+      color: newProduct.color,
+      colorVariantGroup: newProduct.color_variant_group,
       trending: newProduct.is_featured,
       stock: newProduct.stock_quantity
     };
@@ -98,9 +167,13 @@ class StoreService {
       description: updated.description,
       price: updated.price,
       marketPrice: updated.market_price,
+      costPrice: updated.cost_price,
       imageUrl: updated.images?.[0] || '',
       images: updated.images || [],
       category: updates.category || 'uncategorized',
+      subcategory: updates.subcategory,
+      color: updated.color,
+      colorVariantGroup: updated.color_variant_group,
       trending: updated.is_featured,
       stock: updated.stock_quantity
     };
@@ -160,18 +233,38 @@ class StoreService {
     return currentAddresses;
   }
 
-  async createOrder(userId: string, items: any[], total: number, details: any): Promise<Order> {
+  async updateUserAddress(userId: string, index: number, updatedAddress: any): Promise<any[]> {
+    const currentAddresses = await this.getUserAddresses(userId);
+    if (index >= 0 && index < currentAddresses.length) {
+      currentAddresses[index] = updatedAddress;
+      await supabaseService.updateUserProfile(userId, { addresses: currentAddresses });
+      return currentAddresses;
+    }
+    return currentAddresses;
+  }
+
+  async createOrder(userId: string | null, items: any[], total: number, details: any): Promise<Order> {
     const orderData: any = {
       total_amount: total,
       status: 'processing',
       payment_method: details.paymentMethod,
-      delivery_date: details.deliveryDate, // Add delivery_date at order level
+      delivery_date: details.deliveryDate,
+      // Add customer details
+      customer_name: details.customerName,
+      customer_phone: details.phone,
+      customer_email: details.email,
+      // Add delivery and gift wrapping details
+      delivery_speed: details.deliverySpeed || 'standard',
+      gift_wrapping: details.giftWrapping || 'none',
+      // Shipping address
       shipping_address: {
         street: details.shippingAddress.street,
         city: details.shippingAddress.city,
         zipCode: details.shippingAddress.zipCode,
         state: details.shippingAddress.state,
-        country: details.shippingAddress.country
+        country: details.shippingAddress.country,
+        latitude: details.shippingAddress.latitude,
+        longitude: details.shippingAddress.longitude
       },
       guest_info: !userId ? details.guestInfo : null
     };
@@ -191,7 +284,8 @@ class StoreService {
     // Return a frontend-compatible Order object
     return {
       id: this.formatId(result.order.id),
-      userId,
+      readableId: result.order.readable_id,
+      userId: userId || undefined,
       date: result.order.created_at,
       items,
       total,
@@ -234,6 +328,7 @@ class StoreService {
 
       return {
         id: this.formatId(o.id),
+        readableId: o.readable_id,
         userId: o.user_id,
         date: o.created_at,
         items: o.order_items.map((i: any) => ({
@@ -241,23 +336,26 @@ class StoreService {
           name: i.products?.name || 'Unknown Product',
           price: i.unit_price,
           quantity: i.quantity,
-          imageUrl: i.products?.images?.[0] || ''
+          imageUrl: i.products?.images?.[0] || '',
+          selectedSize: i.selected_size,
+          selectedColor: i.selected_color
         })),
         total: o.total_amount,
         status: o.status,
         shippingAddress: shipping,
 
-        // Map customer info from guest_info or user profile
-        customerName: guest.firstName ? `${guest.firstName} ${guest.lastName}` : (o.profiles?.full_name || 'Unknown'),
-        phone: guest.phone || o.profiles?.phone_number || '',
-        email: guest.email || o.profiles?.email || '',
+        // Map customer info from new dedicated columns (with fallbacks)
+        customerName: o.customer_name || (guest.firstName ? `${guest.firstName} ${guest.lastName}` : 'Unknown'),
+        phone: o.customer_phone || guest.phone || '',
+        email: o.customer_email || guest.email || '',
         address: `${shipping.street || ''}, ${shipping.city || ''} - ${shipping.zipCode || ''}`,
         city: shipping.city,
         state: shipping.state,
         zipCode: shipping.zipCode,
         paymentMethod: o.payment_method,
         deliveryDate: o.delivery_date,
-        deliveryType: 'Standard Delivery' // Default, can be enhanced later
+        deliveryType: o.delivery_speed === 'fast' ? 'Fast Delivery' : 'Standard Delivery',
+        giftWrapping: o.gift_wrapping
       };
     });
   }
@@ -268,6 +366,109 @@ class StoreService {
       id: updated.id,
       status: updated.status
     } as any;
+  }
+
+  // --- Reviews ---
+  async addReview(review: any): Promise<any> {
+    return await supabaseService.addReview(review);
+  }
+
+  async getProductReviews(productId: string): Promise<any[]> {
+    return await supabaseService.getProductReviews(productId);
+  }
+
+  async getAllReviews(): Promise<any[]> {
+    return await supabaseService.getAllReviews();
+  }
+
+  async updateReviewStatus(id: string, isApproved: boolean): Promise<any> {
+    return await supabaseService.updateReviewStatus(id, isApproved);
+  }
+
+  async updateReview(id: string, rating: number, comment: string): Promise<any> {
+    return await supabaseService.updateReview(id, rating, comment);
+  }
+
+  async deleteReview(id: string): Promise<void> {
+    await supabaseService.deleteReview(id);
+  }
+
+  async uploadReviewMedia(file: File): Promise<string> {
+    return await supabaseService.uploadReviewMedia(file);
+  }
+
+  async toggleReviewLike(reviewId: string, userId: string): Promise<{ liked: boolean }> {
+    return await supabaseService.toggleReviewLike(reviewId, userId);
+  }
+
+  async getReviewLikeCount(reviewId: string): Promise<number> {
+    return await supabaseService.getReviewLikeCount(reviewId);
+  }
+
+  async hasUserLikedReview(reviewId: string, userId: string): Promise<boolean> {
+    return await supabaseService.hasUserLikedReview(reviewId, userId);
+  }
+
+  // --- Categories ---
+  async getCategories(): Promise<any[]> {
+    console.log('store.getCategories() called');
+    const result = await supabaseService.getCategories();
+    console.log('store.getCategories() result:', result);
+
+    // Map database fields to frontend format
+    return (result || []).map((cat: any) => ({
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug,
+      imageUrl: cat.image_url, // Map image_url to imageUrl
+      description: cat.description,
+      subcategories: (cat.subcategories || []).map((sub: any) => ({
+        id: sub.id,
+        name: sub.name,
+        slug: sub.slug,
+        imageUrl: sub.image_url, // Map subcategory image_url to imageUrl
+        description: sub.description,
+        category_id: sub.category_id
+      }))
+    }));
+  }
+
+  async getCategoryById(id: string): Promise<any> {
+    return await supabaseService.getCategoryById(id);
+  }
+
+  async addCategory(category: any): Promise<any> {
+    return await supabaseService.addCategory(category);
+  }
+
+  async updateCategory(id: string, data: any): Promise<any> {
+    return await supabaseService.updateCategory(id, data);
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await supabaseService.deleteCategory(id);
+  }
+
+  async addSubcategory(subcategory: any): Promise<any> {
+    return await supabaseService.addSubcategory(subcategory);
+  }
+
+  async updateSubcategory(id: string, data: any): Promise<any> {
+    return await supabaseService.updateSubcategory(id, data);
+  }
+
+  async deleteSubcategory(id: string): Promise<void> {
+    await supabaseService.deleteSubcategory(id);
+  }
+
+  // --- Analytics ---
+  async getProductAnalytics(productId: string): Promise<any> {
+    return await supabaseService.getProductAnalytics(productId);
+  }
+
+  // --- Seeding ---
+  async seedCategories(): Promise<{ success: boolean; errors: string[] }> {
+    return await supabaseService.seedCategories();
   }
 }
 

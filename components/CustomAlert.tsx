@@ -159,7 +159,7 @@ export const useCustomAlert = () => {
         type: 'info'
     });
 
-    const showAlert = (
+    const showAlert = React.useCallback((
         title: string,
         message: string,
         type: 'success' | 'error' | 'warning' | 'info' = 'info',
@@ -176,11 +176,11 @@ export const useCustomAlert = () => {
             type,
             ...options
         });
-    };
+    }, []);
 
-    const closeAlert = () => {
+    const closeAlert = React.useCallback(() => {
         setAlertState(prev => ({ ...prev, isOpen: false }));
-    };
+    }, []);
 
     return {
         alertState,

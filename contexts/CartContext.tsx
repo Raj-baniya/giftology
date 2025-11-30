@@ -3,9 +3,9 @@ import { CartItem, Product } from '../types';
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, delta: number) => void;
+  addToCart: (product: Product, openSidebar?: boolean) => void;
+  removeFromCart: (productId: string, selectedSize?: string, selectedColor?: string) => void;
+  updateQuantity: (productId: string, delta: number, selectedSize?: string, selectedColor?: string) => void;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
@@ -19,26 +19,43 @@ export const CartProvider = ({ children }: { children?: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setCartOpen] = useState(false);
 
-  const addToCart = (product: Product) => {
+  // Helper function to match cart items including variants
+  const matchesItem = (item: CartItem, id: string, size?: string, color?: string) => {
+    return item.id === id &&
+      item.selectedSize === size &&
+      item.selectedColor === color;
+  };
+
+  const addToCart = (product: Product, openSidebar: boolean = true) => {
     setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
+      // Find existing item with same id AND same size/color combination
+      const existing = prev.find(item =>
+        matchesItem(item, product.id, product.selectedSize, product.selectedColor)
+      );
+
       if (existing) {
-        return prev.map(item => 
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        // Same product with same variant - increment quantity
+        return prev.map(item =>
+          matchesItem(item, product.id, product.selectedSize, product.selectedColor)
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
         );
       }
+      // New product or different variant - add as new line item
       return [...prev, { ...product, quantity: 1 }];
     });
-    setCartOpen(true);
+    if (openSidebar) {
+      setCartOpen(true);
+    }
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.id !== productId));
+  const removeFromCart = (productId: string, selectedSize?: string, selectedColor?: string) => {
+    setCart(prev => prev.filter(item => !matchesItem(item, productId, selectedSize, selectedColor)));
   };
 
-  const updateQuantity = (productId: string, delta: number) => {
+  const updateQuantity = (productId: string, delta: number, selectedSize?: string, selectedColor?: string) => {
     setCart(prev => prev.map(item => {
-      if (item.id === productId) {
+      if (matchesItem(item, productId, selectedSize, selectedColor)) {
         const newQty = Math.max(1, item.quantity + delta);
         return { ...item, quantity: newQty };
       }
@@ -52,9 +69,9 @@ export const CartProvider = ({ children }: { children?: ReactNode }) => {
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ 
-      cart, addToCart, removeFromCart, updateQuantity, clearCart, 
-      cartTotal, cartCount, isCartOpen, setCartOpen 
+    <CartContext.Provider value={{
+      cart, addToCart, removeFromCart, updateQuantity, clearCart,
+      cartTotal, cartCount, isCartOpen, setCartOpen
     }}>
       {children}
     </CartContext.Provider>

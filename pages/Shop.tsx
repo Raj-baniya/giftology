@@ -7,18 +7,22 @@ import { Icons } from '../components/ui/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingSpinner } from '../components/ui/LoadingAnimations';
 import { ProductInfiniteMenu } from '../components/ProductInfiniteMenu';
+import { Toast } from '../components/Toast';
 
 export const Shop = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const categoryFilter = searchParams.get('category');
+    const searchParam = searchParams.get('search'); // Get search parameter from URL
 
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(searchParam || ''); // Initialize with URL search param
     const [priceRange, setPriceRange] = useState(5000);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'infinite'>('grid'); // Toggle between grid and infinite menu
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
 
     const { addToCart } = useCart();
 
@@ -45,8 +49,10 @@ export const Shop = () => {
                 }
             }
 
-            if (searchQuery) {
-                filtered = filtered.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+            // Handle search from URL parameter or local state
+            const activeSearch = searchParam || searchQuery;
+            if (activeSearch) {
+                filtered = filtered.filter(p => p.name.toLowerCase().includes(activeSearch.toLowerCase()));
             }
 
             filtered = filtered.filter(p => p.price <= priceRange);
@@ -55,7 +61,7 @@ export const Shop = () => {
             setLoading(false);
         };
         load();
-    }, [categoryFilter, searchQuery, priceRange]);
+    }, [categoryFilter, searchQuery, searchParam, priceRange]);
 
     const handleCategoryClick = (slug: string) => {
         if (slug === 'all') {
@@ -107,10 +113,10 @@ export const Shop = () => {
 
             <div className="max-w-[1600px] mx-auto px-4 py-6 md:py-12">
 
-                {/* Mobile Filter Toggle */}
+                {/* Mobile Filter Toggle - Fixed Position */}
                 <button
                     onClick={() => setShowMobileFilters(!showMobileFilters)}
-                    className="lg:hidden w-full mb-6 bg-white border border-gray-200 py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm sticky top-16 z-30 smooth-transition hover-lift btn-animated"
+                    className="lg:hidden w-full mb-6 bg-white border border-gray-200 py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm fixed top-16 left-0 right-0 px-4 z-40 smooth-transition hover-lift btn-animated"
                 >
                     <Icons.Menu className="w-4 h-4" />
                     {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
@@ -216,7 +222,7 @@ export const Shop = () => {
                                 <LoadingSpinner size="lg" />
                             </div>
                         ) : viewMode === 'infinite' ? (
-                            <div className="w-full h-[600px] md:h-[700px] lg:h-[800px] rounded-2xl overflow-hidden shadow-2xl bg-black mb-8">
+                            <div className="w-full h-[65vh] rounded-2xl overflow-hidden shadow-2xl bg-black mb-8">
                                 <ProductInfiniteMenu products={products} />
                             </div>
                         ) : (
@@ -246,6 +252,18 @@ export const Shop = () => {
                                                     <span className="bg-white text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Out of Stock</span>
                                                 </div>
                                             )}
+                                            {/* Review Badge */}
+                                            {product.reviewCount && product.reviewCount > 0 ? (
+                                                <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
+                                                    <div className="bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 shadow-sm">
+                                                        <span>{product.rating}</span>
+                                                        <Icons.Star className="w-2.5 h-2.5 fill-current" />
+                                                    </div>
+                                                    <span className="text-[10px] font-bold text-gray-500 bg-white/80 px-1 rounded backdrop-blur-sm">
+                                                        ({product.reviewCount})
+                                                    </span>
+                                                </div>
+                                            ) : null}
                                         </div>
                                         <div className="p-3 md:p-5 flex flex-col flex-1">
                                             <div className="flex-1 min-h-[60px]">
@@ -259,20 +277,23 @@ export const Shop = () => {
                                                         <span className="text-xs text-gray-400 line-through" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{product.marketPrice}</span>
                                                     )}
                                                 </div>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        addToCart(product);
-                                                    }}
-                                                    disabled={!product.stock || product.stock <= 0}
-                                                    className={`w-full md:w-auto px-3 py-2 md:px-4 md:py-2 rounded-md text-xs md:text-sm font-bold smooth-transition flex items-center justify-center gap-1.5 btn-animated ${!product.stock || product.stock <= 0
-                                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                                        : 'bg-[#E94E77] text-white active:bg-[#D63D65] hover-lift'
-                                                        }`}
-                                                >
-                                                    <Icons.ShoppingBag className="w-3 h-3 md:w-4 md:h-4" />
-                                                    {(!product.stock || product.stock <= 0) ? 'Sold' : 'Add'}
-                                                </button>
+                                                <div className="flex flex-col items-end gap-1 min-h-[32px] justify-center">
+                                                    {(!product.stock || product.stock <= 0) ? (
+                                                        <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                                            <span>Sold Out</span>
+                                                        </div>
+                                                    ) : product.id.length % 2 === 0 ? (
+                                                        <div className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                                                            <Icons.Truck className="w-3 h-3" />
+                                                            <span>Fast Delivery</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-1 text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
+                                                            <Icons.Gift className="w-3 h-3" />
+                                                            <span>Free Gift Wrapping</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -282,6 +303,14 @@ export const Shop = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            <Toast
+                message={toastMessage}
+                isVisible={showToast}
+                onClose={() => setShowToast(false)}
+                type="success"
+            />
         </div>
     );
 };

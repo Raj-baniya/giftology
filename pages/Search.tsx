@@ -5,6 +5,7 @@ import { Product } from '../types';
 import { useCart } from '../contexts/CartContext';
 import { Icons } from '../components/ui/Icons';
 import { motion } from 'framer-motion';
+import { Toast } from '../components/Toast';
 
 export const Search = () => {
   const [searchParams] = useSearchParams();
@@ -12,6 +13,8 @@ export const Search = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   useEffect(() => {
     const load = async () => {
@@ -84,7 +87,11 @@ export const Search = () => {
                       )}
                     </div>
                     <button
-                      onClick={() => addToCart(product)}
+                      onClick={() => {
+                        addToCart(product, false); // Don't open cart
+                        setToastMessage(`${product.name} added to cart!`);
+                        setShowToast(true);
+                      }}
                       className="bg-[#E94E77] text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-[#D63D65] transition-all shadow-lg hover:shadow-[#E94E77]/30 transform active:scale-95"
                     >
                       Add to Cart
@@ -96,6 +103,14 @@ export const Search = () => {
           </div>
         )}
       </div>
+
+      {/* Toast Notification */}
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        type="success"
+      />
     </div>
   );
 };

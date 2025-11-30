@@ -83,8 +83,8 @@ export const Navbar = () => {
               )}
             </div>
 
-            <button
-              onClick={() => setCartOpen(true)}
+            <Link
+              to="/cart"
               className="relative p-2 hover:bg-gray-100 rounded-full smooth-transition hover-scale"
             >
               <Icons.ShoppingBag className="w-5 h-5 md:w-6 md:h-6 text-textMain smooth-transition" />
@@ -93,7 +93,7 @@ export const Navbar = () => {
                   {cartCount}
                 </span>
               )}
-            </button>
+            </Link>
 
             {user ? (
               <div className="relative ml-1 group">

@@ -987,18 +987,9 @@ export const ProductInfiniteMenu: React.FC<ProductInfiniteMenuProps> = ({ produc
 
                     {/* Product Info Below Image */}
                     <div className={`product-info-below ${isMoving ? 'inactive' : 'active'}`}>
-                        {/* Product Title */}
-                        <h2 className="face-title-below">{activeProduct.name}</h2>
-
                         {/* Price Display */}
                         <div className="face-price-container-below">
                             <div className="price-main">₹{activeProduct.price.toLocaleString()}</div>
-                            {activeProduct.marketPrice && activeProduct.marketPrice > activeProduct.price && (
-                                <>
-                                    <div className="price-market">₹{activeProduct.marketPrice.toLocaleString()}</div>
-                                    <div className="price-save">Save ₹{getSavings(activeProduct).toLocaleString()}</div>
-                                </>
-                            )}
                         </div>
                     </div>
 

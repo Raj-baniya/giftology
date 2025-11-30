@@ -43,7 +43,16 @@ import {
   Sparkles,
   Info,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Star,
+  Percent,
+  Tag,
+  Box,
+  Clock,
+  MoreVertical,
+  Edit,
+  Folder,
+  Loader2
 } from 'lucide-react';
 
 export const Icons = {
@@ -91,5 +100,14 @@ export const Icons = {
   Sparkles,
   Info,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Star: (props: any) => <Star {...props} />,
+  Percent: (props: any) => <Percent {...props} />,
+  Tag: (props: any) => <Tag {...props} />,
+  Box: (props: any) => <Box {...props} />,
+  Clock: (props: any) => <Clock {...props} />,
+  MoreVertical,
+  Edit,
+  Folder,
+  Loader2
 };

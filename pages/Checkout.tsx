@@ -24,6 +24,8 @@ export const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cod'>('upi');
   const [isFastDelivery, setIsFastDelivery] = useState(false);
   const [screenshot, setScreenshot] = useState<string | null>(null);
+  const [giftWrapping, setGiftWrapping] = useState<'none' | 'plastic' | 'paper' | 'box-plastic' | 'box-paper'>('none');
+  const [boxWrappingType, setBoxWrappingType] = useState<'plastic' | 'paper'>('plastic');
 
   // Address Management
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -39,7 +41,9 @@ export const Checkout = () => {
     city: '',
     state: '',
     zipCode: '',
-    deliveryDate: ''
+    deliveryDate: '',
+    latitude: null as number | null,
+    longitude: null as number | null
   });
 
   const finalTotal = cartTotal + (isFastDelivery ? 100 : 0);
@@ -88,14 +92,20 @@ export const Checkout = () => {
     // Validation
     if (formData.phone.length !== 10) {
       showAlert('Invalid Phone Number', 'Please enter a valid 10-digit mobile number.', 'warning');
+      document.getElementById('phone')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('phone')?.focus();
       return;
     }
     if (formData.zipCode.length !== 6) {
       showAlert('Invalid Zip Code', 'Zip Code must be 6 digits.', 'warning');
+      document.getElementById('zipCode')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('zipCode')?.focus();
       return;
     }
     if (!formData.deliveryDate) {
       showAlert('Delivery Date Required', 'Please select a delivery date.', 'warning');
+      document.getElementById('deliveryDate')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('deliveryDate')?.focus();
       return;
     }
 
@@ -143,12 +153,16 @@ export const Checkout = () => {
         deliveryDate: formData.deliveryDate,
         deliveryType: isFastDelivery ? 'Fast Delivery' : 'Standard Delivery',
         screenshot: screenshot || undefined,
+        giftWrapping: giftWrapping,
+        deliverySpeed: isFastDelivery ? 'fast' : 'standard',
         shippingAddress: {
           street: formData.address,
           city: formData.city,
           zipCode: formData.zipCode,
           state: formData.state,
-          country: 'India'
+          country: 'India',
+          latitude: formData.latitude,
+          longitude: formData.longitude
         },
         guestInfo: !isRealUser ? {
           firstName: formData.firstName,
@@ -161,8 +175,9 @@ export const Checkout = () => {
       // 1. Create Order in Database
       console.log('Creating order...', { dbUserId, finalTotal, orderDetails });
 
+      let createdOrder;
       try {
-        await store.createOrder(dbUserId, cart, finalTotal, orderDetails);
+        createdOrder = await store.createOrder(dbUserId, cart, finalTotal, orderDetails);
       } catch (err: any) {
         // Retry as guest if foreign key constraint fails (user profile missing)
         if (err?.code === '23503' && dbUserId) {
@@ -176,7 +191,7 @@ export const Checkout = () => {
               phone: formData.phone
             }
           };
-          await store.createOrder(null, cart, finalTotal, guestOrderDetails);
+          createdOrder = await store.createOrder(null, cart, finalTotal, guestOrderDetails);
         } else {
           throw err;
         }
@@ -202,28 +217,83 @@ export const Checkout = () => {
 
       // 3. Send Emails
       try {
+        // Enhanced order items HTML with images and complete details
         const orderItemsHtml = cart.map(item => `
-            <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
-                <p style="margin: 0; font-weight: bold; font-size: 14px;">${item.name}</p>
-                <p style="margin: 0; color: #666; font-size: 12px;">Qty: ${item.quantity} | Price: &#8377;${(item.price * item.quantity).toLocaleString()}</p>
+            <div style="border-bottom: 1px solid #e0e0e0; padding: 15px 0; display: flex; gap: 15px; align-items: start;">
+                <!-- Product Image -->
+                <div style="flex-shrink: 0;">
+                    <img src="${item.imageUrl}" alt="${item.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />
+                </div>
+                
+                <!-- Product Details -->
+                <div style="flex: 1;">
+                    <p style="margin: 0 0 8px 0; font-weight: bold; font-size: 15px; color: #333;">${item.name}</p>
+                    
+                    ${item.selectedSize || item.selectedColor ? `
+                      <div style="margin: 0 0 8px 0; display: flex; gap: 12px; flex-wrap: wrap;">
+                        ${item.selectedSize ? `
+                          <span style="background: #f5f5f5; padding: 4px 10px; border-radius: 4px; font-size: 12px; color: #666;">
+                            <strong>Size:</strong> ${item.selectedSize}
+                          </span>
+                        ` : ''}
+                        ${item.selectedColor ? `
+                          <span style="background: #f5f5f5; padding: 4px 10px; border-radius: 4px; font-size: 12px; color: #666;">
+                            <strong>Color:</strong> ${item.selectedColor}
+                          </span>
+                        ` : ''}
+                      </div>
+                    ` : ''}
+                    
+                    <div style="display: flex; gap: 15px; align-items: center; margin-top: 8px;">
+                        <span style="font-size: 13px; color: #666;">
+                            <strong>Qty:</strong> ${item.quantity}
+                        </span>
+                        <span style="font-size: 15px; font-weight: bold; color: #2e7d32;">
+                            &#8377;${(item.price * item.quantity).toLocaleString()}
+                        </span>
+                    </div>
+                </div>
             </div>
         `).join('');
 
-        const emailParams: OrderEmailParams = {
-          customerName: `${formData.firstName} ${formData.lastName}`,
-          customerPhone: formData.phone,
-          customerEmail: formData.email,
-          orderTotal: finalTotal.toLocaleString(),
-          paymentMethod: paymentMethod,
-          deliveryDetails: `${formData.address}, ${formData.zipCode} | ${formData.deliveryDate}`,
-          orderItems: orderItemsHtml
-        };
+        // Format gift wrapping for display
+        const giftWrappingText = giftWrapping === 'none' ? 'No Wrapping' :
+          giftWrapping === 'plastic' ? 'Designer Plastic Wrapping' :
+            giftWrapping === 'paper' ? 'Designer Paper Wrapping' :
+              giftWrapping === 'box-plastic' ? 'Box + Plastic Wrapping' :
+                giftWrapping === 'box-paper' ? 'Box + Paper Wrapping' : 'No Wrapping';
 
-        // Send emails in background (don't await strictly if you want faster UI response, 
+        // Calculate expected delivery date (delivery date + 1 day for standard, same day for fast)
+        const deliveryDateObj = new Date(formData.deliveryDate);
+        const expectedDeliveryDate = new Date(deliveryDateObj);
+        if (!isFastDelivery) {
+          expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + 1);
+        }
+        const expectedDeliveryStr = expectedDeliveryDate.toLocaleDateString('en-IN', {
+          year: 'numeric', month: 'short', day: 'numeric'
+        });
+
+        // Format shipping address
+        const shippingAddressFormatted = `${formData.address}, ${formData.city}, ${formData.state} - ${formData.zipCode}`;
+
         // but here we await to show success/fail alert accurately)
         await Promise.allSettled([
-          sendOrderConfirmationToUser(emailParams),
-          sendOrderNotificationToAdmin(emailParams)
+          sendOrderConfirmationToUser({
+            to_email: formData.email,
+            to_name: `${formData.firstName} ${formData.lastName}`,
+            order_id: createdOrder.readableId ? `#${createdOrder.readableId}` : createdOrder.id.slice(0, 8),
+            order_total: `₹${finalTotal.toLocaleString()}`,
+            order_items: orderItemsHtml,
+            shipping_address: shippingAddressFormatted,
+            delivery_date: new Date(formData.deliveryDate).toLocaleDateString(),
+            gift_wrapping: giftWrappingText
+          }),
+          sendOrderNotificationToAdmin({
+            order_id: createdOrder.readableId ? `#${createdOrder.readableId}` : createdOrder.id.slice(0, 8),
+            customer_name: `${formData.firstName} ${formData.lastName}`,
+            order_total: `₹${finalTotal.toLocaleString()}`,
+            order_items: orderItemsHtml
+          })
         ]);
 
       } catch (emailError) {
@@ -257,19 +327,21 @@ export const Checkout = () => {
       <AnimatedGradientBackground />
       <div className="max-w-4xl mx-auto relative z-10">
 
+
+
         {/* Stepper */}
-        <div className="flex justify-center mb-10">
-          <div className="flex items-center">
+        <div className="flex justify-center mb-10 px-2">
+          <div className="flex items-center bg-white/90 backdrop-blur-sm px-3 md:px-6 py-3 rounded-xl shadow-md justify-center">
             {steps.map((step, index) => (
               <React.Fragment key={step}>
-                <div className={`flex items-center gap-2 ${index <= currentStep ? 'text-primary' : 'text-gray-300'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 ${index <= currentStep ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
+                <div className={`flex items-center gap-1 md:gap-2 ${index <= currentStep ? 'text-primary' : 'text-gray-600'}`}>
+                  <div className={`w-7 h-7 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-xs md:text-sm border-2 shrink-0 ${index <= currentStep ? 'border-primary bg-primary text-white' : 'border-gray-400 bg-white text-gray-700'}`}>
                     {index + 1}
                   </div>
-                  <span className="hidden sm:block font-medium">{step}</span>
+                  <span className="text-[9px] md:text-sm font-semibold whitespace-nowrap">{step}</span>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`w-12 h-0.5 mx-4 ${index < currentStep ? 'bg-primary' : 'bg-gray-200'}`} />
+                  <div className={`w-4 md:w-12 h-0.5 mx-1 md:mx-4 shrink-0 ${index < currentStep ? 'bg-primary' : 'bg-gray-300'}`} />
                 )}
               </React.Fragment>
             ))}
@@ -291,7 +363,7 @@ export const Checkout = () => {
                   exit={{ opacity: 0, x: 20 }}
                   className="bg-white p-6 rounded-xl shadow-sm"
                 >
-                  <h2 className="font-serif text-2xl font-bold mb-6">Shipping Details</h2>
+                  <h2 className="font-serif text-xl font-bold mb-6">Shipping Details</h2>
 
                   {savedAddresses.length > 0 && (
                     <div className="mb-6">
@@ -312,20 +384,21 @@ export const Checkout = () => {
                     </div>
                   )}
 
-                  <form className="space-y-4" onSubmit={handleShippingSubmit}>
+                  <form id="checkout-shipping-form" className="space-y-4" onSubmit={handleShippingSubmit}>
                     <div className="grid grid-cols-2 gap-4">
-                      <input required type="text" placeholder="First Name" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
-                      <input required type="text" placeholder="Last Name" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      <input required id="firstName" type="text" placeholder="First Name *" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      <input required id="lastName" type="text" placeholder="Last Name *" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
                     </div>
 
-                    <input required type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                    <input required id="email" type="email" placeholder="Email Address *" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
 
                     <div className="flex-1 flex border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary">
                       <span className="bg-gray-50 px-3 py-3 text-gray-500 border-r flex items-center font-medium">+91</span>
                       <input
                         required
+                        id="phone"
                         type="tel"
-                        placeholder="Mobile Number"
+                        placeholder="Mobile Number *"
                         value={formData.phone}
                         onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                         className="flex-1 p-3 outline-none"
@@ -333,23 +406,80 @@ export const Checkout = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-1">Pin Location</label>
-                      <LocationPicker onLocationSelect={(lat, lng) => alert('Location pinned! Please fill in address details.')} />
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Select Location</label>
+
+                      {/* Auto-detect button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                              (position) => {
+                                setFormData({
+                                  ...formData,
+                                  latitude: position.coords.latitude,
+                                  longitude: position.coords.longitude
+                                });
+                                showAlert('Location Captured', 'Your location has been auto-detected successfully!', 'success');
+                              },
+                              (error) => {
+                                showAlert('Location Error', 'Unable to get your location. Please enable location access or select manually on the map.', 'warning');
+                              }
+                            );
+                          } else {
+                            showAlert('Not Supported', 'Geolocation is not supported by your browser. Please select on the map.', 'warning');
+                          }
+                        }}
+                        className={`w-full p-3 rounded-lg border-2 font-medium transition-all mb-3 ${formData.latitude && formData.longitude
+                          ? 'bg-green-50 border-green-500 text-green-700'
+                          : 'bg-gray-50 border-gray-300 text-gray-700 hover:border-primary'
+                          }`}
+                      >
+                        {formData.latitude && formData.longitude ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <Icons.CheckCircle className="w-5 h-5" />
+                            Location Captured
+                          </span>
+                        ) : (
+                          <span className="flex items-center justify-center gap-2">
+                            <Icons.MapPin className="w-5 h-5" />
+                            Auto-Detect My Location
+                          </span>
+                        )}
+                      </button>
+
+                      {/* Map for manual selection */}
+                      <LocationPicker
+                        onLocationSelect={(lat, lng) => {
+                          setFormData({
+                            ...formData,
+                            latitude: lat,
+                            longitude: lng
+                          });
+                        }}
+                      />
+
+                      {formData.latitude && formData.longitude && (
+                        <p className="text-xs text-green-600 font-medium mt-2 bg-green-50 p-2 rounded border border-green-200">
+                          ✓ Location selected: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                        </p>
+                      )}
                     </div>
 
-                    <input required type="text" placeholder="Flat / House No / Building / Street" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                    <input required id="address" type="text" placeholder="Flat / House No / Building / Street *" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
 
                     <div className="grid grid-cols-2 gap-4">
-                      <input required type="text" placeholder="City" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
-                      <input required type="text" placeholder="State" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      <input required id="city" type="text" placeholder="City *" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      <input required id="state" type="text" placeholder="State *" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
                     </div>
 
-                    <input required type="text" placeholder="Zip Code (6 digits)" value={formData.zipCode} onChange={e => setFormData({ ...formData, zipCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                    <input required id="zipCode" type="text" placeholder="Zip Code (6 digits) *" value={formData.zipCode} onChange={e => setFormData({ ...formData, zipCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
 
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-1">Delivery Date</label>
                       <input
                         required
+                        id="deliveryDate"
                         type="date"
                         min={getMinDate()}
                         value={formData.deliveryDate}
@@ -385,6 +515,96 @@ export const Checkout = () => {
                       </div>
                     </div>
 
+                    {/* Gift Wrapping Section */}
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <p className="font-bold text-sm mb-3">Gift Wrapping</p>
+                      <div className="space-y-3">
+                        {/* No Wrapping */}
+                        <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${giftWrapping === 'none' ? 'bg-white border-primary ring-1 ring-primary' : 'bg-white border-gray-200'}`}>
+                          <div className="flex items-center gap-3">
+                            <input type="radio" name="giftWrapping" checked={giftWrapping === 'none'} onChange={() => setGiftWrapping('none')} className="accent-primary w-4 h-4" />
+                            <div>
+                              <span className="font-bold text-sm block">No Wrapping</span>
+                              <span className="text-xs text-gray-500">Standard packaging</span>
+                            </div>
+                          </div>
+                        </label>
+
+                        {/* Designer Plastic Wrapping */}
+                        <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${giftWrapping === 'plastic' ? 'bg-white border-primary ring-1 ring-primary' : 'bg-white border-gray-200'}`}>
+                          <div className="flex items-center gap-3">
+                            <input type="radio" name="giftWrapping" checked={giftWrapping === 'plastic'} onChange={() => setGiftWrapping('plastic')} className="accent-primary w-4 h-4" />
+                            <div>
+                              <span className="font-bold text-sm block flex items-center gap-1">Designer Plastic Wrapping <Icons.Gift className="w-3 h-3 text-primary" /></span>
+                              <span className="text-xs text-gray-500">Transparent designer wrap</span>
+                            </div>
+                          </div>
+                          <span className="text-green-600 font-bold text-sm">Free</span>
+                        </label>
+
+                        {/* Designer Paper Wrapping */}
+                        <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${giftWrapping === 'paper' ? 'bg-white border-primary ring-1 ring-primary' : 'bg-white border-gray-200'}`}>
+                          <div className="flex items-center gap-3">
+                            <input type="radio" name="giftWrapping" checked={giftWrapping === 'paper'} onChange={() => setGiftWrapping('paper')} className="accent-primary w-4 h-4" />
+                            <div>
+                              <span className="font-bold text-sm block flex items-center gap-1">Designer Paper Wrapping <Icons.Gift className="w-3 h-3 text-primary" /></span>
+                              <span className="text-xs text-gray-500">Premium gift paper</span>
+                            </div>
+                          </div>
+                          <span className="text-green-600 font-bold text-sm">Free</span>
+                        </label>
+
+                        {/* Box + Wrapping - Future Scope
+                        <div className={`border rounded-lg transition-all ${giftWrapping === 'box-plastic' || giftWrapping === 'box-paper' ? 'bg-white border-primary ring-1 ring-primary' : 'bg-white border-gray-200'}`}>
+                          <label className="flex items-center justify-between p-3 cursor-pointer">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="radio"
+                                name="giftWrapping"
+                                checked={giftWrapping === 'box-plastic' || giftWrapping === 'box-paper'}
+                                onChange={() => setGiftWrapping(boxWrappingType === 'plastic' ? 'box-plastic' : 'box-paper')}
+                                className="accent-primary w-4 h-4"
+                              />
+                              <div>
+                                <span className="font-bold text-sm block flex items-center gap-1">Box + Wrapping <Icons.Package className="w-3 h-3 text-primary" /></span>
+                                <span className="text-xs text-gray-500">Premium box with wrapping</span>
+                              </div>
+                            </div>
+                            <span className="text-green-600 font-bold text-sm">Free</span>
+                          </label>
+
+                          {(giftWrapping === 'box-plastic' || giftWrapping === 'box-paper') && (
+                            <div className="px-3 pb-3 pt-0 border-t border-gray-100 mt-2">
+                              <p className="text-xs text-gray-600 mb-2 mt-2">Choose wrapping type:</p>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setBoxWrappingType('plastic');
+                                    setGiftWrapping('box-plastic');
+                                  }}
+                                  className={`flex-1 py-2 px-3 text-xs font-medium rounded border transition-all ${boxWrappingType === 'plastic' ? 'bg-primary border-primary text-black' : 'bg-white border-gray-300 text-gray-700 hover:border-primary'}`}
+                                >
+                                  Plastic
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setBoxWrappingType('paper');
+                                    setGiftWrapping('box-paper');
+                                  }}
+                                  className={`flex-1 py-2 px-3 text-xs font-medium rounded border transition-all ${boxWrappingType === 'paper' ? 'bg-primary border-primary text-black' : 'bg-white border-gray-300 text-gray-700 hover:border-primary'}`}
+                                >
+                                  Paper
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        */}
+                      </div>
+                    </div>
+
                     {user && (
                       <label className="flex items-center gap-2 mt-4 cursor-pointer">
                         <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} className="w-4 h-4 accent-primary" />
@@ -392,7 +612,8 @@ export const Checkout = () => {
                       </label>
                     )}
 
-                    <button type="submit" className="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-gray-800 transition-colors mt-4">Continue to Payment</button>
+                    {/* Desktop button - hidden on mobile */}
+                    <button type="submit" className="hidden lg:block w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors mt-4">Continue to Payment</button>
                   </form>
                 </motion.div>
               )}
@@ -406,8 +627,8 @@ export const Checkout = () => {
                   exit={{ opacity: 0, x: 20 }}
                   className="bg-white p-6 rounded-xl shadow-sm"
                 >
-                  <h2 className="font-serif text-2xl font-bold mb-6">Payment Method</h2>
-                  <form onSubmit={handlePayment}>
+                  <h2 className="font-serif text-xl font-bold mb-6">Payment Method</h2>
+                  <form id="checkout-payment-form" onSubmit={handlePayment}>
 
                     {/* UPI Option */}
                     <div className={`mb-4 p-4 border rounded-lg cursor-pointer transition-all ${paymentMethod === 'upi' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:bg-gray-50'}`}>
@@ -420,7 +641,7 @@ export const Checkout = () => {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="mt-4 pl-8 flex flex-col items-center">
                           <div className="bg-white p-4 rounded-xl border-2 border-gray-100 shadow-sm flex flex-col items-center w-full">
                             <p className="text-sm font-bold text-gray-700 mb-3">Scan to Pay</p>
-                            <img src="/upi-qr.png" alt="UPI QR Code" className="w-48 h-48 mb-4 border-4 border-gray-800 rounded-lg" />
+                            <img src="/upi-qr.png" alt="UPI QR Code" className="w-48 h-auto object-contain mb-4 border-2 border-gray-200 rounded-lg" />
                             <div className="w-full border-t pt-4">
                               <label className="block text-sm font-bold text-gray-700 mb-2">Upload Payment Screenshot</label>
                               <input type="file" accept="image/*" onChange={handleFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
@@ -449,7 +670,8 @@ export const Checkout = () => {
                       )}
                     </div>
 
-                    <button type="submit" disabled={processing} className="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
+                    {/* Desktop button - hidden on mobile */}
+                    <button type="submit" disabled={processing} className="hidden lg:block w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
                       {processing ? <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" /> :
                         (paymentMethod === 'cod' ?
                           <span>Place Order - &#8377;{finalTotal.toLocaleString()}</span> :
@@ -511,6 +733,20 @@ export const Checkout = () => {
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-gray-900 line-clamp-2 text-sm">{item.name}</h4>
                       <p className="text-gray-500 text-xs mt-1">{item.category}</p>
+                      {(item.selectedSize || item.selectedColor) && (
+                        <div className="flex gap-2 mt-1">
+                          {item.selectedColor && (
+                            <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                              {item.selectedColor}
+                            </span>
+                          )}
+                          {item.selectedSize && (
+                            <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                              Size: {item.selectedSize}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <span className="font-bold text-gray-900 text-sm">&#8377;{(item.price * item.quantity).toLocaleString()}</span>
                   </div>
@@ -551,6 +787,12 @@ export const Checkout = () => {
                         </span>
                       </div>
 
+                      {/* Gift Wrapping */}
+                      <div className="flex justify-between text-gray-600">
+                        <span>Gift Wrapping</span>
+                        <span className="font-medium text-green-600">Free</span>
+                      </div>
+
                       {/* You Saved Badge */}
                       {hasDiscount && (
                         <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
@@ -570,11 +812,57 @@ export const Checkout = () => {
 
               <div className="border-t border-gray-200 pt-4 mt-4 flex justify-between items-center">
                 <span className="font-bold text-lg">Total</span>
-                <span className="font-bold text-2xl">&#8377;{finalTotal.toLocaleString()}</span>
+                <span className="font-bold text-xl">&#8377;{finalTotal.toLocaleString()}</span>
               </div>
             </div>
           )}
         </div>
+
+        {/* Mobile Submit Buttons - Below Order Summary */}
+        {currentStep < 2 && (
+          <div className="lg:hidden mt-6">
+            {currentStep === 0 && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Trigger form submission
+                  const form = document.getElementById('checkout-shipping-form') as HTMLFormElement;
+                  if (form) form.requestSubmit();
+                }}
+                className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors"
+              >
+                Continue to Payment
+              </button>
+            )}
+            {currentStep === 1 && (
+              <div className="space-y-2">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Trigger form submission
+                    const form = document.getElementById('checkout-payment-form') as HTMLFormElement;
+                    if (form) form.requestSubmit();
+                  }}
+                  disabled={processing}
+                  className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                >
+                  {processing ? <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" /> :
+                    (paymentMethod === 'cod' ?
+                      <span>Place Order - &#8377;{finalTotal.toLocaleString()}</span> :
+                      <span>Confirm Payment - &#8377;{finalTotal.toLocaleString()}</span>)
+                  }
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(0)}
+                  className="w-full text-textMuted hover:underline text-sm"
+                >
+                  Back to Shipping
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Custom Alert */}

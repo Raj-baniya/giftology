@@ -6,51 +6,31 @@ import { ProductInfiniteMenu } from '../components/ProductInfiniteMenu';
 import { store } from '../services/store';
 import { Product } from '../types';
 
-// Hardcoded Categories for Instant Display
-const DISPLAY_CATEGORIES = [
-  { id: '1', name: 'For Him', slug: 'for-him', imageUrl: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?auto=format&fit=crop&w=800&q=80' },
-  { id: '2', name: 'For Her', slug: 'for-her', imageUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80' },
-  { id: '3', name: 'Anniversary', slug: 'anniversary', imageUrl: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80' },
-  { id: '4', name: 'Birthdays', slug: 'birthdays', imageUrl: 'https://images.unsplash.com/photo-1558636508-e0db3814bd1d?auto=format&fit=crop&w=800&q=80' },
-  { id: '5', name: 'For Kids', slug: 'for-kids', imageUrl: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=800&q=80' },
-  { id: '6', name: 'Home Decor', slug: 'for-home', imageUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80' },
-  { id: '7', name: 'Wedding', slug: 'wedding', imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80' },
-  { id: '8', name: 'Diwali', slug: 'diwali', imageUrl: 'https://blog.astrolive.app/wp-content/uploads/2025/09/Diwali-2025-Date-Significance-How-To-Celebrate-Safely.webp' },
-  { id: '9', name: 'Holi', slug: 'holi', imageUrl: 'https://images.unsplash.com/photo-1615966650071-855b15f29ad1?auto=format&fit=crop&w=800&q=80' },
-  { id: '10', name: 'Halloween', slug: 'halloween', imageUrl: 'https://images.unsplash.com/photo-1508361001413-7a9dca21d08a?auto=format&fit=crop&w=800&q=80' },
-  { id: '11', name: 'Christmas', slug: 'christmas', imageUrl: 'https://images.unsplash.com/photo-1512389142860-9c449e58a543?auto=format&fit=crop&w=800&q=80' },
-  { id: '12', name: 'Eid', slug: 'eid', imageUrl: 'https://i.pinimg.com/736x/b1/90/bc/b190bc762bb23a8721c1f2646c215863.jpg' },
-  { id: '13', name: 'Corporate Gifts', slug: 'corporate-gifts', imageUrl: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80' },
-  { id: '14', name: 'Baby Shower', slug: 'baby-shower', imageUrl: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=800&q=80' },
-  { id: '15', name: 'Housewarming', slug: 'housewarming', imageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80' },
-  { id: '16', name: 'Graduation', slug: 'graduation', imageUrl: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80' },
-  { id: '17', name: 'Retirement', slug: 'retirement', imageUrl: 'https://images.unsplash.com/photo-1473186578172-c141e6798cf4?auto=format&fit=crop&w=800&q=80' },
-  { id: '18', name: 'Valentine\'s Day', slug: 'valentines-day', imageUrl: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80' },
-  { id: '19', name: 'Mother\'s Day', slug: 'mothers-day', imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80' },
-  { id: '20', name: 'Father\'s Day', slug: 'fathers-day', imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=800&q=80' }
-];
+
 
 export const Home = () => {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
-  // Use hardcoded categories directly
-  const categories = DISPLAY_CATEGORIES;
-
-  // Fetch products for the Infinite Menu
+  // Fetch products and categories
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const allProducts = await store.getProducts();
+        const [allProducts, allCategories] = await Promise.all([
+          store.getProducts(),
+          store.getCategories()
+        ]);
         setProducts(allProducts);
+        setCategories(allCategories);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoadingProducts(false);
       }
     };
-    fetchProducts();
+    fetchData();
   }, []);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -71,7 +51,7 @@ export const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Hero Section */}
       <section className="relative h-[100dvh] w-full overflow-hidden">
 
@@ -140,7 +120,7 @@ export const Home = () => {
               </p>
             </motion.div>
 
-            <div className="w-full h-[600px] md:h-[650px] lg:h-[700px] rounded-2xl overflow-hidden shadow-2xl bg-black">
+            <div className="w-full h-[65vh] rounded-2xl overflow-hidden shadow-2xl bg-black">
               <ProductInfiniteMenu products={products} />
             </div>
 

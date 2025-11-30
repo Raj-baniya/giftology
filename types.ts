@@ -1,9 +1,23 @@
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  color: string;
+  size: string;
+  size_type: string;
+  stock_quantity: number;
+  images: string[];
+  description?: string; // Per-variant description
+}
+
 export interface Product {
   id: string;
   name: string;
   slug?: string;
   price: number;
   category: string;
+  subcategory?: string;
+  color?: string; // Color name for this product variant (e.g., "Red", "Blue")
+  colorVariantGroup?: string; // UUID linking products that are color variants of each other
   imageUrl: string;
   description: string;
   trending?: boolean;
@@ -11,10 +25,16 @@ export interface Product {
   images?: string[];
   marketPrice?: number;
   costPrice?: number; // Admin-only cost price for profit calculation
+  variants?: ProductVariant[];
+  rating?: number;
+  reviewCount?: number;
 }
 
 export interface CartItem extends Product {
   quantity: number;
+  selectedColor?: string;
+  selectedSize?: string;
+  selectedVariantId?: string;
 }
 
 export interface User {
@@ -27,6 +47,7 @@ export interface User {
 
 export interface Order {
   id: string;
+  readableId?: number; // Auto-incrementing ID for display
   userId: string | null; // Allow null for guests
   date: string;
   items: CartItem[];
@@ -43,6 +64,8 @@ export interface Order {
   deliveryDate?: string;
   deliveryTime?: string;
   deliveryType?: string;
+  deliverySpeed?: 'standard' | 'fast';
+  giftWrapping?: string;
   paymentMethod?: 'upi' | 'cod';
   screenshot?: string; // Base64 string for UPI
   shippingAddress?: any;
