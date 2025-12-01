@@ -265,6 +265,28 @@ export const Account = () => {
             <TabButton active={activeTab === 'addresses'} onClick={() => setActiveTab('addresses')} icon={Icons.MapPin} label="Addresses" />
             <TabButton active={activeTab === 'spending'} onClick={() => setActiveTab('spending')} icon={Icons.Wallet} label="Spending" />
             <TabButton active={activeTab === 'security'} onClick={() => setActiveTab('security')} icon={Icons.Shield} label="Security" />
+
+            {/* Sign Out Button - Mobile Only */}
+            <button
+              onClick={() => {
+                showAlert(
+                  'Sign Out',
+                  'Are you sure you want to sign out?',
+                  'warning',
+                  {
+                    confirmText: 'Sign Out',
+                    onConfirm: () => {
+                      setTimeout(() => logout(), 0);
+                    },
+                    cancelText: 'Cancel'
+                  }
+                );
+              }}
+              className="md:hidden flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all flex-shrink-0 whitespace-nowrap text-sm bg-red-50 text-red-600 font-bold hover:bg-red-100 border border-red-200"
+            >
+              <Icons.LogOut className="w-4 h-4" />
+              Sign Out
+            </button>
           </div>
 
           {/* Content Area */}

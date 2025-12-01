@@ -278,25 +278,25 @@ const Play = () => {
                             </AnimatePresence>
 
                             {/* Overlay UI */}
-                            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-20">
-                                <div className="flex items-end justify-between max-w-4xl mx-auto w-full">
+                            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-black via-black/70 to-transparent pt-40 pb-16 md:pb-20">
+                                <div className="flex items-end justify-between max-w-4xl mx-auto w-full gap-4">
                                     {/* Info */}
-                                    <div className="flex-1 mr-12">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm">
+                                    <div className="flex-1 max-w-[calc(100%-80px)] md:max-w-[calc(100%-100px)]">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-base shadow-lg">
                                                 G
                                             </div>
                                             <a
                                                 href="https://www.instagram.com/giftology.in_"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="font-bold text-sm md:text-base hover:text-gray-300 transition-colors cursor-pointer"
+                                                className="font-bold text-base md:text-lg hover:text-gray-300 transition-colors cursor-pointer drop-shadow-lg"
                                             >
                                                 Giftology Official
                                             </a>
                                         </div>
                                         <p
-                                            className="text-sm md:text-base mb-2 cursor-pointer hover:text-gray-200 transition-colors"
+                                            className="text-sm md:text-base mb-3 cursor-pointer hover:text-gray-200 transition-colors drop-shadow-lg leading-relaxed"
                                             onClick={() => {
                                                 setExpandedCaptions(prev => {
                                                     const newSet = new Set(prev);
@@ -316,33 +316,33 @@ const Play = () => {
                                                     : video.caption)
                                             }
                                         </p>
-                                        <div className="flex items-center gap-2 text-xs text-gray-300">
-                                            <Icons.Music2 className="w-3 h-3" />
+                                        <div className="flex items-center gap-2 text-xs md:text-sm text-gray-300 drop-shadow-lg">
+                                            <Icons.Music2 className="w-4 h-4" />
                                             <span>Original Audio</span>
                                         </div>
                                     </div>
 
                                     {/* Actions Sidebar */}
-                                    <div className="flex flex-col items-center gap-6 pb-4">
-                                        <button onClick={() => handleLike(video)} className="flex flex-col items-center gap-1 group">
-                                            <div className={`p-3 rounded-full bg-black/20 backdrop-blur-sm group-hover:bg-black/40 transition-all ${video.isLiked ? 'text-red-500' : 'text-white'}`}>
-                                                <Icons.Heart className={`w-7 h-7 ${video.isLiked ? 'fill-current' : ''}`} />
+                                    <div className="flex flex-col items-center gap-5 shrink-0">
+                                        <button onClick={() => handleLike(video)} className="flex flex-col items-center gap-1.5 group">
+                                            <div className={`p-3 md:p-3.5 rounded-full bg-black/40 backdrop-blur-md group-hover:bg-black/60 transition-all shadow-lg ${video.isLiked ? 'text-red-500' : 'text-white'}`}>
+                                                <Icons.Heart className={`w-7 h-7 md:w-8 md:h-8 ${video.isLiked ? 'fill-current' : ''}`} />
                                             </div>
-                                            <span className="text-xs font-medium">{video.likesCount}</span>
+                                            <span className="text-xs md:text-sm font-bold drop-shadow-lg">{video.likesCount}</span>
                                         </button>
 
-                                        <button onClick={() => openComments(video.id)} className="flex flex-col items-center gap-1 group">
-                                            <div className="p-3 rounded-full bg-black/20 backdrop-blur-sm group-hover:bg-black/40 transition-all">
-                                                <Icons.MessageCircle className="w-7 h-7 text-white" />
+                                        <button onClick={() => openComments(video.id)} className="flex flex-col items-center gap-1.5 group">
+                                            <div className="p-3 md:p-3.5 rounded-full bg-black/40 backdrop-blur-md group-hover:bg-black/60 transition-all shadow-lg">
+                                                <Icons.MessageCircle className="w-7 h-7 md:w-8 md:h-8 text-white" />
                                             </div>
-                                            <span className="text-xs font-medium">{video.commentsCount}</span>
+                                            <span className="text-xs md:text-sm font-bold drop-shadow-lg">{video.commentsCount}</span>
                                         </button>
 
-                                        <button onClick={() => handleShare(video)} className="flex flex-col items-center gap-1 group">
-                                            <div className="p-3 rounded-full bg-black/20 backdrop-blur-sm group-hover:bg-black/40 transition-all">
-                                                <Icons.Share2 className="w-7 h-7 text-white" />
+                                        <button onClick={() => handleShare(video)} className="flex flex-col items-center gap-1.5 group">
+                                            <div className="p-3 md:p-3.5 rounded-full bg-black/40 backdrop-blur-md group-hover:bg-black/60 transition-all shadow-lg">
+                                                <Icons.Share2 className="w-7 h-7 md:w-8 md:h-8 text-white" />
                                             </div>
-                                            <span className="text-xs font-medium">{video.sharesCount || 'Share'}</span>
+                                            <span className="text-xs md:text-sm font-bold drop-shadow-lg">{video.sharesCount || 'Share'}</span>
                                         </button>
                                     </div>
                                 </div>
