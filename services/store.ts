@@ -409,6 +409,40 @@ class StoreService {
     return await supabaseService.hasUserLikedReview(reviewId, userId);
   }
 
+  // --- Play Feature ---
+
+  async getPlayVideos(userId?: string): Promise<any[]> {
+    return await supabaseService.getPlayVideos(userId);
+  }
+
+  async likeVideo(videoId: string, userId: string): Promise<void> {
+    return await supabaseService.likeVideo(videoId, userId);
+  }
+
+  async unlikeVideo(videoId: string, userId: string): Promise<void> {
+    return await supabaseService.unlikeVideo(videoId, userId);
+  }
+
+  async getVideoComments(videoId: string): Promise<any[]> {
+    return await supabaseService.getVideoComments(videoId);
+  }
+
+  async addComment(videoId: string, userId: string, content: string, userName?: string): Promise<void> {
+    return await supabaseService.addComment(videoId, userId, content, userName);
+  }
+
+  async deleteComment(commentId: string): Promise<void> {
+    return await supabaseService.deleteComment(commentId);
+  }
+
+  async shareVideo(videoId: string, userId?: string, platform?: string): Promise<void> {
+    return await supabaseService.shareVideo(videoId, userId, platform);
+  }
+
+  async uploadVideo(file: File, caption: string, userId: string): Promise<void> {
+    return await supabaseService.uploadVideo(file, caption, userId);
+  }
+
   // --- Categories ---
   async getCategories(): Promise<any[]> {
     console.log('store.getCategories() called');

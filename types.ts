@@ -83,3 +83,31 @@ export interface Category {
   slug: string;
   imageUrl: string;
 }
+
+export interface PlayVideo {
+  id: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  caption?: string;
+  userId: string;
+  createdAt: string;
+  likesCount?: number;
+  commentsCount?: number;
+  sharesCount?: number;
+  isLiked?: boolean; // For current user
+}
+
+export interface PlayComment {
+  id: string;
+  videoId: string;
+  userId: string;
+  userName?: string; // Joined
+  content: string;
+  createdAt: string;
+}
+
+export interface PlayLike {
+  id: string;
+  videoId: string;
+  userId: string;
+}

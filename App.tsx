@@ -34,50 +34,65 @@ const ScrollToTop = () => {
   return null;
 };
 
+const AppContent = () => {
+  const location = useLocation();
+  const isPlayPage = location.pathname === '/play';
+
+  return (
+    <div className="flex flex-col min-h-screen bg-background font-sans text-textMain pb-16 md:pb-0">
+      {!isPlayPage && (
+        <>
+          <div className="hidden md:block">
+            <Navbar />
+          </div>
+          <MobileSearchBar />
+          <MobileNavbar />
+        </>
+      )}
+      <MobileNumberModal />
+
+      <main className={`flex-grow ${isPlayPage ? 'h-screen overflow-hidden' : ''}`}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/gift-guide" element={<GiftGuide />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/products/new" element={<AdminProductForm />} />
+          <Route path="/admin/products/edit/:id" element={<AdminProductForm />} />
+          <Route path="/admin/sales" element={<SalesAnalytics />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
+          <Route path="/categories" element={<MobileCategories />} />
+          <Route path="/play" element={<Play />} />
+
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+      {!isPlayPage && (
+        <footer className="bg-white py-8 border-t border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 text-center text-textMuted text-sm flex flex-col items-center gap-4">
+            <img src="/logo.png" alt="Giftology" className="h-8 w-auto opacity-50 grayscale hover:grayscale-0 transition-all" />
+            <p>&copy; 2025 Giftology. All rights reserved.</p>
+          </div>
+        </footer>
+      )}
+    </div>
+  );
+};
+
 const App = () => {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <AuthProvider>
         <CartProvider>
-          <div className="flex flex-col min-h-screen bg-background font-sans text-textMain pb-16 md:pb-0">
-            <div className="hidden md:block">
-              <Navbar />
-            </div>
-            <MobileSearchBar />
-            <MobileNavbar />
-            <MobileNumberModal />
-
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/gift-guide" element={<GiftGuide />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/admin-login" element={<AdminLogin />} />
-                <Route path="/account" element={<Account />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/products/new" element={<AdminProductForm />} />
-                <Route path="/admin/products/edit/:id" element={<AdminProductForm />} />
-                <Route path="/admin/sales" element={<SalesAnalytics />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/product/:slug" element={<ProductDetail />} />
-                <Route path="/categories" element={<MobileCategories />} />
-                <Route path="/play" element={<Play />} />
-
-
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </main>
-            <footer className="bg-white py-8 border-t border-gray-100">
-              <div className="max-w-7xl mx-auto px-4 text-center text-textMuted text-sm flex flex-col items-center gap-4">
-                <img src="/logo.png" alt="Giftology" className="h-8 w-auto opacity-50 grayscale hover:grayscale-0 transition-all" />
-                <p>&copy; 2025 Giftology. All rights reserved.</p>
-              </div>
-            </footer>
-          </div>
+          <AppContent />
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -540,3 +540,13 @@
 .ripple-effect:active::after {
   animation: ripple 0.6s ease-out;
 }
+
+/* === SCROLLBAR UTILITIES === */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

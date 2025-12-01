@@ -52,7 +52,10 @@ import {
   MoreVertical,
   Edit,
   Folder,
-  Loader2
+  Loader2,
+  Upload,
+  PlayCircle,
+  LayoutGrid
 } from 'lucide-react';
 
 export const Icons = {
@@ -109,5 +112,8 @@ export const Icons = {
   MoreVertical,
   Edit,
   Folder,
-  Loader2
+  Loader2,
+  Upload,
+  PlayCircle,
+  LayoutGrid
 };

@@ -963,3 +963,147 @@ export const hasUserLikedReview = async (reviewId: string, userId: string) => {
 // Export seedCategories as an alias to seedDatabase for backwards compatibility
 export const seedCategories = seedDatabase;
 
+
+// --- Play Feature ---
+
+export const getPlayVideos = async (userId?: string) => {
+    const { data, error } = await supabase
+        .from('play_videos')
+        .select(`
+            *,
+            likes:play_likes(count),
+            comments:play_comments(count),
+            shares:play_shares(count),
+            is_liked:play_likes!left(user_id)
+        `)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching play videos:', error);
+        return [];
+    }
+
+    return data.map((video: any) => ({
+        ...video,
+        videoUrl: video.video_url,
+        thumbnailUrl: video.thumbnail_url,
+        userId: video.user_id,
+        createdAt: video.created_at,
+        likesCount: video.likes?.[0]?.count || 0,
+        commentsCount: video.comments?.[0]?.count || 0,
+        sharesCount: video.shares?.[0]?.count || 0,
+        isLiked: userId ? video.is_liked?.some((l: any) => l.user_id === userId) : false
+    }));
+};
+
+export const likeVideo = async (videoId: string, userId: string) => {
+    const { error } = await supabase
+        .from('play_likes')
+        .insert({ video_id: videoId, user_id: userId });
+    if (error) throw error;
+};
+
+export const unlikeVideo = async (videoId: string, userId: string) => {
+    const { error } = await supabase
+        .from('play_likes')
+        .delete()
+        .match({ video_id: videoId, user_id: userId });
+    if (error) throw error;
+};
+
+export const getVideoComments = async (videoId: string) => {
+    const { data, error } = await supabase
+        .from('play_comments')
+        .select('*')
+        .eq('video_id', videoId)
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching comments:', error);
+        throw error;
+    }
+
+    console.log('Raw comment data from DB:', data);
+
+    return (data || []).map((c: any) => ({
+        id: c.id,
+        videoId: c.video_id,
+        userId: c.user_id,
+        userName: c.user_name || 'Anonymous',
+        content: c.content,
+        createdAt: c.created_at
+    }));
+};
+
+export const addComment = async (videoId: string, userId: string, content: string, userName?: string) => {
+    const { error } = await supabase
+        .from('play_comments')
+        .insert({
+            video_id: videoId,
+            user_id: userId,
+            content,
+            user_name: userName || 'Anonymous'
+        });
+    if (error) throw error;
+};
+
+export const deleteComment = async (commentId: string) => {
+    const { error } = await supabase
+        .from('play_comments')
+        .delete()
+        .eq('id', commentId);
+    if (error) throw error;
+};
+
+export const shareVideo = async (videoId: string, userId?: string, platform?: string) => {
+    const { error } = await supabase
+        .from('play_shares')
+        .insert({ video_id: videoId, user_id: userId, platform });
+    if (error) console.error('Error logging share:', error);
+};
+
+export const uploadVideo = async (file: File, caption: string, userId: string) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`; // No subdirectory, just like reviews
+
+    console.log('Uploading video:', { fileName, fileSize: file.size, fileType: file.type });
+
+    const { error: uploadError } = await supabase.storage
+        .from('videos')
+        .upload(filePath, file);
+
+    if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+    }
+
+    console.log('Upload successful');
+
+    const { data } = supabase.storage.from('videos').getPublicUrl(filePath);
+    const publicUrl = data.publicUrl;
+
+    console.log('Public URL:', publicUrl);
+
+    // Create database record
+    const { data: dbData, error: dbError } = await supabase
+        .from('play_videos')
+        .insert({
+            video_url: publicUrl,
+            caption,
+            user_id: userId
+        })
+        .select()
+        .single();
+
+    if (dbError) {
+        console.error('Database error:', dbError);
+        throw dbError;
+    }
+
+    console.log('Video record created:', dbData);
+    return dbData;
+};
+
+
+
