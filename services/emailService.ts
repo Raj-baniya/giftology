@@ -46,7 +46,7 @@ export const sendOrderConfirmationToUser = async (params: OrderEmailParams): Pro
 
     const userEmailParams = {
       // Standard fields
-      to_name: params.customerName.split(' ')[0],
+      to_name: params.customerName ? params.customerName.split(' ')[0] : 'Customer',
       to_email: params.customerEmail,
 
       // Fallback fields to ensure compatibility
@@ -54,9 +54,13 @@ export const sendOrderConfirmationToUser = async (params: OrderEmailParams): Pro
       user_name: params.customerName,
       name: params.customerName,
 
-      email: params.customerEmail,
-      user_email: params.customerEmail,
-      recipient_email: params.customerEmail,
+      email: params.customerEmail.trim(),
+      user_email: params.customerEmail.trim(),
+      recipient_email: params.customerEmail.trim(),
+      customer_email: params.customerEmail.trim(),
+      send_to: params.customerEmail.trim(),
+      target_email: params.customerEmail.trim(),
+      reply_to: 'giftology.in14@gmail.com',
 
       // Add MISSING fields that caused "Half Filled" email
       customer_phone: params.customerPhone,

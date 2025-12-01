@@ -9,18 +9,20 @@ import { Icons } from '../components/ui/Icons';
 import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 import { ProductAnalyticsModal } from '../components/ProductAnalyticsModal';
 import { CategoryManagement } from './CategoryManagement';
+import { useTheme } from '../contexts/ThemeContext';
 
 export const Admin = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { alertState, showAlert, closeAlert } = useCustomAlert();
+    const { currentTheme, setTheme } = useTheme();
 
     // State
     const [products, setProducts] = useState<Product[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [leads, setLeads] = useState<any[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'leads' | 'reviews' | 'categories' | 'play'>('inventory');
+    const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'leads' | 'reviews' | 'categories' | 'themes' | 'play'>('inventory');
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
     const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
 
@@ -359,6 +361,15 @@ export const Admin = () => {
                             }`}
                     >
                         Categories
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('themes')}
+                        className={`pb-4 px-4 text-sm md:text-base font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'themes'
+                            ? 'border-b-4 border-black text-black -mb-0.5'
+                            : 'text-gray-400 hover:text-gray-600'
+                            }`}
+                    >
+                        Themes
                     </button>
                     <button
                         onClick={() => setActiveTab('play')}
@@ -1008,6 +1019,66 @@ export const Admin = () => {
                 ) : activeTab === 'categories' ? (
                     /* Categories Tab */
                     <CategoryManagement />
+                ) : activeTab === 'themes' ? (
+                    <div className="space-y-6">
+                        <div className="bg-white rounded-xl shadow-sm p-6">
+                            <h2 className="text-xl font-bold mb-4">Homepage Theme</h2>
+                            <p className="text-gray-600 mb-6">Select a theme for the homepage. This will change the look and feel of the main landing page.</p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Default Theme */}
+                                <div
+                                    onClick={() => setTheme('default')}
+                                    className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${currentTheme === 'default' ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-200 hover:border-gray-300'}`}
+                                >
+                                    <div className="h-40 bg-gray-100 flex items-center justify-center">
+                                        <span className="text-4xl">🏠</span>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="flex justify-between items-center">
+                                            <h3 className="font-bold text-lg">Default</h3>
+                                            {currentTheme === 'default' && <Icons.Check className="w-5 h-5 text-green-500" />}
+                                        </div>
+                                        <p className="text-sm text-gray-500 mt-1">Standard Giftology design</p>
+                                    </div>
+                                </div>
+
+                                {/* Christmas Theme */}
+                                <div
+                                    onClick={() => setTheme('christmas')}
+                                    className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${currentTheme === 'christmas' ? 'border-red-600 ring-2 ring-red-600 ring-offset-2' : 'border-gray-200 hover:border-red-200'}`}
+                                >
+                                    <div className="h-40 bg-red-50 flex items-center justify-center">
+                                        <span className="text-4xl">🎄</span>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="flex justify-between items-center">
+                                            <h3 className="font-bold text-lg text-red-700">Christmas</h3>
+                                            {currentTheme === 'christmas' && <Icons.Check className="w-5 h-5 text-green-500" />}
+                                        </div>
+                                        <p className="text-sm text-gray-500 mt-1">Festive red & green design with snow</p>
+                                    </div>
+                                </div>
+
+                                {/* Diwali Theme */}
+                                <div
+                                    onClick={() => setTheme('diwali')}
+                                    className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${currentTheme === 'diwali' ? 'border-orange-500 ring-2 ring-orange-500 ring-offset-2' : 'border-gray-200 hover:border-orange-200'}`}
+                                >
+                                    <div className="h-40 bg-orange-50 flex items-center justify-center">
+                                        <span className="text-4xl">🪔</span>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="flex justify-between items-center">
+                                            <h3 className="font-bold text-lg text-orange-700">Diwali</h3>
+                                            {currentTheme === 'diwali' && <Icons.Check className="w-5 h-5 text-green-500" />}
+                                        </div>
+                                        <p className="text-sm text-gray-500 mt-1">Bright orange & gold design with lamps</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 ) : activeTab === 'play' ? (
                     /* Play Management Tab */
                     <PlayManagement />

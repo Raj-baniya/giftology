@@ -277,24 +277,45 @@ export const Checkout = () => {
         const shippingAddressFormatted = `${formData.address}, ${formData.city}, ${formData.state} - ${formData.zipCode}`;
 
         // but here we await to show success/fail alert accurately)
-        await Promise.allSettled([
+        const emailResults = await Promise.allSettled([
           sendOrderConfirmationToUser({
-            to_email: formData.email,
-            to_name: `${formData.firstName} ${formData.lastName}`,
-            order_id: createdOrder.readableId ? `#${createdOrder.readableId}` : createdOrder.id.slice(0, 8),
-            order_total: `₹${finalTotal.toLocaleString()}`,
-            order_items: orderItemsHtml,
+            customerEmail: formData.email,
+            customerName: `${formData.firstName} ${formData.lastName}`,
+            customerPhone: formData.phone,
+            orderTotal: `₹${finalTotal.toLocaleString()}`,
+            orderItems: orderItemsHtml,
             shipping_address: shippingAddressFormatted,
+            deliveryDetails: `Date: ${new Date(formData.deliveryDate).toLocaleDateString()} | Type: ${isFastDelivery ? 'Fast' : 'Standard'}`,
+            paymentMethod: paymentMethod === 'upi' ? 'UPI' : 'Cash on Delivery',
             delivery_date: new Date(formData.deliveryDate).toLocaleDateString(),
-            gift_wrapping: giftWrappingText
+            gift_wrapping: giftWrappingText,
+            delivery_speed: isFastDelivery ? 'Fast Delivery' : 'Standard Delivery',
+            expected_delivery: expectedDeliveryStr
           }),
           sendOrderNotificationToAdmin({
-            order_id: createdOrder.readableId ? `#${createdOrder.readableId}` : createdOrder.id.slice(0, 8),
-            customer_name: `${formData.firstName} ${formData.lastName}`,
-            order_total: `₹${finalTotal.toLocaleString()}`,
-            order_items: orderItemsHtml
+            customerName: `${formData.firstName} ${formData.lastName}`,
+            customerEmail: formData.email,
+            customerPhone: formData.phone,
+            orderTotal: `₹${finalTotal.toLocaleString()}`,
+            orderItems: orderItemsHtml,
+            shipping_address: shippingAddressFormatted,
+            deliveryDetails: `Date: ${new Date(formData.deliveryDate).toLocaleDateString()} | Type: ${isFastDelivery ? 'Fast' : 'Standard'}`,
+            paymentMethod: paymentMethod === 'upi' ? 'UPI' : 'Cash on Delivery',
+            delivery_date: new Date(formData.deliveryDate).toLocaleDateString(),
+            gift_wrapping: giftWrappingText,
+            delivery_speed: isFastDelivery ? 'Fast Delivery' : 'Standard Delivery',
+            expected_delivery: expectedDeliveryStr
           })
         ]);
+
+        console.log('Email sending results:', emailResults);
+        emailResults.forEach((result, index) => {
+          if (result.status === 'fulfilled') {
+            console.log(`Email ${index + 1} result:`, result.value);
+          } else {
+            console.error(`Email ${index + 1} failed:`, result.reason);
+          }
+        });
 
       } catch (emailError) {
         console.error('Email sending failed:', emailError);

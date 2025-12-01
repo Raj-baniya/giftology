@@ -1,0 +1,187 @@
+/* Christmas Theme - Flame Red, White & Royal Blue */
+
+:root.theme-christmas {
+  --flame-red: #FF4500;
+  --royal-blue: #4169E1;
+}
+
+@keyframes flame-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 30px rgba(255, 69, 0, 0.7);
+  }
+}
+
+@keyframes blue-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(65, 105, 225, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgba(65, 105, 225, 0.6);
+  }
+}
+
+/* Background */
+.theme-christmas {
+  background: linear-gradient(135deg, #F0F8FF 0%, #FFFFFF 100%);
+}
+
+/* Christmas Hero Background */
+.theme-christmas .animate-slow-zoom {
+  background-image: url('https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=1920&q=80') !important;
+}
+
+/* Navbar */
+.theme-christmas nav,
+.theme-christmas header {
+  background: #FFFFFF !important;
+  border-bottom: 3px solid #4169E1;
+  box-shadow: 0 2px 10px rgba(65, 105, 225, 0.1);
+}
+
+.theme-christmas nav a,
+.theme-christmas nav button:not(.bg-primary):not(.bg-black),
+.theme-christmas header a,
+.theme-christmas header button:not(.bg-primary):not(.bg-black) {
+  color: #0047AB !important;
+}
+
+.theme-christmas nav a:hover,
+.theme-christmas nav button:not(.bg-primary):not(.bg-black):hover {
+  color: #FF4500 !important;
+}
+
+.theme-christmas nav svg,
+.theme-christmas header svg {
+  color: #0047AB !important;
+}
+
+.theme-christmas nav svg:hover {
+  color: #FF4500 !important;
+}
+
+/* Buttons */
+.theme-christmas button.bg-primary,
+.theme-christmas button.bg-black,
+.theme-christmas a.bg-primary,
+.theme-christmas a.bg-black {
+  background: linear-gradient(135deg, #FF4500 0%, #DC143C 100%) !important;
+  color: white !important;
+  border: 2px solid #4169E1 !important;
+  font-weight: 600;
+}
+
+.theme-christmas button.bg-primary:hover,
+.theme-christmas button.bg-black:hover,
+.theme-christmas a.bg-primary:hover,
+.theme-christmas a.bg-black:hover {
+  background: linear-gradient(135deg, #DC143C 0%, #B22222 100%) !important;
+  animation: flame-glow 2s ease-in-out infinite;
+  transform: translateY(-2px);
+}
+
+/* Cards */
+.theme-christmas .bg-white {
+  background: #FFFFFF !important;
+  border: 2px solid rgba(65, 105, 225, 0.2) !important;
+}
+
+.theme-christmas .bg-white:hover {
+  border-color: rgba(65, 105, 225, 0.4) !important;
+  box-shadow: 0 8px 25px rgba(65, 105, 225, 0.15) !important;
+}
+
+/* Links */
+.theme-christmas a:not(.no-theme):not([class*="bg-"]) {
+  color: #FF4500;
+}
+
+.theme-christmas a:not(.no-theme):not([class*="bg-"]):hover {
+  color: #DC143C;
+  text-decoration-color: #4169E1;
+}
+
+/* Headers */
+.theme-christmas h1,
+.theme-christmas h2,
+.theme-christmas h3 {
+  color: #0047AB;
+  font-weight: 700;
+}
+
+/* Product Cards */
+.theme-christmas .product-card:hover {
+  border-color: #4169E1;
+  animation: blue-pulse 2s ease-in-out infinite;
+}
+
+/* Badges */
+.theme-christmas .badge,
+.theme-christmas .tag {
+  background: linear-gradient(135deg, #4169E1 0%, #0047AB 100%) !important;
+  color: white !important;
+}
+
+/* Inputs */
+.theme-christmas input:focus,
+.theme-christmas textarea:focus,
+.theme-christmas select:focus {
+  border-color: #4169E1;
+  box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.2);
+}
+
+/* Prices */
+.theme-christmas .text-primary,
+.theme-christmas [class*="text-primary"] {
+  color: #FF4500 !important;
+}
+
+/* Top Border */
+.theme-christmas::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #FF4500 0%, #FF4500 33%, #FFFFFF 33%, #FFFFFF 66%, #4169E1 66%, #4169E1 100%);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Mobile Nav */
+.theme-christmas .mobile-nav,
+.theme-christmas [class*="bottom-0"][class*="fixed"] {
+  background: #FFFFFF !important;
+  border-top: 3px solid #4169E1;
+}
+
+.theme-christmas .mobile-nav svg {
+  color: #0047AB !important;
+}
+
+.theme-christmas .mobile-nav svg:hover {
+  color: #FF4500 !important;
+}
+
+/* Scrollbar */
+.theme-christmas ::-webkit-scrollbar {
+  width: 12px;
+}
+
+.theme-christmas ::-webkit-scrollbar-track {
+  background: #F0F8FF;
+}
+
+.theme-christmas ::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #4169E1, #0047AB);
+  border-radius: 6px;
+}

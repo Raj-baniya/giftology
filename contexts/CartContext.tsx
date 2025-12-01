@@ -44,6 +44,10 @@ export const CartProvider = ({ children }: { children?: ReactNode }) => {
       // New product or different variant - add as new line item
       return [...prev, { ...product, quantity: 1 }];
     });
+
+    // Trigger Santa animation for Christmas theme
+    window.dispatchEvent(new CustomEvent('itemAddedToCart'));
+
     if (openSidebar) {
       setCartOpen(true);
     }

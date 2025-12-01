@@ -2,7 +2,9 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { MobileNumberModal } from './components/MobileNumberModal';
+import './styles/christmas-theme.css';
 
 import { Navbar } from './components/Navbar';
 import { Home } from './pages/Home';
@@ -34,12 +36,25 @@ const ScrollToTop = () => {
   return null;
 };
 
+import { SnowEffect } from './components/SnowEffect';
+import { SantaCartAnimation } from './components/SantaCartAnimation';
+
+// ... imports
+
 const AppContent = () => {
   const location = useLocation();
   const isPlayPage = location.pathname === '/play';
+  const { currentTheme } = useTheme();
+
+  // Apply theme class to document root
+  useEffect(() => {
+    document.documentElement.className = currentTheme ? `theme-${currentTheme}` : '';
+  }, [currentTheme]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background font-sans text-textMain pb-16 md:pb-0">
+    <div className={`flex flex-col min-h-screen bg-background font-sans text-textMain pb-16 md:pb-0 ${currentTheme ? `theme-${currentTheme}` : ''}`}>
+      <SnowEffect />
+      <SantaCartAnimation />
       {!isPlayPage && (
         <>
           <div className="hidden md:block">
@@ -92,7 +107,9 @@ const App = () => {
       <ScrollToTop />
       <AuthProvider>
         <CartProvider>
-          <AppContent />
+          <ThemeProvider>
+            <AppContent />
+          </ThemeProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>
