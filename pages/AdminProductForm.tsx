@@ -56,6 +56,7 @@ export const AdminProductForm = () => {
             color: '',
             colorVariantGroup: '',
             trending: false,
+            isFeatured: false,
             stock: 0,
             additionalImages: '',
         },
@@ -90,6 +91,7 @@ export const AdminProductForm = () => {
                     setValue('additionalImages', product.images?.slice(1).join(', ') || '');
                     setValue('description', product.description);
                     setValue('trending', product.trending || false);
+                    setValue('isFeatured', product.isFeatured || false);
                     setValue('stock', product.stock || 0);
 
                     if (product.variants && product.variants.length > 0) {
@@ -248,6 +250,7 @@ export const AdminProductForm = () => {
                         costPrice: data.costPrice ? Number(data.costPrice) : undefined,
                         stock: colorStock,
                         trending: Boolean(data.trending),
+                        isFeatured: Boolean(data.isFeatured),
                         color,
                         colorVariantGroup: groupId,
                         imageUrl: colorImages[color] || data.imageUrl,
@@ -288,6 +291,7 @@ export const AdminProductForm = () => {
                     costPrice: data.costPrice ? Number(data.costPrice) : undefined,
                     stock: Number(data.stock),
                     trending: Boolean(data.trending),
+                    isFeatured: Boolean(data.isFeatured),
                     images: [
                         data.imageUrl,
                         ...(data.additionalImages ? data.additionalImages.split(',').map((u: string) => u.trim()).filter(Boolean) : []),

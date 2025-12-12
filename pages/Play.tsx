@@ -283,20 +283,20 @@ const Play = () => {
                                     {/* Info */}
                                     <div className="flex-1 max-w-[calc(100%-80px)] md:max-w-[calc(100%-100px)]">
                                         <div className="flex items-center gap-3 mb-4">
-                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-base shadow-lg">
+                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-base shadow-lg !text-white">
                                                 G
                                             </div>
                                             <a
                                                 href="https://www.instagram.com/giftology.in_"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="font-bold text-base md:text-lg hover:text-gray-300 transition-colors cursor-pointer drop-shadow-lg"
+                                                className="font-bold text-base md:text-lg !text-white hover:text-gray-200 transition-colors cursor-pointer drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                                             >
                                                 Giftology Official
                                             </a>
                                         </div>
                                         <p
-                                            className="text-sm md:text-base mb-3 cursor-pointer hover:text-gray-200 transition-colors drop-shadow-lg leading-relaxed"
+                                            className="text-sm md:text-base mb-3 cursor-pointer !text-white hover:text-gray-100 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-relaxed font-medium"
                                             onClick={() => {
                                                 setExpandedCaptions(prev => {
                                                     const newSet = new Set(prev);
@@ -316,7 +316,7 @@ const Play = () => {
                                                     : video.caption)
                                             }
                                         </p>
-                                        <div className="flex items-center gap-2 text-xs md:text-sm text-gray-300 drop-shadow-lg">
+                                        <div className="flex items-center gap-2 text-xs md:text-sm !text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                                             <Icons.Music2 className="w-4 h-4" />
                                             <span>Original Audio</span>
                                         </div>
@@ -328,21 +328,21 @@ const Play = () => {
                                             <div className={`p-3 md:p-3.5 rounded-full bg-black/40 backdrop-blur-md group-hover:bg-black/60 transition-all shadow-lg ${video.isLiked ? 'text-red-500' : 'text-white'}`}>
                                                 <Icons.Heart className={`w-7 h-7 md:w-8 md:h-8 ${video.isLiked ? 'fill-current' : ''}`} />
                                             </div>
-                                            <span className="text-xs md:text-sm font-bold drop-shadow-lg">{video.likesCount}</span>
+                                            <span className="text-xs md:text-sm font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] !text-white">{video.likesCount}</span>
                                         </button>
 
                                         <button onClick={() => openComments(video.id)} className="flex flex-col items-center gap-1.5 group">
                                             <div className="p-3 md:p-3.5 rounded-full bg-black/40 backdrop-blur-md group-hover:bg-black/60 transition-all shadow-lg">
                                                 <Icons.MessageCircle className="w-7 h-7 md:w-8 md:h-8 text-white" />
                                             </div>
-                                            <span className="text-xs md:text-sm font-bold drop-shadow-lg">{video.commentsCount}</span>
+                                            <span className="text-xs md:text-sm font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] !text-white">{video.commentsCount}</span>
                                         </button>
 
                                         <button onClick={() => handleShare(video)} className="flex flex-col items-center gap-1.5 group">
                                             <div className="p-3 md:p-3.5 rounded-full bg-black/40 backdrop-blur-md group-hover:bg-black/60 transition-all shadow-lg">
                                                 <Icons.Share2 className="w-7 h-7 md:w-8 md:h-8 text-white" />
                                             </div>
-                                            <span className="text-xs md:text-sm font-bold drop-shadow-lg">{video.sharesCount || 'Share'}</span>
+                                            <span className="text-xs md:text-sm font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] !text-white">{video.sharesCount || 'Share'}</span>
                                         </button>
                                     </div>
                                 </div>

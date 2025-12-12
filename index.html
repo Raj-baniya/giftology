@@ -5,6 +5,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Giftology - Personalized Gifts</title>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        var div = document.createElement('div');
+        div.style.color = 'red';
+        div.style.background = 'white';
+        div.style.padding = '20px';
+        div.style.border = '2px solid red';
+        div.style.position = 'fixed';
+        div.style.top = '0';
+        div.style.left = '0';
+        div.style.zIndex = '99999';
+        div.style.width = '100%';
+        div.innerHTML = '<h1>Global Error</h1><pre>' + message + '\n' + source + ':' + lineno + '</pre>';
+        document.body.appendChild(div);
+      };
+    </script>
   <link rel="icon" type="image/png" href="/logo.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">

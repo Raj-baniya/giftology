@@ -798,53 +798,78 @@ export const getProductAnalytics = async (productId: string) => {
             totalRevenue += (price * qty);
         });
 
+        // Mocking cost/profit for now as we don't have cost_price in schema yet
+        const totalCost = totalRevenue * 0.7; // Assuming 30% margin
+        const totalProfit = totalRevenue - totalCost;
+        const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+        const totalOrders = allItems?.length || 0;
+        const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
         // 3. Get Recent Orders (Fast - Limited to 10, with Join)
-        // Only fetch heavy data (shipping_address) for the few we display
         const { data: recentItems, error: recentError } = await supabase
             .from('order_items')
             .select('quantity, orders(id, created_at, status, shipping_address)')
             .eq('product_id', productId)
-            .order('created_at', { ascending: false })
-            .limit(10);
+            .order('created_at', { ascending: false, foreignTable: 'orders' })
+            .limit(5);
 
         if (recentError) throw recentError;
 
-        const recentOrders = (recentItems || [])
-            .filter((item: any) => item.orders) // Ensure order exists
-            .map((item: any) => ({
-                orderId: item.orders.id,
-                date: item.orders.created_at,
-                quantity: item.quantity || 1,
-                customerName: item.orders.shipping_address?.fullName || 'Unknown',
-                status: item.orders.status
-            }));
-
-        // Calculate Profit
-        const costPrice = product.cost_price || 0;
-        const totalCost = costPrice * totalUnitsSold;
-        const totalProfit = totalRevenue - totalCost;
-        const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
-        const averageOrderValue = totalUnitsSold > 0 ? totalRevenue / totalUnitsSold : 0;
-
         return {
-            productId,
-            productName: product.name,
-            totalUnitsSold,
             totalRevenue,
             totalCost,
             totalProfit,
             profitMargin,
+            totalOrders,
             averageOrderValue,
-            currentStock: product.stock_quantity,
-            costPrice: costPrice,
-            sellingPrice: product.price,
-            marketPrice: product.market_price,
-            recentOrders: recentOrders
+            recentOrders: recentItems?.map((item: any) => ({
+                id: item.orders.id,
+                date: item.orders.created_at,
+                status: item.orders.status,
+                customer: item.orders.shipping_address?.fullName || 'Unknown',
+                quantity: item.quantity,
+                total: (item.quantity * (product.sale_price || product.price))
+            })) || []
         };
 
     } catch (error) {
-        console.error('Error fetching product analytics:', error);
-        return null;
+        console.error('Error calculating sales analytics:', error);
+        return {
+            totalRevenue: 0,
+            totalCost: 0,
+            totalProfit: 0,
+            profitMargin: 0,
+            totalOrders: 0,
+            averageOrderValue: 0,
+            recentOrders: []
+        };
+    }
+};
+
+// --- Global Settings (Theme) ---
+
+export const getGlobalTheme = async () => {
+    const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'current_theme')
+        .single();
+
+    if (error) {
+        console.warn('Error fetching global theme:', error);
+        return 'default'; // Fallback
+    }
+    return data?.value || 'default';
+};
+
+export const updateGlobalTheme = async (theme: string) => {
+    const { error } = await supabase
+        .from('settings')
+        .upsert({ key: 'current_theme', value: theme, updated_at: new Date().toISOString() });
+
+    if (error) {
+        console.error('Error updating global theme:', error);
+        throw error;
     }
 };
 

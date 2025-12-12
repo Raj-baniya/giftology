@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Supabase Connection</title>
+</head>
+<body>
+    <h1>Testing Supabase Connection</h1>
+    <div id="result"></div>
+    
+    <script type="module">
+        const SUPABASE_URL = 'https://ldzlynxzmrgwvqieaevx.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxkemx5bnh6bXJnd3ZxaWVhZXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3OTcwODMsImV4cCI6MjA3OTM3MzA4M30.gke2jrN1XBDaDbyeiGVrAk0yAMdxM2VhOnwe_1psQs4';
+        
+        const resultDiv = document.getElementById('result');
+        
+        async function testConnection() {
+            resultDiv.innerHTML = '<p>Testing connection to Supabase...</p>';
+            
+            try {
+                // Test 1: Can we reach the URL?
+                resultDiv.innerHTML += '<p>🔵 Checking if Supabase URL is reachable...</p>';
+                const pingResponse = await fetch(SUPABASE_URL);
+                resultDiv.innerHTML += `<p>✅ Supabase URL reachable! Status: ${pingResponse.status}</p>`;
+                
+                // Test 2: Can we query the products table?
+                resultDiv.innerHTML += '<p>🔵 Querying products table...</p>';
+                const productsUrl = `${SUPABASE_URL}/rest/v1/products?select=*&limit=5`;
+                const response = await fetch(productsUrl, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML += `<p>✅ Products query successful!</p>`;
+                resultDiv.innerHTML += `<p>📦 Found ${data.length} products</p>`;
+                resultDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+            } catch (error) {
+                resultDiv.innerHTML += `<p style="color: red;">❌ ERROR: ${error.message}</p>`;
+                resultDiv.innerHTML += `<p style="color: red;">Full error: ${JSON.stringify(error, null, 2)}</p>`;
+                
+                // Additional diagnostics
+                resultDiv.innerHTML += '<h2>Diagnostics:</h2>';
+                resultDiv.innerHTML += `<p>Browser: ${navigator.userAgent}</p>`;
+                resultDiv.innerHTML += `<p>Online: ${navigator.onLine}</p>`;
+            }
+        }
+        
+        testConnection();
+    </script>
+</body>
+</html>

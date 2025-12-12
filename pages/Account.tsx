@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { store } from '../services/store';
 import { Order } from '../types';
 import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
+import { calculatePointsForPrice, calculateCartRewardPoints } from '../utils/rewardUtils';
 
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
   <button
@@ -308,8 +309,16 @@ export const Account = () => {
                             className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4 p-3 md:p-4 cursor-pointer hover:bg-gray-50"
                           >
                             <div className="flex items-center gap-4 w-full sm:w-auto">
-                              <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-md shrink-0 flex items-center justify-center text-gray-400">
-                                {expandedOrderId === order.id ? <Icons.ChevronDown /> : <Icons.Package />}
+                              <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-md shrink-0 flex items-center justify-center text-gray-400 overflow-hidden border border-gray-200">
+                                {order.items?.[0]?.imageUrl ? (
+                                  <img
+                                    src={order.items[0].imageUrl}
+                                    alt="Product"
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <Icons.Package />
+                                )}
                               </div>
                               <div className="flex-1 sm:hidden">
                                 <h4 className="font-bold text-sm">Order #{order.readableId || order.id.slice(0, 8)}</h4>
@@ -360,6 +369,11 @@ export const Account = () => {
                                   Cancel
                                 </button>
                               )}
+
+                              {/* Expand Chevron */}
+                              <div className="text-gray-400 ml-1">
+                                <Icons.ChevronDown className={`w-5 h-5 transition-transform duration-200 ${expandedOrderId === order.id ? 'rotate-180' : ''}`} />
+                              </div>
                             </div>
                           </div>
 
@@ -390,6 +404,9 @@ export const Account = () => {
                                         {item.selectedColor && (
                                           <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">{item.selectedColor}</span>
                                         )}
+                                      </div>
+                                      <div className="text-xs text-amber-600 font-medium mt-1">
+                                        Earned {calculatePointsForPrice(item.price) * item.quantity} pts
                                       </div>
                                     </div>
 
@@ -425,6 +442,10 @@ export const Account = () => {
                                     </span>
                                   </div>
                                 )}
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-500">Total Points Earned</span>
+                                  <span className="font-bold text-amber-600">+{calculateCartRewardPoints(order.items)} pts</span>
+                                </div>
                               </div>
                             </div>
                           )}

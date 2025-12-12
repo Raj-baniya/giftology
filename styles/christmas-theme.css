@@ -1,150 +1,206 @@
-/* Christmas Theme - Flame Red, White & Royal Blue */
+/* Christmas Theme - Midnight Blue & Gold */
 
 :root.theme-christmas {
-  --flame-red: #FF4500;
-  --royal-blue: #4169E1;
+  --midnight-blue: #161F48;
+  --royal-blue: #1C2E5D;
+  --light-blue: #284574;
+  --gold: #D2A047;
+  --light-gold: #E1C582;
+  --cream: #F5EFE0;
+  --dark-text: #1a202c;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 }
 
-@keyframes flame-glow {
+/* --- Global Enhancements --- */
 
-  0%,
-  100% {
-    box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
-  }
-
-  50% {
-    box-shadow: 0 0 30px rgba(255, 69, 0, 0.7);
-  }
+/* Smooth Scrolling */
+html.theme-christmas {
+  scroll-behavior: smooth;
 }
 
-@keyframes blue-pulse {
+/* Selection Color */
+.theme-christmas ::selection {
+  background: var(--gold);
+  color: white;
+}
 
-  0%,
-  100% {
-    box-shadow: 0 0 15px rgba(65, 105, 225, 0.3);
-  }
+/* Custom Scrollbar */
+.theme-christmas ::-webkit-scrollbar {
+  width: 10px;
+}
 
-  50% {
-    box-shadow: 0 0 25px rgba(65, 105, 225, 0.6);
-  }
+.theme-christmas ::-webkit-scrollbar-track {
+  background: var(--cream);
+}
+
+.theme-christmas ::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--midnight-blue), var(--royal-blue));
+  border-radius: 5px;
+  border: 2px solid var(--cream);
+}
+
+.theme-christmas ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, var(--royal-blue), var(--light-blue));
 }
 
 /* Background */
 .theme-christmas {
-  background: linear-gradient(135deg, #F0F8FF 0%, #FFFFFF 100%);
+  background-color: var(--cream);
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(22, 31, 72, 0.03) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(210, 160, 71, 0.03) 0%, transparent 20%);
 }
 
-/* Christmas Hero Background */
-.theme-christmas .animate-slow-zoom {
-  background-image: url('https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=1920&q=80') !important;
+/* --- Typography --- */
+.theme-christmas h1,
+.theme-christmas h2,
+.theme-christmas h3,
+.theme-christmas h4 {
+  font-family: 'Playfair Display', serif;
+  color: var(--dark-text);
 }
+
+/* --- Glassmorphism Utilities --- */
+.theme-christmas .glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 16px;
+}
+
+.theme-christmas .glass-card:hover {
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.2);
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* --- Component Overrides --- */
 
 /* Navbar */
 .theme-christmas nav,
 .theme-christmas header {
-  background: #FFFFFF !important;
-  border-bottom: 3px solid #4169E1;
-  box-shadow: 0 2px 10px rgba(65, 105, 225, 0.1);
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid var(--gold);
+  box-shadow: 0 2px 10px rgba(210, 160, 71, 0.1);
 }
 
 .theme-christmas nav a,
-.theme-christmas nav button:not(.bg-primary):not(.bg-black),
-.theme-christmas header a,
-.theme-christmas header button:not(.bg-primary):not(.bg-black) {
-  color: #0047AB !important;
+.theme-christmas header a {
+  color: var(--dark-text) !important;
+  font-weight: 600;
+  position: relative;
 }
 
-.theme-christmas nav a:hover,
-.theme-christmas nav button:not(.bg-primary):not(.bg-black):hover {
-  color: #FF4500 !important;
+.theme-christmas nav a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: var(--gold);
+  transition: width 0.3s ease;
 }
 
-.theme-christmas nav svg,
-.theme-christmas header svg {
-  color: #0047AB !important;
+.theme-christmas nav a:hover::after {
+  width: 100%;
 }
 
-.theme-christmas nav svg:hover {
-  color: #FF4500 !important;
+.theme-christmas nav a:hover {
+  color: var(--gold) !important;
 }
 
 /* Buttons */
 .theme-christmas button.bg-primary,
-.theme-christmas button.bg-black,
 .theme-christmas a.bg-primary,
+.theme-christmas button.bg-black,
 .theme-christmas a.bg-black {
-  background: linear-gradient(135deg, #FF4500 0%, #DC143C 100%) !important;
-  color: white !important;
-  border: 2px solid #4169E1 !important;
-  font-weight: 600;
+  background: linear-gradient(135deg, var(--gold) 0%, #C89437 100%) !important;
+  color: var(--midnight-blue) !important;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(210, 160, 71, 0.3);
+  border: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-christmas button.bg-primary:hover,
-.theme-christmas button.bg-black:hover,
 .theme-christmas a.bg-primary:hover,
+.theme-christmas button.bg-black:hover,
 .theme-christmas a.bg-black:hover {
-  background: linear-gradient(135deg, #DC143C 0%, #B22222 100%) !important;
-  animation: flame-glow 2s ease-in-out infinite;
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #C89437 0%, var(--gold) 100%) !important;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(210, 160, 71, 0.4);
+  color: white !important;
 }
 
 /* Cards */
 .theme-christmas .bg-white {
   background: #FFFFFF !important;
-  border: 2px solid rgba(65, 105, 225, 0.2) !important;
+  border: 2px solid rgba(210, 160, 71, 0.2) !important;
 }
 
 .theme-christmas .bg-white:hover {
-  border-color: rgba(65, 105, 225, 0.4) !important;
-  box-shadow: 0 8px 25px rgba(65, 105, 225, 0.15) !important;
+  border-color: rgba(210, 160, 71, 0.4) !important;
+  box-shadow: 0 8px 25px rgba(210, 160, 71, 0.15) !important;
+}
+
+/* Inputs */
+.theme-christmas input,
+.theme-christmas textarea,
+.theme-christmas select {
+  border: 1px solid rgba(210, 160, 71, 0.3);
+  background: white;
+  color: var(--dark-text) !important;
+  transition: all 0.3s ease;
+}
+
+.theme-christmas input::placeholder,
+.theme-christmas textarea::placeholder {
+  color: #9CA3AF !important;
+}
+
+.theme-christmas input:focus,
+.theme-christmas textarea:focus,
+.theme-christmas select:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(210, 160, 71, 0.1);
+  outline: none;
+}
+
+/* Labels */
+.theme-christmas label {
+  color: var(--dark-text) !important;
 }
 
 /* Links */
 .theme-christmas a:not(.no-theme):not([class*="bg-"]) {
-  color: #FF4500;
+  color: var(--dark-text);
 }
 
 .theme-christmas a:not(.no-theme):not([class*="bg-"]):hover {
-  color: #DC143C;
-  text-decoration-color: #4169E1;
+  color: var(--gold);
 }
 
-/* Headers */
-.theme-christmas h1,
-.theme-christmas h2,
-.theme-christmas h3 {
-  color: #0047AB;
-  font-weight: 700;
+/* Prices & Primary Text */
+.theme-christmas .text-primary,
+.theme-christmas [class*="text-primary"] {
+  color: var(--gold) !important;
 }
 
 /* Product Cards */
 .theme-christmas .product-card:hover {
-  border-color: #4169E1;
-  animation: blue-pulse 2s ease-in-out infinite;
+  border-color: var(--gold);
+  box-shadow: 0 8px 25px rgba(210, 160, 71, 0.2);
 }
 
-/* Badges */
-.theme-christmas .badge,
-.theme-christmas .tag {
-  background: linear-gradient(135deg, #4169E1 0%, #0047AB 100%) !important;
-  color: white !important;
-}
-
-/* Inputs */
-.theme-christmas input:focus,
-.theme-christmas textarea:focus,
-.theme-christmas select:focus {
-  border-color: #4169E1;
-  box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.2);
-}
-
-/* Prices */
-.theme-christmas .text-primary,
-.theme-christmas [class*="text-primary"] {
-  color: #FF4500 !important;
-}
-
-/* Top Border */
+/* Top Festive Border */
 .theme-christmas::before {
   content: '';
   position: fixed;
@@ -152,7 +208,13 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #FF4500 0%, #FF4500 33%, #FFFFFF 33%, #FFFFFF 66%, #4169E1 66%, #4169E1 100%);
+  background: repeating-linear-gradient(90deg,
+      var(--midnight-blue),
+      var(--midnight-blue) 20px,
+      var(--gold) 20px,
+      var(--gold) 40px,
+      var(--light-gold) 40px,
+      var(--light-gold) 60px);
   z-index: 9999;
   pointer-events: none;
 }
@@ -160,28 +222,58 @@
 /* Mobile Nav */
 .theme-christmas .mobile-nav,
 .theme-christmas [class*="bottom-0"][class*="fixed"] {
-  background: #FFFFFF !important;
-  border-top: 3px solid #4169E1;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-top: 2px solid var(--gold);
+  backdrop-filter: blur(10px);
 }
 
 .theme-christmas .mobile-nav svg {
-  color: #0047AB !important;
+  color: var(--dark-text) !important;
 }
 
 .theme-christmas .mobile-nav svg:hover {
-  color: #FF4500 !important;
+  color: var(--gold) !important;
 }
 
-/* Scrollbar */
-.theme-christmas ::-webkit-scrollbar {
-  width: 12px;
+/* Text Visibility Fixes - Ensure all text is readable */
+.theme-christmas .text-gray-600,
+.theme-christmas .text-gray-500,
+.theme-christmas .text-textMuted {
+  color: #6B7280 !important;
 }
 
-.theme-christmas ::-webkit-scrollbar-track {
-  background: #F0F8FF;
+.theme-christmas .text-gray-900,
+.theme-christmas .text-textMain,
+.theme-christmas .text-black {
+  color: var(--dark-text) !important;
 }
 
-.theme-christmas ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #4169E1, #0047AB);
-  border-radius: 6px;
+.theme-christmas .text-gray-700 {
+  color: #374151 !important;
+}
+
+.theme-christmas .text-gray-400 {
+  color: #9CA3AF !important;
+}
+
+/* Ensure all headings and body text are visible */
+.theme-christmas p,
+.theme-christmas span:not([class*="text-"]):not([style*="color"]) {
+  color: var(--dark-text);
+}
+
+/* Ensure all text on dark backgrounds is visible */
+.theme-christmas [class*="bg-gray-"],
+.theme-christmas [class*="bg-black"],
+.theme-christmas .bg-gray-50,
+.theme-christmas .bg-gray-100 {
+  color: var(--dark-text) !important;
+}
+
+/* Admin pages should not be affected by theme colors */
+.theme-christmas [class*="admin"] input,
+.theme-christmas [class*="admin"] textarea,
+.theme-christmas [class*="admin"] select,
+.theme-christmas [class*="admin"] label {
+  color: #1a202c !important;
 }

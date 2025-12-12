@@ -1028,7 +1028,7 @@ export const Admin = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {/* Default Theme */}
                                 <div
-                                    onClick={() => setTheme('default')}
+                                    onClick={async () => await setTheme('default')}
                                     className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${currentTheme === 'default' ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-200 hover:border-gray-300'}`}
                                 >
                                     <div className="h-40 bg-gray-100 flex items-center justify-center">
@@ -1045,7 +1045,7 @@ export const Admin = () => {
 
                                 {/* Christmas Theme */}
                                 <div
-                                    onClick={() => setTheme('christmas')}
+                                    onClick={async () => await setTheme('christmas')}
                                     className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${currentTheme === 'christmas' ? 'border-red-600 ring-2 ring-red-600 ring-offset-2' : 'border-gray-200 hover:border-red-200'}`}
                                 >
                                     <div className="h-40 bg-red-50 flex items-center justify-center">
@@ -1062,7 +1062,7 @@ export const Admin = () => {
 
                                 {/* Diwali Theme */}
                                 <div
-                                    onClick={() => setTheme('diwali')}
+                                    onClick={async () => await setTheme('diwali')}
                                     className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${currentTheme === 'diwali' ? 'border-orange-500 ring-2 ring-orange-500 ring-offset-2' : 'border-gray-200 hover:border-orange-200'}`}
                                 >
                                     <div className="h-40 bg-orange-50 flex items-center justify-center">

@@ -1,29 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
 
 export const SnowEffect = () => {
-  const { currentTheme } = useTheme();
   const [snowflakes, setSnowflakes] = useState<any[]>([]);
 
   useEffect(() => {
-    if (currentTheme === 'christmas') {
-      // Generate snowflakes with more variation
-      const flakes = Array.from({ length: 50 }).map((_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        animationDuration: Math.random() * 10 + 10,
-        animationDelay: Math.random() * 5,
-        opacity: Math.random() * 0.6 + 0.3,
-        size: Math.random() * 8 + 3,
-        drift: Math.random() * 100 - 50
-      }));
-      setSnowflakes(flakes);
-    } else {
-      setSnowflakes([]);
-    }
-  }, [currentTheme]);
-
-  if (currentTheme !== 'christmas') return null;
+    // Generate snowflakes with more variation
+    const flakes = Array.from({ length: 50 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      animationDuration: Math.random() * 10 + 10,
+      animationDelay: Math.random() * 5,
+      opacity: Math.random() * 0.6 + 0.3,
+      size: Math.random() * 8 + 3,
+      drift: Math.random() * 100 - 50
+    }));
+    setSnowflakes(flakes);
+  }, []);
 
   return (
     <>

@@ -12,6 +12,7 @@ interface AuthContextType {
   loginWithOtp: (email: string) => Promise<{ error: any }>;
   verifyOtp: (email: string, token: string) => Promise<{ data: any; error: any }>;
   changePassword: (password: string) => Promise<{ error: any }>;
+  updateRewardPoints: (points: number) => Promise<void>;
   loading: boolean;
 }
 
@@ -21,17 +22,39 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchUserPoints = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('reward_points')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        // If profile doesn't exist, we might want to create it or just ignore
+        console.warn('Error fetching user points:', error);
+        return 0;
+      }
+      return data?.reward_points || 0;
+    } catch (err) {
+      console.error('Failed to fetch points', err);
+      return 0;
+    }
+  };
+
   useEffect(() => {
     // Check active session
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
+        const points = await fetchUserPoints(session.user.id);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
           displayName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || '',
           joinDate: session.user.created_at,
-          role: session.user.user_metadata?.role || 'user'
+          role: session.user.user_metadata?.role || 'user',
+          reward_points: points
         });
       } else {
         setUser(null);
@@ -42,14 +65,16 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
     checkSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
+        const points = await fetchUserPoints(session.user.id);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
           displayName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || '',
           joinDate: session.user.created_at,
-          role: session.user.user_metadata?.role || 'user'
+          role: session.user.user_metadata?.role || 'user',
+          reward_points: points
         });
       } else {
         setUser(null);
@@ -103,6 +128,24 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
       });
       if (!error) {
         setUser(prev => prev ? { ...prev, displayName: name } : null);
+      }
+    }
+  };
+
+  const updateRewardPoints = async (newPoints: number) => {
+    if (user) {
+      // Optimistic update
+      setUser(prev => prev ? { ...prev, reward_points: newPoints } : null);
+
+      // DB update
+      const { error } = await supabase
+        .from('profiles')
+        .update({ reward_points: newPoints })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Failed to update reward points in DB:', error);
+        // Revert if failed? For now, we just log.
       }
     }
   };
@@ -202,12 +245,14 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
 
       // Construct the User Object for the Frontend
       // We use the REAL email/name for display, but the (potentially ephemeral) ID for the DB
+      const points = await fetchUserPoints(realSupabaseUserId || `otp_${email}`);
       const finalUser: User = {
         id: realSupabaseUserId || `otp_${email}`, // Fallback to mock ID if absolutely everything fails
         email: email,
         displayName: email.split('@')[0],
         joinDate: new Date().toISOString(),
-        role: 'user'
+        role: 'user',
+        reward_points: points
       };
 
       setUser(finalUser);
@@ -226,7 +271,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateProfile, loginWithOtp, verifyOtp, changePassword, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateProfile, loginWithOtp, verifyOtp, changePassword, updateRewardPoints, loading }}>
       {children}
     </AuthContext.Provider>
   );

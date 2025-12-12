@@ -248,11 +248,6 @@ export const Login = () => {
           </button>
         </div>
 
-        <div className="mt-4 text-center border-t pt-6">
-          <button onClick={() => navigate('/admin-login')} className="text-xs text-gray-400 hover:text-primary transition-colors">
-            Admin Access
-          </button>
-        </div>
       </div>
     </div>
   );

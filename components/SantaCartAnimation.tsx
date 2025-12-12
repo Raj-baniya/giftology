@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
 
 export const SantaCartAnimation = () => {
-  const { currentTheme } = useTheme();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (currentTheme !== 'christmas') return;
-
     const handleCartAdd = () => {
       setIsVisible(true);
       // Hide after animation completes
@@ -16,9 +12,9 @@ export const SantaCartAnimation = () => {
 
     window.addEventListener('itemAddedToCart', handleCartAdd);
     return () => window.removeEventListener('itemAddedToCart', handleCartAdd);
-  }, [currentTheme]);
+  }, []);
 
-  if (currentTheme !== 'christmas' || !isVisible) return null;
+  if (!isVisible) return null;
 
   return (
     <>

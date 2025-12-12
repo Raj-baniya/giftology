@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -24,6 +25,8 @@ import MobileSearchBar from './components/MobileSearchBar';
 import MobileCategories from './pages/MobileCategories';
 import Play from './pages/Play';
 import { Cart } from './pages/Cart';
+import { SnowEffect } from './components/SnowEffect';
+import { SantaCartAnimation } from './components/SantaCartAnimation';
 
 // Scroll to top component
 const ScrollToTop = () => {
@@ -36,25 +39,21 @@ const ScrollToTop = () => {
   return null;
 };
 
-import { SnowEffect } from './components/SnowEffect';
-import { SantaCartAnimation } from './components/SantaCartAnimation';
-
-// ... imports
-
 const AppContent = () => {
   const location = useLocation();
   const isPlayPage = location.pathname === '/play';
   const { currentTheme } = useTheme();
 
-  // Apply theme class to document root
-  useEffect(() => {
-    document.documentElement.className = currentTheme ? `theme-${currentTheme}` : '';
-  }, [currentTheme]);
-
   return (
-    <div className={`flex flex-col min-h-screen bg-background font-sans text-textMain pb-16 md:pb-0 ${currentTheme ? `theme-${currentTheme}` : ''}`}>
-      <SnowEffect />
-      <SantaCartAnimation />
+    <div className={`flex flex-col min-h-screen bg-background font-sans text-textMain pb-16 md:pb-0 theme-${currentTheme}`}>
+      {/* Christmas effects - only if theme is christmas */}
+      {currentTheme === 'christmas' && (
+        <>
+          <SnowEffect />
+          <SantaCartAnimation />
+        </>
+      )}
+
       {!isPlayPage && (
         <>
           <div className="hidden md:block">
@@ -84,8 +83,6 @@ const AppContent = () => {
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/categories" element={<MobileCategories />} />
           <Route path="/play" element={<Play />} />
-
-
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

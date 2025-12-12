@@ -28,37 +28,46 @@ export const Shop = () => {
 
     const [categories, setCategories] = useState<Category[]>([]);
 
+    const [error, setError] = useState<string | null>(null);
+
     useEffect(() => {
         const load = async () => {
-            setLoading(true);
-            const [allProducts, allCategories] = await Promise.all([
-                store.getProducts(),
-                store.getCategories()
-            ]);
+            try {
+                setLoading(true);
+                setError(null);
+                const [allProducts, allCategories] = await Promise.all([
+                    store.getProducts(),
+                    store.getCategories()
+                ]);
 
-            setCategories(allCategories);
-            console.log('All Products:', allProducts);
+                setCategories(allCategories);
+                console.log('All Products:', allProducts);
 
-            let filtered = allProducts;
+                let filtered = allProducts;
 
-            if (categoryFilter && categoryFilter !== 'all') {
-                if (categoryFilter === 'trending') {
-                    filtered = filtered.filter(p => p.trending === true);
-                } else {
-                    filtered = filtered.filter(p => p.category === categoryFilter);
+                if (categoryFilter && categoryFilter !== 'all') {
+                    if (categoryFilter === 'trending') {
+                        filtered = filtered.filter(p => p.trending === true);
+                    } else {
+                        filtered = filtered.filter(p => p.category === categoryFilter);
+                    }
                 }
+
+                // Handle search from URL parameter or local state
+                const activeSearch = searchParam || searchQuery;
+                if (activeSearch) {
+                    filtered = filtered.filter(p => p.name.toLowerCase().includes(activeSearch.toLowerCase()));
+                }
+
+                filtered = filtered.filter(p => p.price <= priceRange);
+
+                setProducts(filtered);
+            } catch (err: any) {
+                console.error('Shop fetch error:', err);
+                setError(err.message || 'Failed to load products');
+            } finally {
+                setLoading(false);
             }
-
-            // Handle search from URL parameter or local state
-            const activeSearch = searchParam || searchQuery;
-            if (activeSearch) {
-                filtered = filtered.filter(p => p.name.toLowerCase().includes(activeSearch.toLowerCase()));
-            }
-
-            filtered = filtered.filter(p => p.price <= priceRange);
-
-            setProducts(filtered);
-            setLoading(false);
         };
         load();
     }, [categoryFilter, searchQuery, searchParam, priceRange]);
@@ -116,7 +125,7 @@ export const Shop = () => {
                 {/* Mobile Filter Toggle - Fixed Position */}
                 <button
                     onClick={() => setShowMobileFilters(!showMobileFilters)}
-                    className="lg:hidden w-full mb-6 bg-white border border-gray-200 py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm fixed top-16 left-0 right-0 px-4 z-40 smooth-transition hover-lift btn-animated"
+                    className="lg:hidden w-full mb-6 bg-white border border-gray-200 py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm px-4 z-40 smooth-transition hover-lift btn-animated"
                 >
                     <Icons.Menu className="w-4 h-4" />
                     {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
@@ -221,12 +230,19 @@ export const Shop = () => {
                             <div className="flex justify-center py-20">
                                 <LoadingSpinner size="lg" />
                             </div>
+                        ) : error ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-red-500">
+                                <Icons.AlertTriangle className="w-12 h-12 mb-4" />
+                                <h3 className="text-xl font-bold">Error Loading Products</h3>
+                                <p>{error}</p>
+                                <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-black text-white rounded-lg">Retry</button>
+                            </div>
                         ) : viewMode === 'infinite' ? (
                             <div className="w-full h-[65vh] rounded-2xl overflow-hidden shadow-2xl bg-black mb-8">
                                 <ProductInfiniteMenu products={products} />
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                                 {products.map((product) => (
                                     <motion.div
                                         key={product.id}
@@ -234,13 +250,13 @@ export const Shop = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         whileHover={{ y: -5 }}
                                         onClick={() => navigate(`/product/${product.slug || product.id}`)}
-                                        className="bg-white rounded-lg md:rounded-xl overflow-hidden shadow-sm hover:shadow-xl smooth-transition-slow group border border-gray-100 flex flex-col relative cursor-pointer card-hover"
+                                        className="bg-white rounded-lg md:rounded-xl overflow-hidden shadow-sm hover:shadow-xl smooth-transition-slow group border border-gray-100 flex flex-col relative cursor-pointer card-hover h-[60vh] md:h-auto w-full"
                                     >
-                                        <div className="relative aspect-square overflow-hidden bg-gray-50">
+                                        <div className="relative h-[75%] md:h-auto md:aspect-square overflow-hidden bg-gray-50">
                                             <img
                                                 src={product.imageUrl}
                                                 alt={product.name}
-                                                className="w-full h-full object-contain smooth-transition-slow md:group-hover:scale-110 p-2"
+                                                className="w-full h-full object-cover md:object-contain smooth-transition-slow md:group-hover:scale-110"
                                             />
                                             {product.trending && (
                                                 <div className="absolute top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md flex items-center gap-1 z-10">

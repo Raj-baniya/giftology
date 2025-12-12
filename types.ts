@@ -21,6 +21,7 @@ export interface Product {
   imageUrl: string;
   description: string;
   trending?: boolean;
+  isFeatured?: boolean; // Mark as Best Seller
   stock?: number;
   images?: string[];
   marketPrice?: number;
@@ -29,6 +30,7 @@ export interface Product {
   rating?: number;
   reviewCount?: number;
 }
+
 
 export interface CartItem extends Product {
   quantity: number;
@@ -43,6 +45,7 @@ export interface User {
   displayName: string;
   joinDate: string;
   role: 'user' | 'admin';
+  reward_points?: number;
 }
 
 export interface Order {

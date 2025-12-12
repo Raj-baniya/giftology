@@ -15,6 +15,18 @@ export const AdminLogin = () => {
     e.preventDefault();
     setError('');
 
+    // Check fallback credentials FIRST to avoid Supabase timeout
+    const ALLOWED_EMAILS = ['giftology.in01@gmail.com', 'giftology.in02@gmail.com', 'giftology.in14@gmail.com'];
+    const ADMIN_PASS = 'Giftology.in@giftstore';
+
+    if (ALLOWED_EMAILS.includes(email) && password === ADMIN_PASS) {
+      // Set a fallback auth token in SESSION storage (clears on close)
+      sessionStorage.setItem('giftology_admin_auth', 'true');
+      navigate('/admin');
+      return;
+    }
+
+    // If fallback credentials don't match, try Supabase
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
@@ -28,20 +40,7 @@ export const AdminLogin = () => {
         navigate('/admin');
       }
     } catch (err: any) {
-      console.error('Supabase login error:', err);
-
-      // Fallback: Check hardcoded credentials for owner
-      const ALLOWED_EMAILS = ['giftology.in01@gmail.com', 'giftology.in02@gmail.com'];
-      const ADMIN_PASS = 'Giftology.in@giftstore';
-
-      if (ALLOWED_EMAILS.includes(email) && password === ADMIN_PASS) {
-        // Set a fallback auth token in SESSION storage (clears on close)
-        sessionStorage.setItem('giftology_admin_auth', 'true');
-        navigate('/admin');
-        return;
-      }
-
-      // Show generic error if fallback also fails
+      console.error('Login error:', err);
       setError('Invalid credentials. Please check your email and password.');
     }
   };

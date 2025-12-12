@@ -9,12 +9,13 @@ import { LocationPicker } from '../components/LocationPicker';
 import { sendOrderConfirmationToUser, sendOrderNotificationToAdmin, OrderEmailParams } from '../services/emailService';
 import { AnimatedGradientBackground, DeliveryCarAnimation } from '../components/AnimatedBackgrounds';
 import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
+import { calculateDiscountFromPoints, calculateCartRewardPoints, POINTS_PER_RUPEE_DISCOUNT } from '../utils/rewardUtils';
 
 const steps = ['Shipping', 'Payment', 'Confirmation'];
 
 export const Checkout = () => {
   const { cart, cartTotal, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, updateRewardPoints } = useAuth();
   const navigate = useNavigate();
   const { alertState, showAlert, closeAlert } = useCustomAlert();
 
@@ -26,6 +27,7 @@ export const Checkout = () => {
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [giftWrapping, setGiftWrapping] = useState<'none' | 'plastic' | 'paper' | 'box-plastic' | 'box-paper'>('none');
   const [boxWrappingType, setBoxWrappingType] = useState<'plastic' | 'paper'>('plastic');
+  const [useRewardPoints, setUseRewardPoints] = useState(false);
 
   // Address Management
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -46,7 +48,11 @@ export const Checkout = () => {
     longitude: null as number | null
   });
 
-  const finalTotal = cartTotal + (isFastDelivery ? 100 : 0);
+  const rewardDiscount = useRewardPoints && user?.reward_points
+    ? Math.min(calculateDiscountFromPoints(user.reward_points), cartTotal + (isFastDelivery ? 100 : 0))
+    : 0;
+
+  const finalTotal = cartTotal + (isFastDelivery ? 100 : 0) - rewardDiscount;
 
   // Load saved addresses for logged-in users
   useEffect(() => {
@@ -63,6 +69,11 @@ export const Checkout = () => {
       navigate('/shop');
     }
   }, [cart, navigate, currentStep]);
+
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep]);
 
   // Helper: Calculate minimum delivery date (Today + 2 days)
   const getMinDate = () => {
@@ -215,6 +226,26 @@ export const Checkout = () => {
         }
       }
 
+      // 3. Update Reward Points
+      if (user) {
+        try {
+          let newPoints = user.reward_points || 0;
+
+          // Deduct points if used
+          if (useRewardPoints && rewardDiscount > 0) {
+            newPoints -= (rewardDiscount * POINTS_PER_RUPEE_DISCOUNT);
+          }
+
+          // Add earned points
+          const earnedPoints = calculateCartRewardPoints(cart);
+          newPoints += earnedPoints;
+
+          await updateRewardPoints(newPoints);
+        } catch (pointsError) {
+          console.error('Failed to update reward points:', pointsError);
+        }
+      }
+
       // 3. Send Emails
       try {
         // Enhanced order items HTML with images and complete details
@@ -277,7 +308,8 @@ export const Checkout = () => {
         const shippingAddressFormatted = `${formData.address}, ${formData.city}, ${formData.state} - ${formData.zipCode}`;
 
         // but here we await to show success/fail alert accurately)
-        const emailResults = await Promise.allSettled([
+        // Fire emails in background (don't await to prevent blocking UI)
+        Promise.allSettled([
           sendOrderConfirmationToUser({
             customerEmail: formData.email,
             customerName: `${formData.firstName} ${formData.lastName}`,
@@ -306,19 +338,19 @@ export const Checkout = () => {
             delivery_speed: isFastDelivery ? 'Fast Delivery' : 'Standard Delivery',
             expected_delivery: expectedDeliveryStr
           })
-        ]);
-
-        console.log('Email sending results:', emailResults);
-        emailResults.forEach((result, index) => {
-          if (result.status === 'fulfilled') {
-            console.log(`Email ${index + 1} result:`, result.value);
-          } else {
-            console.error(`Email ${index + 1} failed:`, result.reason);
-          }
+        ]).then((results) => {
+          console.log('Email sending results:', results);
+          results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+              console.log(`Email ${index + 1} result:`, result.value);
+            } else {
+              console.error(`Email ${index + 1} failed:`, result.reason);
+            }
+          });
         });
 
       } catch (emailError) {
-        console.error('Email sending failed:', emailError);
+        console.error('Email sending/preparation failed:', emailError);
         // Continue to success screen even if email fails
       }
 
@@ -649,6 +681,31 @@ export const Checkout = () => {
                   className="bg-white p-6 rounded-xl shadow-sm"
                 >
                   <h2 className="font-serif text-xl font-bold mb-6">Payment Method</h2>
+
+                  {/* Reward Points Section */}
+                  {user && user.reward_points && user.reward_points > 0 && (
+                    <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={useRewardPoints}
+                          onChange={(e) => setUseRewardPoints(e.target.checked)}
+                          className="w-5 h-5 text-amber-600 accent-amber-600 rounded focus:ring-amber-500"
+                        />
+                        <div className="flex-1">
+                          <span className="font-bold text-gray-900 flex items-center gap-2">
+                            <Icons.Star className="w-5 h-5 fill-amber-500 text-amber-500" />
+                            Use Reward Points
+                          </span>
+                          <p className="text-sm text-gray-600 mt-1">
+                            You have <span className="font-bold text-amber-700">{user.reward_points} points</span>.
+                            Redeem to save <span className="font-bold text-green-600">&#8377;{Math.min(calculateDiscountFromPoints(user.reward_points), cartTotal + (isFastDelivery ? 100 : 0)).toLocaleString()}</span>
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  )}
+
                   <form id="checkout-payment-form" onSubmit={handlePayment}>
 
                     {/* UPI Option */}
@@ -814,6 +871,20 @@ export const Checkout = () => {
                         <span className="font-medium text-green-600">Free</span>
                       </div>
 
+                      {/* Reward Discount */}
+                      {rewardDiscount > 0 && (
+                        <div className="flex justify-between text-amber-600 font-medium">
+                          <span className="flex items-center gap-1"><Icons.Star className="w-4 h-4 fill-amber-500" /> Points Redeemed</span>
+                          <span>-&#8377;{rewardDiscount.toLocaleString()}</span>
+                        </div>
+                      )}
+
+                      {/* Points to Earn */}
+                      <div className="flex justify-between text-amber-600 font-medium">
+                        <span>Reward Points to Earn</span>
+                        <span>+{calculateCartRewardPoints(cart)} pts</span>
+                      </div>
+
                       {/* You Saved Badge */}
                       {hasDiscount && (
                         <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
@@ -897,6 +968,6 @@ export const Checkout = () => {
         onConfirm={alertState.onConfirm}
         cancelText={alertState.cancelText}
       />
-    </div>
+    </div >
   );
 };
