@@ -352,6 +352,11 @@ INSERT INTO public.subcategories (category_id, name, slug, image_url) VALUES
 ('20', 'Tools', 'tools', 'https://images.unsplash.com/photo-1581783342308-f792ca11df53?auto=format&fit=crop&w=300&q=80'),
 ('20', 'Shoes', 'shoes-20', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80'),
 ('20', 'Gadgets', 'gadgets', 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=300&q=80');
+
+-- Products
+INSERT INTO public.products (id, name, slug, price, category_id, description, image_url, images, trending, is_featured, stock_quantity) VALUES
+('1', 'Custom Engraved Watch', 'custom-engraved-watch', 2499, '1', 'A timeless piece with a personal touch.', 'https://images.pexels.com/photos/280250/pexels-photo-280250.jpeg?auto=compress&cs=tinysrgb&w=600', ARRAY['https://images.pexels.com/photos/280250/pexels-photo-280250.jpeg?auto=compress&cs=tinysrgb&w=600'], true, true, 50),
+('2', 'Monogrammed Leather Tote', 'monogrammed-leather-tote', 3999, '2', 'Elegant and spacious for everyday use.', 'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=600', ARRAY['https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=600'], true, true, 30),
 ('3', 'Anniversary Photo Frame', 'anniversary-photo-frame', 1299, '3', 'Capture your best moments together.', 'https://images.pexels.com/photos/1040900/pexels-photo-1040900.jpeg?auto=compress&cs=tinysrgb&w=600', ARRAY['https://images.pexels.com/photos/1040900/pexels-photo-1040900.jpeg?auto=compress&cs=tinysrgb&w=600'], false, false, 100),
 ('4', 'Personalized Mug Set', 'personalized-mug-set', 899, '4', 'Start the morning with a smile.', 'https://images.pexels.com/photos/1320998/pexels-photo-1320998.jpeg?auto=compress&cs=tinysrgb&w=600', ARRAY['https://images.pexels.com/photos/1320998/pexels-photo-1320998.jpeg?auto=compress&cs=tinysrgb&w=600'], false, false, 200),
 ('5', 'Wooden Toy Train', 'wooden-toy-train', 1499, '5', 'Classic wooden toy for imaginative play.', 'https://images.pexels.com/photos/3663060/pexels-photo-3663060.jpeg?auto=compress&cs=tinysrgb&w=600', ARRAY['https://images.pexels.com/photos/3663060/pexels-photo-3663060.jpeg?auto=compress&cs=tinysrgb&w=600'], false, false, 45),
