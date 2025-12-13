@@ -45,7 +45,6 @@ export interface User {
   displayName: string;
   joinDate: string;
   role: 'user' | 'admin';
-  reward_points?: number;
 }
 
 export interface Order {

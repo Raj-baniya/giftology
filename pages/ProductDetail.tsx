@@ -9,7 +9,6 @@ import { LightRays } from '../components/ui/LightRays';
 import { useAuth } from '../contexts/AuthContext';
 import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 import { Toast } from '../components/Toast';
-import { calculatePointsForPrice } from '../utils/rewardUtils';
 
 export const ProductDetail = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -272,7 +271,45 @@ export const ProductDetail = () => {
             <LightRays />
 
             <div className="min-h-screen pt-0 sm:pt-20 pb-3 sm:pb-16">
-                <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 md:pt-0">
+                {/* Top Navigation - Mobile */}
+                <div className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-white border-b border-gray-200 shadow-sm">
+                    <div className="flex items-center gap-2 px-3 py-2">
+                        {/* Back Button */}
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
+                        >
+                            <Icons.ChevronLeft className="w-6 h-6 text-gray-700" />
+                        </button>
+
+                        {/* Search Bar */}
+                        <div className="flex-1 relative">
+                            <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search products"
+                                className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                                onClick={() => navigate('/shop')}
+                                readOnly
+                            />
+                        </div>
+
+                        {/* Cart Icon */}
+                        <button
+                            onClick={() => navigate('/cart')}
+                            className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer shrink-0"
+                        >
+                            <Icons.ShoppingCart className="w-6 h-6 text-gray-700" />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-16 md:pt-0">
                     {/* Desktop Back Button */}
                     <motion.button
                         initial={{ opacity: 0, y: -20 }}
@@ -525,10 +562,6 @@ export const ProductDetail = () => {
                                             </span>
                                         </>
                                     )}
-                                </div>
-                                <div className="mt-3 flex items-center gap-2 text-sm font-medium text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg w-fit">
-                                    <Icons.Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                                    <span>Earn {calculatePointsForPrice(product.price)} Reward Points</span>
                                 </div>
                             </motion.div>
 

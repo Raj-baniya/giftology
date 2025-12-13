@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { store } from '../services/store';
 import { Order } from '../types';
 import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
-import { calculatePointsForPrice, calculateCartRewardPoints } from '../utils/rewardUtils';
 
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
   <button
@@ -405,9 +404,6 @@ export const Account = () => {
                                           <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">{item.selectedColor}</span>
                                         )}
                                       </div>
-                                      <div className="text-xs text-amber-600 font-medium mt-1">
-                                        Earned {calculatePointsForPrice(item.price) * item.quantity} pts
-                                      </div>
                                     </div>
 
                                     {/* Price */}
@@ -442,10 +438,6 @@ export const Account = () => {
                                     </span>
                                   </div>
                                 )}
-                                <div className="flex justify-between items-center">
-                                  <span className="text-gray-500">Total Points Earned</span>
-                                  <span className="font-bold text-amber-600">+{calculateCartRewardPoints(order.items)} pts</span>
-                                </div>
                               </div>
                             </div>
                           )}

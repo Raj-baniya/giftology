@@ -102,13 +102,13 @@ const App = () => {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <AuthProvider>
-        <CartProvider>
-          <ThemeProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <CartProvider>
             <AppContent />
-          </ThemeProvider>
-        </CartProvider>
-      </AuthProvider>
+          </CartProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 };

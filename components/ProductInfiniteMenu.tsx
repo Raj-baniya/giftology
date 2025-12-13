@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mat4, quat, vec2, vec3 } from 'gl-matrix';
 import { Product } from '../types';
@@ -352,7 +352,7 @@ function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement) {
 function makeBuffer(gl: WebGL2RenderingContext, sizeOrData: ArrayBuffer | number, usage: number) {
     const buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, sizeOrData, usage);
+    gl.bufferData(gl.ARRAY_BUFFER, sizeOrData as number, usage);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     return buf;
 }

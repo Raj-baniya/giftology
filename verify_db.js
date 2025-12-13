@@ -38,58 +38,38 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function verify() {
-    console.log('Verifying database content...');
-    console.log('Supabase URL:', supabaseUrl);
+    console.log('Verifying database...');
 
-    // 1. Check Categories
-    const { data: categories, error: catError } = await supabase
-        .from('categories')
-        .select('*');
-
-    if (catError) console.error('Error fetching categories:', catError);
-    else console.log(`Categories found: ${categories.length}`);
-
-    // 4. Check Subcategories
-    const { data: subcategories, error: subError } = await supabase
-        .from('subcategories')
+    // Check product_variants table
+    const { data, error } = await supabase
+        .from('product_variants')
         .select('*')
         .limit(1);
 
-    if (subError) {
-        console.error('Error fetching subcategories:', subError.message);
+    if (error) {
+        console.error('Error accessing product_variants table:', error);
+        if (error.code === '42P01') {
+            console.error('Table product_variants does not exist!');
+        }
     } else {
-        console.log(`Subcategories found: ${subcategories.length}`);
+        console.log('product_variants table exists. Rows:', data.length);
     }
 
-    // 2. Check Products and is_active status
+    // Check products table for cost_price
     const { data: products, error: prodError } = await supabase
         .from('products')
-        .select('id, name, is_active');
+        .select('cost_price')
+        .limit(1);
 
     if (prodError) {
-        console.error('Error fetching products:', prodError);
+        console.error('Error accessing products table:', prodError);
     } else {
-        console.log(`Products found: ${products.length}`);
-        const activeCount = products.filter(p => p.is_active === true).length;
-        const inactiveCount = products.filter(p => !p.is_active).length;
-        console.log(`- Active: ${activeCount}`);
-        console.log(`- Inactive/Null: ${inactiveCount}`);
-
-        if (products.length > 0 && activeCount === 0) {
-            console.warn('WARNING: All products are inactive! The RLS policy "is_active = true" will hide them all.');
+        console.log('products table accessed successfully.');
+        if (products.length > 0 && products[0].cost_price === undefined) {
+            console.error('cost_price column might be missing (returned undefined)');
+        } else {
+            console.log('cost_price column check passed (or no rows to check).');
         }
-    }
-
-    // 3. Check Play Videos
-    // Note: User's SQL created 'play_videos', but did they run it? let's check.
-    const { data: videos, error: videoError } = await supabase
-        .from('play_videos')
-        .select('*');
-
-    if (videoError) {
-        console.error('Error fetching play_videos:', videoError.message); // might be "relation does not exist"
-    } else {
-        console.log(`Play Videos found: ${videos.length}`);
     }
 }
 

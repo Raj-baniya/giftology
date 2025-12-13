@@ -5,7 +5,6 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { store } from '../services/store';
 import { Icons } from './ui/Icons';
-import { calculatePointsForPrice, calculateCartRewardPoints } from '../utils/rewardUtils';
 
 export const CartDrawer = () => {
   const { cart, isCartOpen, setCartOpen, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -150,10 +149,6 @@ export const CartDrawer = () => {
                                 </>
                               )}
                             </div>
-                            <div className="text-xs text-amber-600 font-medium mt-1 flex items-center gap-1">
-                              <Icons.Star className="w-3 h-3 fill-amber-500" />
-                              Earn {calculatePointsForPrice(item.price) * item.quantity} pts
-                            </div>
                           </div>
                         </div>
 
@@ -191,10 +186,6 @@ export const CartDrawer = () => {
                             <span>&#8377;{deliveryCharges}</span>
                           )}
                         </span>
-                      </div>
-                      <div className="flex justify-between text-amber-600 font-medium">
-                        <span>Reward Points to Earn</span>
-                        <span>+{calculateCartRewardPoints(cart)} pts</span>
                       </div>
                       <div className="border-t border-dashed border-gray-200 my-2"></div>
                       <div className="flex justify-between font-bold text-base">

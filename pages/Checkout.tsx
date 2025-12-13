@@ -9,13 +9,12 @@ import { LocationPicker } from '../components/LocationPicker';
 import { sendOrderConfirmationToUser, sendOrderNotificationToAdmin, OrderEmailParams } from '../services/emailService';
 import { AnimatedGradientBackground, DeliveryCarAnimation } from '../components/AnimatedBackgrounds';
 import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
-import { calculateDiscountFromPoints, calculateCartRewardPoints, POINTS_PER_RUPEE_DISCOUNT } from '../utils/rewardUtils';
 
 const steps = ['Shipping', 'Payment', 'Confirmation'];
 
 export const Checkout = () => {
   const { cart, cartTotal, clearCart } = useCart();
-  const { user, updateRewardPoints } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { alertState, showAlert, closeAlert } = useCustomAlert();
 
@@ -27,7 +26,6 @@ export const Checkout = () => {
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [giftWrapping, setGiftWrapping] = useState<'none' | 'plastic' | 'paper' | 'box-plastic' | 'box-paper'>('none');
   const [boxWrappingType, setBoxWrappingType] = useState<'plastic' | 'paper'>('plastic');
-  const [useRewardPoints, setUseRewardPoints] = useState(false);
 
   // Address Management
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -48,11 +46,7 @@ export const Checkout = () => {
     longitude: null as number | null
   });
 
-  const rewardDiscount = useRewardPoints && user?.reward_points
-    ? Math.min(calculateDiscountFromPoints(user.reward_points), cartTotal + (isFastDelivery ? 100 : 0))
-    : 0;
-
-  const finalTotal = cartTotal + (isFastDelivery ? 100 : 0) - rewardDiscount;
+  const finalTotal = cartTotal + (isFastDelivery ? 100 : 0);
 
   // Load saved addresses for logged-in users
   useEffect(() => {
@@ -223,26 +217,6 @@ export const Checkout = () => {
         } catch (addrError) {
           console.warn('Failed to save address:', addrError);
           // Don't block order completion for this
-        }
-      }
-
-      // 3. Update Reward Points
-      if (user) {
-        try {
-          let newPoints = user.reward_points || 0;
-
-          // Deduct points if used
-          if (useRewardPoints && rewardDiscount > 0) {
-            newPoints -= (rewardDiscount * POINTS_PER_RUPEE_DISCOUNT);
-          }
-
-          // Add earned points
-          const earnedPoints = calculateCartRewardPoints(cart);
-          newPoints += earnedPoints;
-
-          await updateRewardPoints(newPoints);
-        } catch (pointsError) {
-          console.error('Failed to update reward points:', pointsError);
         }
       }
 
@@ -681,31 +655,6 @@ export const Checkout = () => {
                   className="bg-white p-6 rounded-xl shadow-sm"
                 >
                   <h2 className="font-serif text-xl font-bold mb-6">Payment Method</h2>
-
-                  {/* Reward Points Section */}
-                  {user && user.reward_points && user.reward_points > 0 && (
-                    <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={useRewardPoints}
-                          onChange={(e) => setUseRewardPoints(e.target.checked)}
-                          className="w-5 h-5 text-amber-600 accent-amber-600 rounded focus:ring-amber-500"
-                        />
-                        <div className="flex-1">
-                          <span className="font-bold text-gray-900 flex items-center gap-2">
-                            <Icons.Star className="w-5 h-5 fill-amber-500 text-amber-500" />
-                            Use Reward Points
-                          </span>
-                          <p className="text-sm text-gray-600 mt-1">
-                            You have <span className="font-bold text-amber-700">{user.reward_points} points</span>.
-                            Redeem to save <span className="font-bold text-green-600">&#8377;{Math.min(calculateDiscountFromPoints(user.reward_points), cartTotal + (isFastDelivery ? 100 : 0)).toLocaleString()}</span>
-                          </p>
-                        </div>
-                      </label>
-                    </div>
-                  )}
-
                   <form id="checkout-payment-form" onSubmit={handlePayment}>
 
                     {/* UPI Option */}
@@ -871,20 +820,6 @@ export const Checkout = () => {
                         <span className="font-medium text-green-600">Free</span>
                       </div>
 
-                      {/* Reward Discount */}
-                      {rewardDiscount > 0 && (
-                        <div className="flex justify-between text-amber-600 font-medium">
-                          <span className="flex items-center gap-1"><Icons.Star className="w-4 h-4 fill-amber-500" /> Points Redeemed</span>
-                          <span>-&#8377;{rewardDiscount.toLocaleString()}</span>
-                        </div>
-                      )}
-
-                      {/* Points to Earn */}
-                      <div className="flex justify-between text-amber-600 font-medium">
-                        <span>Reward Points to Earn</span>
-                        <span>+{calculateCartRewardPoints(cart)} pts</span>
-                      </div>
-
                       {/* You Saved Badge */}
                       {hasDiscount && (
                         <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
@@ -968,6 +903,6 @@ export const Checkout = () => {
         onConfirm={alertState.onConfirm}
         cancelText={alertState.cancelText}
       />
-    </div >
+    </div>
   );
 };

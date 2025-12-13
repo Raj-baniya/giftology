@@ -1,11 +1,18 @@
+/// <reference types="vite/client" />
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Safely get env vars and strip quotes if present
+const getEnvVar = (key: string) => {
+    const val = import.meta.env[key];
+    return val ? val.replace(/^["']|["']$/g, '') : undefined;
+};
+
+const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
+const supabaseAnonKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
 
 console.log('=== SUPABASE INITIALIZATION ===');
 console.log('URL:', supabaseUrl ? 'SET' : 'MISSING');
-console.log('Key:', supabaseAnonKey ? 'SET' : 'MISSING');
+console.log('Key:', supabaseAnonKey ? 'SET (Length: ' + supabaseAnonKey.length + ')' : 'MISSING');
 
 let supabaseInstance;
 

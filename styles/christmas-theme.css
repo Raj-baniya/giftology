@@ -257,18 +257,18 @@ html.theme-christmas {
 }
 
 /* Ensure all headings and body text are visible */
-.theme-christmas p,
+/* Removed aggressive text color overrides that conflict with dark mode pages */
+/* .theme-christmas p,
 .theme-christmas span:not([class*="text-"]):not([style*="color"]) {
   color: var(--dark-text);
-}
+} */
 
-/* Ensure all text on dark backgrounds is visible */
-.theme-christmas [class*="bg-gray-"],
+/* .theme-christmas [class*="bg-gray-"],
 .theme-christmas [class*="bg-black"],
 .theme-christmas .bg-gray-50,
 .theme-christmas .bg-gray-100 {
   color: var(--dark-text) !important;
-}
+} */
 
 /* Admin pages should not be affected by theme colors */
 .theme-christmas [class*="admin"] input,
