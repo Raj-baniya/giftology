@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { MobileNumberModal } from './components/MobileNumberModal';
+import { CustomAlert, useCustomAlert } from './components/CustomAlert';
 import './styles/christmas-theme.css';
 
 import { Navbar } from './components/Navbar';
@@ -43,6 +44,36 @@ const AppContent = () => {
   const location = useLocation();
   const isPlayPage = location.pathname === '/play';
   const { currentTheme } = useTheme();
+  const { alertState, showAlert, closeAlert } = useCustomAlert();
+
+  useEffect(() => {
+    const showBonus = sessionStorage.getItem('showSignupBonus');
+    if (showBonus === 'true') {
+      showAlert(
+        "You've received 500 free points! 🎁",
+        'Use them on your first order to get a discount.',
+        'success',
+        { confirmText: 'Awesome!' }
+      );
+      sessionStorage.removeItem('showSignupBonus');
+    }
+  }, [showAlert, location]);
+
+  // Listen for stock alert events from CartContext
+  useEffect(() => {
+    const handleStockAlert = (e: CustomEvent) => {
+      const stock = e.detail?.stock;
+      showAlert(
+        'Out of Stock! 📦',
+        `Sorry! Only ${stock} items available in stock.`,
+        'warning',
+        { confirmText: 'OK' }
+      );
+    };
+
+    window.addEventListener('showStockAlert', handleStockAlert as EventListener);
+    return () => window.removeEventListener('showStockAlert', handleStockAlert as EventListener);
+  }, [showAlert]);
 
   return (
     <div className={`flex flex-col min-h-screen bg-background font-sans text-textMain pb-16 md:pb-0 theme-${currentTheme}`}>
@@ -64,6 +95,16 @@ const AppContent = () => {
         </>
       )}
       <MobileNumberModal />
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        onClose={closeAlert}
+        onConfirm={alertState.onConfirm}
+        confirmText={alertState.confirmText}
+        cancelText={alertState.cancelText}
+      />
 
       <main className={`flex-grow ${isPlayPage ? 'h-screen overflow-hidden' : ''}`}>
         <Routes>

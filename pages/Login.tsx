@@ -1,25 +1,49 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Icons } from '../components/ui/Icons';
 import { sendWelcomeEmail } from '../services/emailService';
+import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 
 export const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isOtpLogin, setIsOtpLogin] = useState(false); // New state for OTP Login mode
   const [otpSent, setOtpSent] = useState(false); // New state for OTP sent status
+  const [isSignupFlow, setIsSignupFlow] = useState(false); // Validates if we are in signup path to send email
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [otp, setOtp] = useState(''); // New state for OTP input
+  const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { user, login, register, loginWithOtp, verifyOtp } = useAuth();
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode');
+  const { alertState, showAlert, closeAlert } = useCustomAlert();
+
+  const validateEmail = (email: string) => {
+    return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+  };
+
+  useEffect(() => {
+    if (mode === 'signup') {
+      setIsLogin(false);
+    } else {
+      setIsLogin(true);
+    }
+  }, [mode]);
+
+  const { user, login, register, loginWithOtp, verifyOtp, checkUserExists } = useAuth();
 
   useEffect(() => {
     if (user) {
@@ -29,66 +53,130 @@ export const Login = () => {
 
   const [pendingSignup, setPendingSignup] = useState<{ name: string, email: string, password: string } | null>(null);
 
+  const handleVerify = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    if (!otp || otp.length < 6) {
+      setError('Please enter the 6-digit code.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+
+    try {
+      const cleanEmail = email.trim().toLowerCase();
+      const { data, error } = await verifyOtp(cleanEmail, otp);
+      if (error) throw error;
+
+      if (data.session) {
+        sessionStorage.setItem('showSignupBonus', 'true');
+
+        // Send Welcome Email if this was a fresh signup
+        if (isSignupFlow) {
+          console.log('Sending welcome email to new user:', cleanEmail);
+          sendWelcomeEmail(cleanEmail, name || cleanEmail.split('@')[0]);
+        }
+
+        window.location.href = '/';
+      } else {
+        throw new Error('Verification failed.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Invalid code.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+
     setError('');
     setMessage('');
+
+    // 1. Sanitize Email immediately
+    let rawEmail = email.trim();
+    if (!rawEmail) {
+      setError('Email is required.');
+      return;
+    }
+
+    if (!rawEmail.includes('@')) {
+      rawEmail += '@gmail.com';
+    }
+    const cleanEmail = rawEmail.toLowerCase();
+    setEmail(cleanEmail);
+
+    if (!validateEmail(cleanEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (isOtpLogin) {
-        // OTP Flow (Login or Signup Verification)
-        if (!otpSent) {
-          // Send OTP
-          const { error } = await loginWithOtp(email);
-          if (error) {
-            console.error('OTP Send Error:', error);
-            throw new Error(typeof error === 'string' ? error : (error.message || JSON.stringify(error)));
+        // --- OTP FLOW ---
+        if (otpSent) {
+          await handleVerify();
+          return;
+        }
+
+        // Optimistic Existence Check
+        try {
+          const exists = await Promise.race([
+            checkUserExists(cleanEmail),
+            new Promise<boolean>((resolve) => setTimeout(() => resolve(isLogin), 5000))
+          ]);
+
+          if (isLogin && !exists) {
+            throw new Error('No account found with this email. Please Sign Up first.');
           }
-          setOtpSent(true);
-          setMessage(`OTP sent to ${email}. Please check your inbox.`);
+          if (!isLogin && exists) {
+            throw new Error('An account with this email already exists. Please Sign In.');
+          }
+        } catch (e: any) {
+          console.warn('[Login] Existence check slow, proceeding...', e);
+        }
+
+        const { error } = await loginWithOtp(cleanEmail);
+        if (error) throw error;
+
+        setOtpSent(true);
+        setMessage(`Success! OTP sent to ${cleanEmail}.`);
+      } else {
+        // --- PASSWORD FLOW (Sign In Only) ---
+        if (isLogin) {
+          const { error } = await login(cleanEmail, password);
+          if (error) throw error;
+          window.location.href = '/';
         } else {
-          // Verify OTP
-          const { error } = await verifyOtp(email, otp);
+          // --- FORCED OTP SIGNUP FLOW ---
+          // 1. Check if user already exists
+          try {
+            const exists = await Promise.race([
+              checkUserExists(cleanEmail),
+              new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000))
+            ]);
+            if (exists) throw new Error('Email already registered. Please Sign In.');
+          } catch (e: any) {
+            if (e.message.includes('already registered')) throw e;
+            console.warn('[Login] Registration check slow, proceeding...', e);
+          }
+
+          // 2. Initiate OTP Flow Instead of Password Register
+          const { error } = await loginWithOtp(cleanEmail);
           if (error) throw error;
 
-          // If this was a signup verification
-          if (pendingSignup) {
-            const { error: regError } = await register(pendingSignup.name, pendingSignup.email, pendingSignup.password);
-            if (regError) {
-              console.error("Registration error after OTP:", regError);
-              // If registration failed but we verified OTP, we might still want to send the welcome email
-              // if it was a "User already registered" error, maybe not?
-              // But if the user THINKS they are signing up, getting a welcome email is nice.
-              // Let's force send it here just in case register() didn't do it because of the error.
-              sendWelcomeEmail(pendingSignup.name, pendingSignup.email);
-            }
-          }
-
-          // Success handled by AuthContext updating user
+          setIsOtpLogin(true); // Switch UI to OTP mode
+          setIsSignupFlow(true); // Mark as signup for welcome email
+          setOtpSent(true);
+          setMessage(`Verification code sent to ${cleanEmail}.`);
         }
-      } else if (isLogin) {
-        // Password Login
-        const { error } = await login(email, password);
-        if (error) throw error;
-      } else {
-        // Registration - Initiate OTP Verification
-        setPendingSignup({ name, email, password });
-
-        // Send OTP first
-        const { error } = await loginWithOtp(email);
-        if (error) throw error;
-
-        // Switch to OTP mode
-        setIsOtpLogin(true);
-        setOtpSent(true);
-        setMessage(`OTP sent to ${email}. Please verify your email to complete registration.`);
       }
     } catch (err: any) {
-      console.error('Auth error:', err);
-      setError(err.message || 'Authentication failed');
-      // Reset pending signup on error if needed
-      if (!isOtpLogin) setPendingSignup(null);
+      console.error('[Login] Submit Error:', err);
+      setError(err.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -153,7 +241,7 @@ export const Login = () => {
           {/* Name Field (Only for Registration) */}
           {!isLogin && !isOtpLogin && (
             <div>
-              <label className="block text-sm font-bold mb-1">Full Name</label>
+              <label className="block text-sm font-bold mb-1">Full Name <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={name}
@@ -168,39 +256,55 @@ export const Login = () => {
           {/* Email Field (Always visible unless OTP sent) */}
           {(!isOtpLogin || !otpSent) && (
             <div>
-              <label className="block text-sm font-bold mb-1">Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-                placeholder="you@example.com"
-                required
-                disabled={otpSent}
-              />
+              <label className="block text-sm font-bold mb-1">Email Address <span className="text-red-500">*</span></label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none ${!email.includes('@') && !otpSent ? 'pr-24' : ''}`}
+                  placeholder="username"
+                  required
+                  disabled={otpSent}
+                />
+                {!email.includes('@') && !otpSent && (
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-medium pointer-events-none select-none">
+                    @gmail.com
+                  </span>
+                )}
+              </div>
             </div>
           )}
 
           {/* Password Field (Only for Password Login/Register) */}
           {!isOtpLogin && (
             <div>
-              <label className="block text-sm font-bold mb-1">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-                placeholder="••••••••"
-                required
-                minLength={6}
-              />
+              <label className="block text-sm font-bold mb-1">Password <span className="text-red-500">*</span></label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-primary outline-none"
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                >
+                  {showPassword ? <Icons.EyeOff className="w-5 h-5" /> : <Icons.Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
           )}
 
           {/* OTP Input (Only if OTP sent) */}
           {isOtpLogin && otpSent && (
             <div>
-              <label className="block text-sm font-bold mb-1">Enter OTP</label>
+              <label className="block text-sm font-bold mb-1">Enter OTP <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={otp}
@@ -221,9 +325,10 @@ export const Login = () => {
           )}
 
           <button
-            type="submit"
+            type={isOtpLogin && otpSent ? "button" : "submit"}
+            onClick={isOtpLogin && otpSent ? handleVerify : undefined}
             disabled={loading}
-            className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-gray-900 text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
@@ -248,6 +353,16 @@ export const Login = () => {
           </button>
         </div>
 
+        <CustomAlert
+          isOpen={alertState.isOpen}
+          onClose={closeAlert}
+          title={alertState.title}
+          message={alertState.message}
+          type={alertState.type}
+          confirmText={alertState.confirmText}
+          onConfirm={alertState.onConfirm}
+          cancelText={alertState.cancelText}
+        />
       </div>
     </div>
   );

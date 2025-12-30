@@ -48,10 +48,7 @@ html.theme-christmas {
 
 /* Background */
 .theme-christmas {
-  background-color: var(--cream);
-  background-image:
-    radial-gradient(circle at 10% 20%, rgba(22, 31, 72, 0.03) 0%, transparent 20%),
-    radial-gradient(circle at 90% 80%, rgba(210, 160, 71, 0.03) 0%, transparent 20%);
+  background-color: #EDE7C7 !important;
 }
 
 /* --- Typography --- */

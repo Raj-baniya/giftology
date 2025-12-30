@@ -5,6 +5,8 @@ import { Product } from '../types';
 import { useCart } from '../contexts/CartContext';
 import { Icons } from '../components/ui/Icons';
 import { motion } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
+import { useCustomAlert, CustomAlert } from '../components/CustomAlert';
 import { Toast } from '../components/Toast';
 
 export const Search = () => {
@@ -13,6 +15,8 @@ export const Search = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const { showAlert } = useCustomAlert();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
@@ -87,7 +91,21 @@ export const Search = () => {
                       )}
                     </div>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (!user) {
+                          showAlert(
+                            'Sign In Required',
+                            'Please sign in to add items to your cart! \n\n🎉 Sign up now to get ₹50 (500 Points) worth of rewards instantly on your first order!',
+                            'warning',
+                            {
+                              confirmText: 'Login / Sign Up',
+                              onConfirm: () => navigate('/login'),
+                              cancelText: 'Cancel'
+                            }
+                          );
+                          return;
+                        }
                         addToCart(product, false); // Don't open cart
                         setToastMessage(`${product.name} added to cart!`);
                         setShowToast(true);
@@ -110,6 +128,16 @@ export const Search = () => {
         isVisible={showToast}
         onClose={() => setShowToast(false)}
         type="success"
+      />
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        onClose={closeAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        confirmText={alertState.confirmText}
+        onConfirm={alertState.onConfirm}
+        cancelText={alertState.cancelText}
       />
     </div>
   );

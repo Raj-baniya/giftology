@@ -228,29 +228,26 @@ class IcosahedronGeometry extends Geometry {
             0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11,
             1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
             3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9,
-            4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1
         );
     }
 }
 
+
+
 class DiscGeometry extends Geometry {
-    constructor(steps = 4, radius = 1) {
+    constructor(steps = 64, radius = 1) { // Increased steps for smoother circle
         super();
         steps = Math.max(4, steps);
-
         const alpha = (2 * Math.PI) / steps;
-
         this.addVertex(0, 0, 0);
         this.lastVertex.uv[0] = 0.5;
         this.lastVertex.uv[1] = 0.5;
-
         for (let i = 0; i < steps; ++i) {
             const x = Math.cos(alpha * i);
             const y = Math.sin(alpha * i);
             this.addVertex(radius * x, radius * y, 0);
             this.lastVertex.uv[0] = x * 0.5 + 0.5;
             this.lastVertex.uv[1] = y * 0.5 + 0.5;
-
             if (i > 0) {
                 this.addFace(0, i, i + 1);
             }
@@ -652,7 +649,7 @@ class InfiniteGridMenu {
             uAtlasSize: gl.getUniformLocation(this.discProgram, 'uAtlasSize')
         };
 
-        this.discGeo = new DiscGeometry(56, 1);
+        this.discGeo = new DiscGeometry(64, 1.2); // Radius 1.2 for good size
         this.discBuffers = this.discGeo.data;
         this.discVAO = makeVertexArray(
             gl,
@@ -727,13 +724,15 @@ class InfiniteGridMenu {
                 let offsetY = 0;
 
                 if (imgAspect > cellAspect) {
-                    // Image is wider - fit to width
-                    drawHeight = cellSize / imgAspect;
-                    offsetY = (cellSize - drawHeight) / 2;
-                } else {
-                    // Image is taller - fit to height
+                    // Image is wider - fit to height (cover)
+                    drawHeight = cellSize;
                     drawWidth = cellSize * imgAspect;
-                    offsetX = (cellSize - drawWidth) / 2;
+                    offsetX = (cellSize - drawWidth) / 2; // Center horizontally
+                } else {
+                    // Image is taller - fit to width (cover)
+                    drawWidth = cellSize;
+                    drawHeight = cellSize / imgAspect;
+                    offsetY = (cellSize - drawHeight) / 2; // Center vertically
                 }
 
                 // Fill cell with white background first

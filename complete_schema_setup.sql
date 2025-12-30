@@ -30,7 +30,7 @@ create table public.profiles (
     avatar_url text,
     role text default 'user',
     phone text,
-    reward_points integer default 0,
+    reward_points integer default 500, -- Default 500 points for everyone
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -107,12 +107,18 @@ create table public.orders (
     id uuid default uuid_generate_v4() primary key,
     user_id uuid references auth.users(id) on delete set null,
     readable_id serial, -- Auto-incrementing simple ID
+    customer_name text,
+    customer_email text,
+    customer_phone text,
     total_amount numeric not null,
     status text default 'processing', -- processing, shipped, delivered, cancelled
     shipping_address jsonb,
     contact_info jsonb,
     payment_method text,
     payment_status text default 'pending',
+    delivery_speed text default 'standard',
+    gift_wrapping text default 'none',
+    guest_info jsonb,
     delivery_date timestamp with time zone,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -123,8 +129,10 @@ create table public.order_items (
     order_id uuid references public.orders(id) on delete cascade not null,
     product_id text references public.products(id) on delete set null,
     quantity integer not null,
-    price_at_time numeric not null,
-    selected_variant jsonb, -- Store size/color snapshot
+    unit_price numeric not null,
+    selected_size text,
+    selected_color text,
+    selected_variant jsonb, -- Store full snapshot
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -400,5 +408,38 @@ INSERT INTO public.play_videos (video_url, thumbnail_url, caption, likes_count, 
 -- Settings
 INSERT INTO public.settings (key, value) VALUES
 ('current_theme', 'christmas');
+
+-- 7. ROBUST SIGNUP AUTOMATION (TRIGGER)
+-- This ensures every new user gets a profile with 500 points automatically.
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, email, reward_points, role)
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'full_name', new.email), -- Fallback to email if name missing
+    new.email,
+    500, -- GUARANTEED 500 POINTS
+    'user'
+  );
+  RETURN new;
+EXCEPTION
+  WHEN unique_violation THEN
+    RETURN new;
+  WHEN OTHERS THEN
+    RAISE WARNING 'Profile creation failed for user %: %', new.id, SQLERRM;
+    RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Grant permissions for profile management
+GRANT ALL ON public.profiles TO authenticated;
+GRANT ALL ON public.profiles TO service_role;
 
 -- End of Script

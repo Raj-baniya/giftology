@@ -16,34 +16,35 @@ class StoreService {
 
   // --- Products ---
   async getProducts(): Promise<Product[]> {
-    const dbProducts = await supabaseService.getProducts();
-    // Map DB product to Frontend Product type
-    return (dbProducts || []).map((p: any) => {
-      const approvedReviews = p.reviews?.filter((r: any) => r.is_approved) || [];
-      const ratingSum = approvedReviews.reduce((sum: number, r: any) => sum + r.rating, 0);
-      const avgRating = approvedReviews.length > 0 ? ratingSum / approvedReviews.length : 0;
-
-      return {
-        id: this.formatId(p.id), // Format ID
-        name: p.name,
-        slug: p.slug,
-        description: p.description,
-        price: p.price,
-        marketPrice: p.market_price,
-        costPrice: p.cost_price,
-        imageUrl: p.images?.[0] || '',
-        images: p.images || [],
-        category: p.categories?.slug || 'uncategorized',
-        subcategory: p.subcategory,
-        color: p.color,
-        colorVariantGroup: p.color_variant_group,
-        trending: p.is_featured,
-        stock: p.stock_quantity,
-        variants: p.product_variants || [],
-        rating: parseFloat(avgRating.toFixed(1)),
-        reviewCount: approvedReviews.length
-      };
-    });
+    try {
+      const dbProducts = await supabaseService.getProducts();
+      // Map DB product to Frontend Product type
+      return (dbProducts || []).map((p: any) => {
+        return {
+          id: this.formatId(p.id), // Format ID
+          name: p.name,
+          slug: p.slug,
+          description: p.description,
+          price: p.price,
+          marketPrice: p.market_price,
+          costPrice: p.cost_price,
+          imageUrl: p.images?.[0] || '',
+          images: p.images || [],
+          category: p.categories?.slug || 'uncategorized',
+          subcategory: p.subcategory,
+          color: p.color,
+          colorVariantGroup: p.color_variant_group,
+          trending: p.is_featured,
+          stock: p.stock_quantity,
+          variants: p.product_variants || [],
+          rating: p.rating || 0,
+          reviewCount: p.review_count || 0
+        };
+      });
+    } catch (error) {
+      console.error('StoreService.getProducts error:', error);
+      return [];
+    }
   }
 
   async getAdminProducts(): Promise<Product[]> {
@@ -64,7 +65,9 @@ class StoreService {
       colorVariantGroup: p.color_variant_group,
       trending: p.is_featured,
       stock: p.stock_quantity,
-      variants: p.product_variants || []
+      variants: p.product_variants || [],
+      rating: p.rating || 0,
+      reviewCount: p.review_count || 0
     }));
   }
 
@@ -87,12 +90,21 @@ class StoreService {
       colorVariantGroup: p.color_variant_group,
       trending: p.is_featured,
       stock: p.stock_quantity,
-      variants: p.product_variants || []
+      variants: p.product_variants || [],
+      rating: p.rating || 0,
+      reviewCount: p.review_count || 0
     };
   }
 
   async getProductById(id: string): Promise<Product | null> {
-    const p = await supabaseService.getProductById(id);
+    // Handle padded IDs (e.g. "00005" -> 5)
+    // Supabase likely expects the raw integer ID
+    const cleanId = id.replace(/^0+/, '');
+    const lookupId = cleanId === '' ? '0' : cleanId; // Handle "00000" -> "0"
+
+    console.log(`Store: Looking up product. Input ID: ${id}, Clean ID: ${lookupId}`);
+
+    const p = await supabaseService.getProductById(lookupId);
     if (!p) return null;
     return {
       id: this.formatId(p.id),
@@ -110,7 +122,9 @@ class StoreService {
       colorVariantGroup: p.color_variant_group,
       trending: p.is_featured,
       stock: p.stock_quantity,
-      variants: p.product_variants || []
+      variants: p.product_variants || [],
+      rating: p.rating || 0,
+      reviewCount: p.review_count || 0
     };
   }
 
@@ -158,8 +172,60 @@ class StoreService {
     };
   }
 
-  async updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
-    const updated = await supabaseService.updateProduct(id, updates);
+  async updateProduct(id: string, updates: Partial<Product>): Promise<Product | null> {
+    // Strategy: Determine the working ID by checking existence first
+    // This separates "ID Mismatch" from "RLS/Permission" issues.
+
+    const possibleIds = [
+      id.replace(/^0+/, ''), // Clean ID (5)
+      id,                    // Raw ID (00005)
+      parseInt(id, 10).toString() // Strict Int (5)
+    ];
+    // Deduplicate
+    const uniqueIds = Array.from(new Set(possibleIds)).filter(i => i && i !== 'NaN');
+
+    console.log(`Store: Update diagnostics. Testing IDs: ${uniqueIds.join(', ')}`);
+
+    let workingId: string | null = null;
+    let currentProduct: any = null;
+
+    // 1. Find which ID actually exists
+    for (const testId of uniqueIds) {
+      // We use supabaseService directly or a simpler internal fetch to check existence
+      // But for now, let's reuse getProductById logic roughly
+      const exists = await supabaseService.getProductById(testId);
+      if (exists) {
+        workingId = testId;
+        currentProduct = exists;
+        console.log(`Store: Found valid product with ID: ${testId}`);
+        break;
+      }
+    }
+
+    if (!workingId) {
+      console.error("Store: Product does not exist with any tested ID variation.");
+      return null; // Truly not found
+    }
+
+    // 2. We have a valid ID. Now try to update it.
+    console.log(`Store: Attempting update on proven ID: ${workingId}`);
+
+    // Prepare data
+    let imageUrl = updates.imageUrl;
+    const productData = {
+      ...updates,
+      imageUrl
+    };
+
+    const updated = await supabaseService.updateProduct(workingId, productData);
+
+    if (!updated) {
+      // CRITICAL: Product exists (we found it in step 1), but Update returned null.
+      // This implies blocked permissions (RLS).
+      console.error("Store: Product exists but Update returned null. Likely RLS/Permission issue.");
+      throw new Error(`Permission Denied: Found product ${workingId} but could not update it. Check Database RLS policies.`);
+    }
+
     return {
       id: this.formatId(updated.id),
       name: updated.name,
@@ -171,7 +237,7 @@ class StoreService {
       imageUrl: updated.images?.[0] || '',
       images: updated.images || [],
       category: updates.category || 'uncategorized',
-      subcategory: updates.subcategory,
+      subcategory: updated.subcategory,
       color: updated.color,
       colorVariantGroup: updated.color_variant_group,
       trending: updated.is_featured,
@@ -180,7 +246,11 @@ class StoreService {
   }
 
   async deleteProduct(id: string): Promise<void> {
-    await supabaseService.deleteProduct(id);
+    const cleanId = id.replace(/^0+/, '');
+    const lookupId = cleanId === '' ? '0' : cleanId;
+    await supabaseService.deleteProduct(lookupId);
+    // Note: If delete fails silently for cleanId, we might want to try raw ID, 
+    // but usually delete is less critical to confirm than update.
   }
 
   // --- Users ---
@@ -266,6 +336,8 @@ class StoreService {
         latitude: details.shippingAddress.latitude,
         longitude: details.shippingAddress.longitude
       },
+      points_redeemed: details.pointsRedeemed || 0,
+      coupon_code: details.couponCode || null,
       guest_info: !userId ? details.guestInfo : null
     };
 
@@ -275,7 +347,13 @@ class StoreService {
 
     console.log('Creating order with data:', orderData);
 
-    const result = await supabaseService.createOrder(orderData, items);
+    // Sanitize item IDs (strip leading zeros to match DB integer IDs)
+    const sanitizedItems = items.map(item => ({
+      ...item,
+      id: String(item.id).replace(/^0+/, '') || '0'
+    }));
+
+    const result = await supabaseService.createOrder(orderData, sanitizedItems);
     if (!result.success) {
       console.error('Supabase createOrder failed:', result.error);
       throw result.error;
@@ -299,7 +377,9 @@ class StoreService {
     if (userId) {
       dbOrders = await supabaseService.getUserOrders(userId);
     } else {
-      dbOrders = await supabaseService.getAdminOrders();
+      const result = await supabaseService.getAdminOrders();
+      if (result.error) throw result.error;
+      dbOrders = result.data;
     }
 
     return (dbOrders || []).map((o: any) => {
@@ -355,15 +435,18 @@ class StoreService {
         paymentMethod: o.payment_method,
         deliveryDate: o.delivery_date,
         deliveryType: o.delivery_speed === 'fast' ? 'Fast Delivery' : 'Standard Delivery',
-        giftWrapping: o.gift_wrapping
+        giftWrapping: o.gift_wrapping,
+        pointsRedeemed: o.points_redeemed || 0
       };
     });
   }
 
   async updateOrderStatus(orderId: string, status: Order['status']): Promise<Order> {
-    const updated = await supabaseService.updateOrderStatus(orderId, status);
+    const cleanId = String(orderId).replace(/^0+/, '') || '0';
+    console.log(`Store: Updating order status. Original: ${orderId}, Cleaned: ${cleanId}`);
+    const updated = await supabaseService.updateOrderStatus(cleanId, status);
     return {
-      id: updated.id,
+      id: this.formatId(updated.id),
       status: updated.status
     } as any;
   }
@@ -381,6 +464,10 @@ class StoreService {
     return await supabaseService.getAllReviews();
   }
 
+  async getAllUsersWithStats(): Promise<any[]> {
+    return await supabaseService.getAllUsersWithStats();
+  }
+
   async updateReviewStatus(id: string, isApproved: boolean): Promise<any> {
     return await supabaseService.updateReviewStatus(id, isApproved);
   }
@@ -390,7 +477,7 @@ class StoreService {
   }
 
   async deleteReview(id: string): Promise<void> {
-    await supabaseService.deleteReview(id);
+    return supabaseService.deleteReview(id);
   }
 
   async uploadReviewMedia(file: File): Promise<string> {
@@ -413,6 +500,10 @@ class StoreService {
 
   async getPlayVideos(userId?: string): Promise<any[]> {
     return await supabaseService.getPlayVideos(userId);
+  }
+
+  async deletePlayVideo(videoId: string): Promise<void> {
+    return await supabaseService.deletePlayVideo(videoId);
   }
 
   async likeVideo(videoId: string, userId: string): Promise<void> {
@@ -445,26 +536,31 @@ class StoreService {
 
   // --- Categories ---
   async getCategories(): Promise<any[]> {
-    console.log('store.getCategories() called');
-    const result = await supabaseService.getCategories();
-    console.log('store.getCategories() result:', result);
+    try {
+      console.log('store.getCategories() called');
+      const result = await supabaseService.getCategories();
+      console.log('store.getCategories() result:', result);
 
-    // Map database fields to frontend format
-    return (result || []).map((cat: any) => ({
-      id: cat.id,
-      name: cat.name,
-      slug: cat.slug,
-      imageUrl: cat.image_url, // Map image_url to imageUrl
-      description: cat.description,
-      subcategories: (cat.subcategories || []).map((sub: any) => ({
-        id: sub.id,
-        name: sub.name,
-        slug: sub.slug,
-        imageUrl: sub.image_url, // Map subcategory image_url to imageUrl
-        description: sub.description,
-        category_id: sub.category_id
-      }))
-    }));
+      // Map database fields to frontend format
+      return (result || []).map((cat: any) => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        imageUrl: cat.image_url, // Map image_url to imageUrl
+        description: cat.description,
+        subcategories: (cat.subcategories || []).map((sub: any) => ({
+          id: sub.id,
+          name: sub.name,
+          slug: sub.slug,
+          imageUrl: sub.image_url, // Map subcategory image_url to imageUrl
+          description: sub.description,
+          category_id: sub.category_id
+        }))
+      }));
+    } catch (error) {
+      console.error('StoreService.getCategories error:', error);
+      return [];
+    }
   }
 
   async getCategoryById(id: string): Promise<any> {

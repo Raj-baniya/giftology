@@ -1,5 +1,6 @@
-import { supabase } from './supabaseClient';
-import { INITIAL_PRODUCTS, CATEGORIES, SUBCATEGORIES } from './mockData';
+import { supabase, queryWithTimeout } from './supabaseClient';
+import { INITIAL_PRODUCTS, CATEGORIES, SUBCATEGORIES, PLAY_VIDEOS } from './mockData';
+import { calculatePointsEarned } from '../utils/rewards';
 
 // Types
 export interface Product {
@@ -37,33 +38,27 @@ export interface ContactMessage {
 // --- Products ---
 
 export const getProducts = async () => {
-    const { data, error } = await supabase
-        .from('products')
-        .select('*, categories(name, slug), product_variants(*), reviews(rating, is_approved)')
-        // .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching products:', error);
-        throw error;
-    }
-    console.log('Fetched products:', data);
-    return data || [];
+    const { data } = await queryWithTimeout(
+        () => supabase
+            .from('products')
+            .select('*, categories(name, slug), product_variants(*)')
+            .order('created_at', { ascending: false }),
+        [],
+        'getProducts'
+    );
+    return data;
 };
 
 export const getAdminProducts = async () => {
-    console.log('Fetching admin products...');
-    const { data, error } = await supabase
-        .from('products')
-        .select('*, categories(name, slug), product_variants(*)')
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching admin products:', error);
-        throw error;
-    }
-    console.log('Fetched admin products:', data?.length);
-    return data || [];
+    const { data } = await queryWithTimeout(
+        () => supabase
+            .from('products')
+            .select('*, categories(name, slug), product_variants(*)')
+            .order('created_at', { ascending: false }),
+        [],
+        'getAdminProducts'
+    );
+    return data;
 };
 
 export const getFeaturedProducts = async () => {
@@ -114,34 +109,39 @@ export const getProductsByVariantGroup = async (groupId: string) => {
 };
 
 export const getProductById = async (id: string) => {
-    const { data, error } = await supabase
-        .from('products')
-        .select('*, categories(name, slug), product_variants(*)')
-        .eq('id', id)
-        .single();
-
-    if (error) {
-        console.error('Error fetching product by ID:', error);
-        return null;
-    }
+    const { data } = await queryWithTimeout(
+        () => supabase
+            .from('products')
+            .select('*, categories(name, slug), product_variants(*)')
+            .eq('id', id)
+            .single(),
+        null,
+        `getProductById:${id}`
+    );
     return data;
 };
 
 // --- Categories ---
 
 export const getCategories = async () => {
-    const { data, error } = await supabase
-        .from('categories')
-        .select(`
-            *,
-            subcategories (*)
-        `)
-        .order('name', { ascending: true });
-
-    if (error) {
-        console.error('Error fetching categories:', error);
-        return [];
-    }
+    const { data } = await queryWithTimeout(
+        () => supabase
+            .from('categories')
+            .select(`
+                *,
+                subcategories (*)
+            `)
+            .order('name', { ascending: true }),
+        CATEGORIES.map(c => ({
+            ...c,
+            image_url: c.imageUrl,
+            subcategories: SUBCATEGORIES.filter(s => s.category_id === c.id).map(s => ({
+                ...s,
+                image_url: s.imageUrl
+            }))
+        })),
+        'getCategories'
+    );
     return data;
 };
 
@@ -298,48 +298,69 @@ export const createOrder = async (orderData: any, orderItems: any[]) => {
         return { success: false, error: itemsError };
     }
 
+    // 4. Deduct Stock (Atomic via RPC)
+    for (const item of orderItems) {
+        try {
+            // Deduct from main product
+            await supabase.rpc('decrement_product_stock', {
+                p_id: item.id,
+                p_qty: item.quantity
+            });
+
+            // If it's a variant, deduct from variant stock too
+            if (item.selectedSize || item.selectedColor) {
+                await supabase.rpc('decrement_variant_stock', {
+                    p_id: item.id,
+                    v_size: item.selectedSize || null,
+                    v_color: item.selectedColor || null,
+                    p_qty: item.quantity
+                });
+            }
+        } catch (stockErr) {
+            console.error('Failed to deduct stock for item:', item.id, stockErr);
+            // We don't block order completion if stock deduction fails, 
+            // but we log it for admin investigation.
+        }
+    }
+
     return { success: true, order };
 };
 
 // --- Admin Functions ---
 
 export const getAdminOrders = async () => {
-    const { data, error } = await supabase
-        .from('orders')
-        .select('*, order_items(*, products(name, images))')
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching admin orders:', error);
-        return [];
-    }
-    return data;
+    return await queryWithTimeout(
+        () => supabase
+            .from('orders')
+            .select('*, order_items(*, products(name, images))')
+            .order('created_at', { ascending: false }),
+        [],
+        'getAdminOrders'
+    );
 };
 
 export const getUserOrders = async (userId: string) => {
-    const { data, error } = await supabase
-        .from('orders')
-        .select('*, order_items(*, products(name, images))')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching user orders:', error);
-        return [];
-    }
+    const { data } = await queryWithTimeout(
+        () => supabase
+            .from('orders')
+            .select('*, order_items(*, products(name, images))')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false }),
+        [],
+        `getUserOrders:${userId}`
+    );
     return data;
 };
 
 export const getContactMessages = async () => {
-    const { data, error } = await supabase
-        .from('contact_messages')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching contact messages:', error);
-        return [];
-    }
+    const { data } = await queryWithTimeout(
+        () => supabase
+            .from('contact_messages')
+            .select('*')
+            .order('created_at', { ascending: false }),
+        [],
+        'getContactMessages'
+    );
     return data;
 };
 
@@ -361,19 +382,19 @@ export const addProduct = async (product: any) => {
         stock_quantity: product.stock !== undefined ? product.stock : 100,
         images: product.images || [product.imageUrl],
         category_id: product.category_id,
-        subcategory: product.subcategory,
+        // subcategory: product.subcategory, // Column missing
         is_featured: product.trending || false,
-        is_active: true,
-        variants: product.variants || []
+        is_active: true
+        // variants are handled separately, do not add to dbProduct
     };
 
     // Add color_variant_group if provided (requires schema migration)
-    if (product.colorVariantGroup) {
-        dbProduct.color_variant_group = product.colorVariantGroup;
-    }
+    // if (product.colorVariantGroup) {
+    //     dbProduct.color_variant_group = product.colorVariantGroup;
+    // }
     // If category_id is missing but category slug is present, fetch category_id
     if (!dbProduct.category_id && product.category) {
-        const { data: cat } = await supabase.from('categories').select('id').eq('slug', product.category).single();
+        const { data: cat } = await supabase.from('categories').select('id').eq('slug', product.category).maybeSingle();
         if (cat) dbProduct.category_id = cat.id;
     }
 
@@ -422,27 +443,31 @@ export const updateProduct = async (id: string, updates: any) => {
     if (updates.images) dbUpdates.images = updates.images;
     else if (updates.imageUrl) dbUpdates.images = [updates.imageUrl];
     if (updates.trending !== undefined) dbUpdates.is_featured = updates.trending;
-    if (updates.trending !== undefined) dbUpdates.is_featured = updates.trending;
     if (updates.stock !== undefined) dbUpdates.stock_quantity = updates.stock;
-    if (updates.variants) dbUpdates.variants = updates.variants;
+    // variants are handled separately, do not add to dbUpdates
 
     // Resolve category slug to ID if category is updated
     if (updates.category) {
-        const { data: cat } = await supabase.from('categories').select('id').eq('slug', updates.category).single();
+        const { data: cat } = await supabase.from('categories').select('id').eq('slug', updates.category).maybeSingle();
         if (cat) {
             dbUpdates.category_id = cat.id;
         }
     }
-    if (updates.subcategory) dbUpdates.subcategory = updates.subcategory;
+    // if (updates.subcategory) dbUpdates.subcategory = updates.subcategory; // Column missing
     // Add color_variant_group if provided (requires schema migration)
-    if (updates.colorVariantGroup) dbUpdates.color_variant_group = updates.colorVariantGroup;
+    // if (updates.colorVariantGroup) dbUpdates.color_variant_group = updates.colorVariantGroup;
+
+    console.log('SupabaseService: updateProduct called with ID:', id);
+    console.log('SupabaseService: dbUpdates payload:', dbUpdates);
 
     const { data, error } = await supabase
         .from('products')
         .update(dbUpdates)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
+
+    console.log('SupabaseService: update result:', { data, error });
 
     if (error) {
         console.error('Error updating product:', error);
@@ -491,26 +516,123 @@ export const deleteProduct = async (id: string) => {
 };
 
 export const updateOrderStatus = async (id: string, status: string) => {
+    // 1. Fetch current order to check previous status and get details
+    const { data: currentOrder, error: fetchError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+
+    if (fetchError) {
+        console.error('Error fetching order for status update:', fetchError);
+        throw fetchError;
+    }
+
+    if (!currentOrder) {
+        throw new Error(`Order with ID ${id} not found.`);
+    }
+
+    // 2. Perform the Update
     const { data, error } = await supabase
         .from('orders')
         .update({ status })
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
 
     if (error) {
         console.error('Error updating order status:', error);
         throw error;
     }
+
+    if (!data) {
+        throw new Error('Failed to update order status: Order not found or permission denied.');
+    }
+
+    // 3. Award Points if transitioning to Delivered
+    // Check if new status is 'delivered' AND previous status was NOT 'delivered' AND user exists
+    const normalizedStatus = status.toLowerCase();
+    const normalizedCurrentStatus = currentOrder.status?.toLowerCase();
+
+    console.log(`Store: Status Update Check. New: ${normalizedStatus}, Current: ${normalizedCurrentStatus}, User: ${currentOrder.user_id}`);
+
+    if (currentOrder.user_id) {
+        // CASE A: Award Points ( -> Delivered)
+        if (normalizedStatus === 'delivered' && normalizedCurrentStatus !== 'delivered') {
+            try {
+                const pointsEarned = calculatePointsEarned(currentOrder.total_amount);
+                console.log(`Order ${id} delivered. Awarding ${pointsEarned} points to user ${currentOrder.user_id}`);
+
+                // Fetch current points
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('reward_points')
+                    .eq('id', currentOrder.user_id)
+                    .single();
+
+                const currentPoints = profile?.reward_points || 0;
+
+                // Update points
+                const { error: pointsError } = await supabase
+                    .from('profiles')
+                    .update({ reward_points: currentPoints + pointsEarned })
+                    .eq('id', currentOrder.user_id);
+
+                if (pointsError) {
+                    console.error('Error awarding points:', pointsError);
+                } else {
+                    console.log(`Successfully awarded ${pointsEarned} points to user ${currentOrder.user_id}`);
+                }
+            } catch (err) {
+                console.error('Unexpected error awarding points:', err);
+            }
+        }
+
+        // CASE B: Revert Points (Delivered -> Any other status)
+        // This prevents "Buy -> Earn -> Spend -> Return/Cancel/Revert" abuse
+        else if (normalizedCurrentStatus === 'delivered' && normalizedStatus !== 'delivered') {
+            try {
+                const pointsToRevert = calculatePointsEarned(currentOrder.total_amount);
+                console.log(`Order ${id} status changed from delivered to ${normalizedStatus}. Reverting ${pointsToRevert} points from user ${currentOrder.user_id}`);
+
+                // Fetch current points
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('reward_points')
+                    .eq('id', currentOrder.user_id)
+                    .single();
+
+                const currentPoints = profile?.reward_points || 0;
+
+                // Deduct points (Allowing negative balance if they already spent them - standard ledger practice)
+                const { error: pointsError } = await supabase
+                    .from('profiles')
+                    .update({ reward_points: currentPoints - pointsToRevert })
+                    .eq('id', currentOrder.user_id);
+
+                if (pointsError) {
+                    console.error('Error reverting points:', pointsError);
+                } else {
+                    console.log(`Successfully deducted ${pointsToRevert} points from user ${currentOrder.user_id}`);
+                }
+            } catch (err) {
+                console.error('Unexpected error reverting points:', err);
+            }
+        }
+    }
+
     return data;
 };
 
 export const seedDatabase = async () => {
-    console.log('Starting database seed...');
+    console.log('🚀 [SEED] Starting database seed process...');
     const errors: string[] = [];
 
     // 1. Seed Categories & Subcategories
+    console.log(`[SEED] processing ${CATEGORIES.length} categories...`);
     for (const cat of CATEGORIES) {
+        console.log(`[SEED] Processing category: ${cat.name} (${cat.slug})`);
+
         // Upsert Category
         const { data: categoryData, error: catError } = await supabase
             .from('categories')
@@ -524,11 +646,14 @@ export const seedDatabase = async () => {
             .single();
 
         if (catError) {
-            console.error(`Error seeding category ${cat.name}:`, catError);
+            console.error(`❌ [SEED-ERROR] Category ${cat.name}:`, catError);
             errors.push(`Category ${cat.name}: ${catError.message}`);
         } else if (categoryData) {
-            // Seed Subcategories for this category
+            console.log(`✅ [SEED] Category upserted: ${cat.name} (ID: ${categoryData.id})`);
+
+            // Seed Subcategories
             const categorySubcategories = SUBCATEGORIES.filter(sub => sub.category_id === cat.id);
+            console.log(`[SEED] Found ${categorySubcategories.length} subcategories for ${cat.name}`);
 
             for (const sub of categorySubcategories) {
                 const { error: subError } = await supabase
@@ -541,14 +666,17 @@ export const seedDatabase = async () => {
                     }, { onConflict: 'category_id, slug' });
 
                 if (subError) {
-                    console.error(`Error seeding subcategory ${sub.name}:`, subError);
+                    console.error(`❌ [SEED-ERROR] Subcategory ${sub.name}:`, subError);
                     errors.push(`Subcategory ${sub.name}: ${subError.message}`);
+                } else {
+                    console.log(`   ✅ [SEED] Subcategory seeded: ${sub.name}`);
                 }
             }
         }
     }
 
     // 2. Seed Products
+    console.log(`[SEED] Processing ${INITIAL_PRODUCTS.length} products...`);
     for (const prod of INITIAL_PRODUCTS) {
         const { data: catData } = await supabase
             .from('categories')
@@ -557,14 +685,20 @@ export const seedDatabase = async () => {
             .single();
 
         if (catData) {
-            const { data: existingProd } = await supabase.from('products').select('id').eq('slug', prod.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')).single();
+            const slug = prod.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+            const { data: existingProd } = await supabase
+                .from('products')
+                .select('id')
+                .eq('slug', slug)
+                .maybeSingle(); // Changed to maybeSingle to avoid errors if 0 found
 
             if (!existingProd) {
+                console.log(`[SEED] Inserting product: ${prod.name}`);
                 const { error } = await supabase
                     .from('products')
                     .insert({
                         name: prod.name,
-                        slug: prod.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+                        slug: slug,
                         description: prod.description,
                         price: prod.price,
                         stock_quantity: 50,
@@ -575,13 +709,24 @@ export const seedDatabase = async () => {
                     });
 
                 if (error) {
-                    console.error(`Error seeding product ${prod.name}:`, error);
+                    console.error(`❌ [SEED-ERROR] Product ${prod.name}:`, error);
                     errors.push(`Product ${prod.name}: ${error.message}`);
+                } else {
+                    console.log(`✅ [SEED] Product created: ${prod.name}`);
                 }
+            } else {
+                console.log(`ℹ️ [SEED] Product already exists: ${prod.name}`);
             }
         } else {
+            console.warn(`⚠️ [SEED-WARN] Skipped product ${prod.name}: Category '${prod.category}' not found via slug.`);
             errors.push(`Skipped product ${prod.name}: Category ${prod.category} not found`);
         }
+    }
+
+    if (errors.length > 0) {
+        console.error('❌ [SEED] Completed with errors:', errors);
+    } else {
+        console.log('✅ [SEED] Database seeding completed successfully!');
     }
 
     return { success: errors.length === 0, errors };
@@ -590,16 +735,15 @@ export const seedDatabase = async () => {
 // --- Profile Management ---
 
 export const getUserProfile = async (userId: string) => {
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-    if (error) {
-        console.error('Error fetching user profile:', error);
-        return null;
-    }
+    const { data } = await queryWithTimeout(
+        () => supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single(),
+        null,
+        `getUserProfile:${userId}`
+    );
     return data;
 };
 
@@ -631,49 +775,33 @@ export interface SalesAnalytics {
 
 export const getSalesAnalytics = async (): Promise<SalesAnalytics> => {
     try {
-        // Fetch all completed orders
+        // 1. Fetch orders with their items
         const { data: orders, error: ordersError } = await supabase
             .from('orders')
-            .select('*')
+            .select('id, total_amount, order_items(quantity, unit_price, product_id, products(cost_price))')
             .in('status', ['delivered', 'shipped', 'processing']);
 
         if (ordersError) {
-            console.error('Error fetching orders:', ordersError);
+            console.error('Error fetching orders for analytics:', ordersError);
             throw ordersError;
         }
-
-        // Fetch all products with cost_price
-        const { data: products, error: productsError } = await supabase
-            .from('products')
-            .select('id, cost_price, price');
-
-        if (productsError) {
-            console.error('Error fetching products:', productsError);
-            throw productsError;
-        }
-
-        // Create a map of product ID to cost/price
-        const productMap = new Map<string, { costPrice: number; price: number }>(
-            products?.map((p: any) => [p.id, { costPrice: p.cost_price || 0, price: p.price }]) || []
-        );
 
         let totalRevenue = 0;
         let totalCost = 0;
         let totalOrders = orders?.length || 0;
 
-        // Calculate revenue and cost from orders
+        // 2. Calculate Revenue and Cost
         orders?.forEach(order => {
-            // Add order total to revenue
-            totalRevenue += order.total || 0;
+            // Add order total amount
+            totalRevenue += Number(order.total_amount) || 0;
 
-            // Calculate cost from order items
-            if (order.items && Array.isArray(order.items)) {
-                order.items.forEach((item: any) => {
-                    const productInfo = productMap.get(item.id);
-                    if (productInfo) {
-                        const quantity = item.quantity || 1;
-                        totalCost += productInfo.costPrice * quantity;
-                    }
+            // Calculate cost from items
+            if (order.order_items && Array.isArray(order.order_items)) {
+                order.order_items.forEach((item: any) => {
+                    const quantity = Number(item.quantity) || 0;
+                    const costPrice = Number(item.products?.cost_price) || 0;
+                    // If cost_price is 0, we treat it as no cost recorded for that item
+                    totalCost += (costPrice * quantity);
                 });
             }
         });
@@ -691,7 +819,7 @@ export const getSalesAnalytics = async (): Promise<SalesAnalytics> => {
             averageOrderValue
         };
     } catch (error) {
-        console.error('Error calculating sales analytics:', error);
+        console.error('getSalesAnalytics error:', error);
         return {
             totalRevenue: 0,
             totalCost: 0,
@@ -992,21 +1120,25 @@ export const seedCategories = seedDatabase;
 // --- Play Feature ---
 
 export const getPlayVideos = async (userId?: string) => {
-    const { data, error } = await supabase
-        .from('play_videos')
-        .select(`
-            *,
-            likes:play_likes(count),
-            comments:play_comments(count),
-            shares:play_shares(count),
-            is_liked:play_likes!left(user_id)
-        `)
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching play videos:', error);
-        return [];
-    }
+    const { data } = await queryWithTimeout(
+        () => supabase
+            .from('play_videos')
+            .select(`
+                *,
+                likes:play_likes(count),
+                comments:play_comments(count),
+                is_liked:play_likes!left(user_id)
+            `)
+            .order('created_at', { ascending: false }),
+        PLAY_VIDEOS.map(v => ({
+            ...v,
+            video_url: v.videoUrl,
+            thumbnail_url: v.thumbnailUrl,
+            user_id: v.userId,
+            created_at: v.createdAt || new Date().toISOString()
+        })),
+        'getPlayVideos'
+    );
 
     return data.map((video: any) => ({
         ...video,
@@ -1016,9 +1148,38 @@ export const getPlayVideos = async (userId?: string) => {
         createdAt: video.created_at,
         likesCount: video.likes?.[0]?.count || 0,
         commentsCount: video.comments?.[0]?.count || 0,
-        sharesCount: video.shares?.[0]?.count || 0,
+        sharesCount: video.shares_count || 0,
         isLiked: userId ? video.is_liked?.some((l: any) => l.user_id === userId) : false
     }));
+};
+
+export const deletePlayVideo = async (videoId: string) => {
+    // 1. Get video info to delete from storage if needed
+    const { data: video } = await supabase
+        .from('play_videos')
+        .select('video_url')
+        .eq('id', videoId)
+        .single();
+
+    // 2. Delete from database
+    const { error } = await supabase
+        .from('play_videos')
+        .delete()
+        .eq('id', videoId);
+
+    if (error) throw error;
+
+    // 3. Optional: Delete from storage
+    if (video?.video_url) {
+        try {
+            const fileName = video.video_url.split('/').pop();
+            if (fileName) {
+                await supabase.storage.from('videos').remove([fileName]);
+            }
+        } catch (storageError) {
+            console.error('Error deleting video file from storage:', storageError);
+        }
+    }
 };
 
 export const likeVideo = async (videoId: string, userId: string) => {
@@ -1085,6 +1246,49 @@ export const shareVideo = async (videoId: string, userId?: string, platform?: st
         .from('play_shares')
         .insert({ video_id: videoId, user_id: userId, platform });
     if (error) console.error('Error logging share:', error);
+};
+
+// --- Users & Stats ---
+export const getAllUsersWithStats = async () => {
+    try {
+        // 1. Fetch Profiles
+        const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('*')
+            .order('reward_points', { ascending: false });
+
+        if (profilesError) throw profilesError;
+
+        // 2. Fetch User Coupons (Wallet)
+        const { data: coupons, error: couponsError } = await supabase
+            .from('user_coupons')
+            .select('*');
+
+        if (couponsError) {
+            console.warn('Error fetching user coupons (table might be missing?):', couponsError);
+            // Return profiles without coupon data if this fails
+            return profiles?.map(p => ({ ...p, coupons: [], coupons_used: 0, coupons_active: 0 })) || [];
+        }
+
+        // 3. Merge Data
+        const enrichedUsers = profiles?.map(user => {
+            const userCoupons = coupons?.filter(c => c.user_id === user.id) || [];
+            const activeCoupons = userCoupons.filter(c => c.status === 'active').length;
+            const usedCoupons = userCoupons.filter(c => c.status === 'used').length;
+            return {
+                ...user,
+                coupons: userCoupons,
+                coupons_active: activeCoupons,
+                coupons_used: usedCoupons
+            };
+        });
+
+        return enrichedUsers || [];
+
+    } catch (error) {
+        console.error('Error fetching system users:', error);
+        return [];
+    }
 };
 
 export const uploadVideo = async (file: File, caption: string, userId: string) => {

@@ -107,9 +107,8 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.4 }}
                                     className="text-gray-600 text-base leading-relaxed mb-8"
-                                >
-                                    {message}
-                                </motion.p>
+                                    dangerouslySetInnerHTML={{ __html: message }}
+                                />
 
                                 {/* Buttons */}
                                 <motion.div

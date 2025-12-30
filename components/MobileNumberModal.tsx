@@ -38,10 +38,14 @@ export const MobileNumberModal = () => {
       setError('Please enter a valid 10-digit mobile number.');
       return;
     }
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address.');
-      return;
+
+    // Email Normalization
+    let finalEmail = email.trim();
+    if (finalEmail && !finalEmail.includes('@')) {
+      finalEmail += '@gmail.com';
+      setEmail(finalEmail);
     }
+
     if (!message.trim()) {
       setError('Please enter your feedback message.');
       return;
@@ -53,7 +57,7 @@ export const MobileNumberModal = () => {
       // Save to Supabase
       const result = await submitContactMessage({
         name,
-        email,
+        email: finalEmail,
         phone: mobileNumber,
         message: message,
         source: 'feedback_modal'

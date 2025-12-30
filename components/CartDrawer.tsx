@@ -104,66 +104,112 @@ export const CartDrawer = () => {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {cart.map((item) => {
-                    const discount = item.marketPrice ? Math.round(((item.marketPrice - item.price) / item.marketPrice) * 100) : 0;
+                  <AnimatePresence mode="popLayout">
+                    {cart.map((item) => {
+                      const discount = item.marketPrice ? Math.round(((item.marketPrice - item.price) / item.marketPrice) * 100) : 0;
 
-                    return (
-                      <div key={item.id} className="bg-white p-4">
-                        <div className="flex gap-4 mb-4">
-                          {/* Image */}
-                          <div className="w-20 h-20 shrink-0 border border-gray-100 rounded p-1">
-                            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain" />
-                          </div>
+                      return (
+                        <motion.div
+                          key={`${item.id}-${item.selectedSize}-${item.selectedColor}`}
+                          initial={{ opacity: 0, x: 100, scale: 0.8 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          exit={{ opacity: 0, x: -100, scale: 0.8, height: 0, marginTop: 0, marginBottom: 0, padding: 0 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 30,
+                            opacity: { duration: 0.2 }
+                          }}
+                          layout
+                          className="bg-white p-4"
+                        >
+                          <div className="flex gap-4 mb-4">
+                            {/* Image */}
+                            <motion.div
+                              initial={{ scale: 0.5, rotate: -10 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
+                              className="w-20 h-20 shrink-0 border border-gray-100 rounded p-1"
+                            >
+                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain" />
+                            </motion.div>
 
-                          {/* Details */}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">{item.name}</h3>
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {item.selectedColor && (
-                                <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium border border-gray-200">
-                                  {item.selectedColor}
-                                </span>
-                              )}
-                              {item.selectedSize && (
-                                <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium border border-gray-200">
-                                  Size: {item.selectedSize}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Rating placeholder */}
-                            <div className="flex items-center gap-1 mb-2">
-                              <div className="bg-green-600 text-white text-[10px] px-1 rounded flex items-center gap-0.5">
-                                4.2 <Icons.Star className="w-2 h-2 fill-current" />
+                            {/* Details */}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">{item.name}</h3>
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {item.selectedColor && (
+                                  <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium border border-gray-200">
+                                    {item.selectedColor}
+                                  </span>
+                                )}
+                                {item.selectedSize && (
+                                  <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium border border-gray-200">
+                                    Size: {item.selectedSize}
+                                  </span>
+                                )}
                               </div>
-                              <span className="text-xs text-gray-500">(5)</span>
-                            </div>
 
-                            {/* Price */}
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-lg">&#8377;{(item.price * item.quantity).toLocaleString()}</span>
-                              {item.marketPrice && item.marketPrice > item.price && (
-                                <>
-                                  <span className="text-xs text-gray-500 line-through">&#8377;{(item.marketPrice * item.quantity).toLocaleString()}</span>
-                                  <span className="text-xs text-green-600 font-bold">{discount}% off</span>
-                                </>
-                              )}
+                              {/* Rating placeholder */}
+                              <div className="flex items-center gap-1 mb-2">
+                                <div className="bg-green-600 text-white text-[10px] px-1 rounded flex items-center gap-0.5">
+                                  4.2 <Icons.Star className="w-2 h-2 fill-current" />
+                                </div>
+                                <span className="text-xs text-gray-500">(5)</span>
+                              </div>
+
+                              {/* Price */}
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-lg">&#8377;{(item.price * item.quantity).toLocaleString()}</span>
+                                {item.marketPrice && item.marketPrice > item.price && (
+                                  <>
+                                    <span className="text-xs text-gray-500 line-through">&#8377;{(item.marketPrice * item.quantity).toLocaleString()}</span>
+                                    <span className="text-xs text-green-600 font-bold">{discount}% off</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Actions */}
-                        <div className="flex border-t border-gray-100 pt-3 gap-4">
-                          <div className="flex items-center gap-3 border border-gray-200 rounded px-2 py-1">
-                            <button onClick={() => updateQuantity(item.id, -1, item.selectedSize, item.selectedColor)} className="w-6 h-6 flex items-center justify-center font-bold text-gray-600">-</button>
-                            <span className="text-sm font-bold">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, 1, item.selectedSize, item.selectedColor)} className="w-6 h-6 flex items-center justify-center font-bold text-gray-600">+</button>
+                          {/* Actions */}
+                          <div className="flex border-t border-gray-100 pt-3 gap-4">
+                            <div className="flex items-center gap-3 border border-gray-200 rounded px-2 py-1">
+                              <motion.button
+                                whileTap={{ scale: 0.8 }}
+                                onClick={() => updateQuantity(item.id, -1, item.selectedSize, item.selectedColor)}
+                                className="w-6 h-6 flex items-center justify-center font-bold text-gray-600"
+                              >
+                                -
+                              </motion.button>
+                              <motion.span
+                                key={item.quantity}
+                                initial={{ scale: 1.3 }}
+                                animate={{ scale: 1 }}
+                                className="text-sm font-bold"
+                              >
+                                {item.quantity}
+                              </motion.span>
+                              <motion.button
+                                whileTap={{ scale: 0.8 }}
+                                onClick={() => updateQuantity(item.id, 1, item.selectedSize, item.selectedColor)}
+                                className="w-6 h-6 flex items-center justify-center font-bold text-gray-600"
+                              >
+                                +
+                              </motion.button>
+                            </div>
+                            <motion.button
+                              whileHover={{ scale: 1.02, backgroundColor: '#f3f4f6' }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor)}
+                              className="flex-1 text-sm font-medium text-gray-900 border border-gray-200 rounded py-1 transition-colors"
+                            >
+                              Remove
+                            </motion.button>
                           </div>
-                          <button onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor)} className="flex-1 text-sm font-medium text-gray-900 border border-gray-200 rounded py-1 hover:bg-gray-50">Remove</button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
 
                   {/* Price Details */}
                   <div className="bg-white p-4 mt-2">

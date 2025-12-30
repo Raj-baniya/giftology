@@ -253,11 +253,6 @@ export const CategoryManagement = () => {
                                 {/* Category Header */}
                                 <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                                     <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => setExpandedCategory(expandedCategory === category.id ? null : category.id)}>
-                                        <button
-                                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                        >
-                                            {expandedCategory === category.id ? <Icons.ChevronDown className="w-5 h-5" /> : <Icons.ChevronRight className="w-5 h-5" />}
-                                        </button>
                                         {category.image_url && (
                                             <img src={category.image_url} alt={category.name} className="w-16 h-16 object-cover rounded-lg" />
                                         )}

@@ -9,6 +9,8 @@ import { LocationPicker } from '../components/LocationPicker';
 import { sendOrderConfirmationToUser, sendOrderNotificationToAdmin, OrderEmailParams } from '../services/emailService';
 import { AnimatedGradientBackground, DeliveryCarAnimation } from '../components/AnimatedBackgrounds';
 import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
+import { calculatePointsValue, REWARD_RULES } from '../utils/rewards';
+import { supabase } from '../services/supabaseClient';
 
 const steps = ['Shipping', 'Payment', 'Confirmation'];
 
@@ -27,6 +29,14 @@ export const Checkout = () => {
   const [giftWrapping, setGiftWrapping] = useState<'none' | 'plastic' | 'paper' | 'box-plastic' | 'box-paper'>('none');
   const [boxWrappingType, setBoxWrappingType] = useState<'plastic' | 'paper'>('plastic');
 
+  // Rewards & Coupons State
+  const [useRewards, setUseRewards] = useState(false);
+  const [userPoints, setUserPoints] = useState(0);
+  const [pointsValue, setPointsValue] = useState(0);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string, percent: number } | null>(null);
+  const [verifyingCoupon, setVerifyingCoupon] = useState(false);
+
   // Address Management
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [saveAddress, setSaveAddress] = useState(true);
@@ -41,12 +51,20 @@ export const Checkout = () => {
     city: '',
     state: '',
     zipCode: '',
-    deliveryDate: '',
+    deliveryDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Default to tomorrow
     latitude: null as number | null,
     longitude: null as number | null
   });
 
-  const finalTotal = cartTotal + (isFastDelivery ? 100 : 0);
+  // Calculate Totals
+  const shippingCost = isFastDelivery ? 100 : 0;
+
+  // Calculate Discounts
+  const pointsDiscount = useRewards ? Math.min(pointsValue, cartTotal) : 0;
+  const couponDiscount = appliedCoupon ? Math.round(cartTotal * (appliedCoupon.percent / 100)) : 0;
+
+  const totalDiscount = pointsDiscount + couponDiscount;
+  const finalTotal = Math.max(0, cartTotal + shippingCost - totalDiscount);
 
   // Load saved addresses for logged-in users
   useEffect(() => {
@@ -54,6 +72,16 @@ export const Checkout = () => {
       store.getUserAddresses(user.id)
         .then(setSavedAddresses)
         .catch(err => console.error('Failed to load addresses:', err));
+
+      // Fetch User Points
+      const fetchPoints = async () => {
+        const { data, error } = await supabase.from('profiles').select('reward_points').eq('id', user.id).single();
+        if (data) {
+          setUserPoints(data.reward_points || 0);
+          setPointsValue(calculatePointsValue(data.reward_points || 0));
+        }
+      };
+      fetchPoints();
     }
   }, [user]);
 
@@ -66,15 +94,9 @@ export const Checkout = () => {
 
   // Scroll to top when step changes
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
   }, [currentStep]);
 
-  // Helper: Calculate minimum delivery date (Today + 2 days)
-  const getMinDate = () => {
-    const date = new Date();
-    date.setDate(date.getDate() + 2);
-    return date.toISOString().split('T')[0];
-  };
 
   // Handler: Select saved address
   const handleAddressSelect = (addr: any) => {
@@ -107,12 +129,14 @@ export const Checkout = () => {
       document.getElementById('zipCode')?.focus();
       return;
     }
-    if (!formData.deliveryDate) {
-      showAlert('Delivery Date Required', 'Please select a delivery date.', 'warning');
-      document.getElementById('deliveryDate')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      document.getElementById('deliveryDate')?.focus();
-      return;
+
+    // Email Normalization
+    let email = formData.email.trim();
+    if (email && !email.includes('@')) {
+      email += '@gmail.com';
+      setFormData(prev => ({ ...prev, email }));
     }
+
 
     setCurrentStep(1);
   };
@@ -160,6 +184,8 @@ export const Checkout = () => {
         screenshot: screenshot || undefined,
         giftWrapping: giftWrapping,
         deliverySpeed: isFastDelivery ? 'fast' : 'standard',
+        pointsRedeemed: useRewards ? Math.floor(pointsDiscount * 10) : 0,
+        couponCode: appliedCoupon?.code || undefined,
         shippingAddress: {
           street: formData.address,
           city: formData.city,
@@ -291,7 +317,7 @@ export const Checkout = () => {
             orderTotal: `₹${finalTotal.toLocaleString()}`,
             orderItems: orderItemsHtml,
             shipping_address: shippingAddressFormatted,
-            deliveryDetails: `Date: ${new Date(formData.deliveryDate).toLocaleDateString()} | Type: ${isFastDelivery ? 'Fast' : 'Standard'}`,
+            deliveryDetails: `Type: ${isFastDelivery ? 'Fast' : 'Standard'}`,
             paymentMethod: paymentMethod === 'upi' ? 'UPI' : 'Cash on Delivery',
             delivery_date: new Date(formData.deliveryDate).toLocaleDateString(),
             gift_wrapping: giftWrappingText,
@@ -305,7 +331,7 @@ export const Checkout = () => {
             orderTotal: `₹${finalTotal.toLocaleString()}`,
             orderItems: orderItemsHtml,
             shipping_address: shippingAddressFormatted,
-            deliveryDetails: `Date: ${new Date(formData.deliveryDate).toLocaleDateString()} | Type: ${isFastDelivery ? 'Fast' : 'Standard'}`,
+            deliveryDetails: `Type: ${isFastDelivery ? 'Fast' : 'Standard'}`,
             paymentMethod: paymentMethod === 'upi' ? 'UPI' : 'Cash on Delivery',
             delivery_date: new Date(formData.deliveryDate).toLocaleDateString(),
             gift_wrapping: giftWrappingText,
@@ -328,10 +354,83 @@ export const Checkout = () => {
         // Continue to success screen even if email fails
       }
 
-      // Success
+      // 4. DEDUCT REWARD POINTS (Critical Fix!)
+      if (useRewards && isRealUser && pointsDiscount > 0) {
+        try {
+          const pointsToDeduct = Math.floor(pointsDiscount * 10); // Convert ₹ to points (10 points = ₹1)
+
+          // Fetch current points
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('reward_points')
+            .eq('id', user.id)
+            .single();
+
+          const currentPoints = profile?.reward_points || 0;
+          const newPoints = Math.max(0, currentPoints - pointsToDeduct); // Ensure no negative points
+
+          // Update points in database
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ reward_points: newPoints })
+            .eq('id', user.id);
+
+          if (updateError) {
+            console.error('Failed to deduct reward points:', updateError);
+          } else {
+            console.log(`Deducted ${pointsToDeduct} points. New balance: ${newPoints}`);
+          }
+        } catch (pointsError) {
+          console.error('Error deducting points:', pointsError);
+          // Don't block order completion for this
+        }
+      }
+
+      // 5. AWAY EARNED REWARD POINTS removed from checkout (Now handled on delivery)
+      let pointsEarned = Math.floor((finalTotal / 100) * 60);
+
+      // 6. SAVE ADDRESS (Via Safe RPC)
+      if (isRealUser && saveAddress) {
+        const newAddress = {
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode
+        };
+
+        try {
+          const { error: addrError } = await supabase.rpc('append_user_address', {
+            user_id: user.id,
+            new_address: newAddress
+          });
+
+          if (addrError) {
+            console.error('RPC append address failed:', addrError);
+            // Fallback handled by store.saveUserAddress call earlier (at step 2)
+          } else {
+            console.log('Address saved via RPC.');
+          }
+        } catch (e) {
+          console.error('Error saving address:', e);
+        }
+      }
+
+      // Success with points alert
       setProcessing(false);
       setCurrentStep(2);
       clearCart();
+
+      // Show congratulations alert with earned points
+      if (pointsEarned > 0) {
+        setTimeout(() => {
+          showAlert(
+            '🎉 Order Confirmed!',
+            `You will get <span style="color: #D4AF37; font-weight: bold; font-size: 1.2em;">${pointsEarned}</span> reward points once the order is delivered! Use them on your next purchase.`,
+            'success',
+            { confirmText: 'Awesome!' }
+          );
+        }, 500);
+      }
 
     } catch (error: any) {
       console.error('Order processing failed:', error);
@@ -411,25 +510,37 @@ export const Checkout = () => {
                     </div>
                   )}
 
-                  <form id="checkout-shipping-form" className="space-y-4" onSubmit={handleShippingSubmit}>
+                  <form id="checkout-shipping-form" className="space-y-5" onSubmit={handleShippingSubmit}>
                     <div className="grid grid-cols-2 gap-4">
-                      <input required id="firstName" type="text" placeholder="First Name *" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
-                      <input required id="lastName" type="text" placeholder="Last Name *" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">First Name <span className="text-red-500">*</span></label>
+                        <input required id="firstName" type="text" placeholder="First Name" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Last Name <span className="text-red-500">*</span></label>
+                        <input required id="lastName" type="text" placeholder="Last Name" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      </div>
                     </div>
 
-                    <input required id="email" type="email" placeholder="Email Address *" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Email <span className="text-red-500">*</span></label>
+                      <input required id="email" type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                    </div>
 
-                    <div className="flex-1 flex border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary">
-                      <span className="bg-gray-50 px-3 py-3 text-gray-500 border-r flex items-center font-medium">+91</span>
-                      <input
-                        required
-                        id="phone"
-                        type="tel"
-                        placeholder="Mobile Number *"
-                        value={formData.phone}
-                        onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
-                        className="flex-1 p-3 outline-none"
-                      />
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Mobile Number <span className="text-red-500">*</span></label>
+                      <div className="flex-1 flex border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary">
+                        <span className="bg-gray-50 px-3 py-3 text-gray-500 border-r flex items-center font-medium">+91</span>
+                        <input
+                          required
+                          id="phone"
+                          type="tel"
+                          placeholder="Mobile Number"
+                          value={formData.phone}
+                          onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                          className="flex-1 p-3 outline-none"
+                        />
+                      </div>
                     </div>
 
                     <div>
@@ -493,51 +604,130 @@ export const Checkout = () => {
                       )}
                     </div>
 
-                    <input required id="address" type="text" placeholder="Flat / House No / Building / Street *" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                    {/* Rewards & Coupons Section (Only for Logged In Users) */}
+                    {user && (
+                      <div className="space-y-4 mb-6 pt-4 border-t border-gray-100">
+                        {/* Points Redemption */}
+                        {userPoints > 0 && (
+                          <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className="bg-amber-100 p-1.5 rounded-full">
+                                  <Icons.Star className="w-4 h-4 text-amber-600 fill-current" />
+                                </div>
+                                <div>
+                                  <p className="font-bold text-gray-800">Use Reward Points</p>
+                                  <p className="text-xs text-gray-600">You have {userPoints} points (Worth &#8377;{pointsValue})</p>
+                                </div>
+                              </div>
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  className="sr-only peer"
+                                  checked={useRewards}
+                                  onChange={(e) => setUseRewards(e.target.checked)}
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                              </label>
+                            </div>
+                            {useRewards && (
+                              <p className="text-xs text-green-700 font-medium ml-8">
+                                Applied: &#8377;{Math.min(pointsValue, finalTotal + totalDiscount)} discount
+                                {/* Note: Added totalDiscount back to compare against base total, or just use logic in render */}
+                              </p>
+                            )}
+                          </div>
+                        )}
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <input required id="city" type="text" placeholder="City *" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
-                      <input required id="state" type="text" placeholder="State *" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
-                    </div>
+                        {/* Coupons */}
+                        <div className="bg-gradient-to-br from-white to-rose-50/50 p-4 rounded-xl border border-rose-100/60 shadow-sm">
+                          <label className="block text-sm font-bold text-rose-950 mb-2 flex items-center gap-2">
+                            <Icons.Tag className="w-4 h-4 text-rose-600" />
+                            Have a Coupon?
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Enter code"
+                              value={couponCode}
+                              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-400 max-w-[150px] uppercase font-medium tracking-wide placeholder:normal-case placeholder:font-normal"
+                              maxLength={6}
+                              disabled={!!appliedCoupon}
+                            />
+                            {appliedCoupon ? (
+                              <button
+                                onClick={() => { setAppliedCoupon(null); setCouponCode(''); }}
+                                className="px-4 py-2 bg-rose-100 text-rose-600 text-xs font-bold rounded-lg hover:bg-rose-200 transition-colors"
+                              >
+                                Remove
+                              </button>
+                            ) : (
+                              <button
+                                onClick={async () => {
+                                  if (couponCode.length !== 6) return;
+                                  setVerifyingCoupon(true);
+                                  const { data, error } = await supabase.from('coupons').select('*').eq('code', couponCode).eq('is_active', true).single();
 
-                    <input required id="zipCode" type="text" placeholder="Zip Code (6 digits) *" value={formData.zipCode} onChange={e => setFormData({ ...formData, zipCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                                  if (data) {
+                                    showAlert('Coupon Applied!', `${data.discount_percent}% Discount Applied`, 'success');
+                                    setAppliedCoupon({ code: data.code, percent: data.discount_percent });
+                                  } else {
+                                    showAlert('Invalid Coupon', 'This code is invalid or expired.', 'error');
+                                  }
+                                  setVerifyingCoupon(false);
+                                }}
+                                disabled={verifyingCoupon || couponCode.length !== 6}
+                                className="px-4 py-2 bg-gradient-to-r from-rose-600 to-rose-700 text-white text-xs font-bold rounded-lg hover:from-rose-700 hover:to-rose-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-rose-200 hover:shadow-xl hover:shadow-rose-300 transition-all duration-300 transform hover:-translate-y-0.5"
+                              >
+                                {verifyingCoupon ? '...' : 'Apply'}
+                              </button>
+                            )}
+                          </div>
+                          {appliedCoupon && (
+                            <p className="text-xs text-green-600 font-bold mt-2">
+                              ✅ {appliedCoupon.percent}% OFF Applied!
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-1">Delivery Date</label>
-                      <input
-                        required
-                        id="deliveryDate"
-                        type="date"
-                        min={getMinDate()}
-                        value={formData.deliveryDate}
-                        onChange={e => setFormData({ ...formData, deliveryDate: e.target.value })}
-                        className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none"
-                      />
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Address <span className="text-red-500">*</span></label>
+                      <input required id="address" type="text" placeholder="Flat / House No / Building / Street" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
                     </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">City <span className="text-red-500">*</span></label>
+                        <input required id="city" type="text" placeholder="City" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">State <span className="text-red-500">*</span></label>
+                        <input required id="state" type="text" placeholder="State" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Zip Code <span className="text-red-500">*</span></label>
+                      <input required id="zipCode" type="text" placeholder="Zip Code (6 digits)" value={formData.zipCode} onChange={e => setFormData({ ...formData, zipCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} className="border rounded-lg p-3 w-full focus:ring-2 focus:ring-primary outline-none" />
+                    </div>
+
+
 
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <p className="font-bold text-sm mb-3">Delivery Speed</p>
                       <div className="space-y-3">
-                        <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${!isFastDelivery ? 'bg-white border-primary ring-1 ring-primary' : 'bg-white border-gray-200'}`}>
+                        <label className="flex items-center justify-between p-3 border rounded-lg bg-white border-primary ring-1 ring-primary">
                           <div className="flex items-center gap-3">
-                            <input type="radio" name="deliverySpeed" checked={!isFastDelivery} onChange={() => setIsFastDelivery(false)} className="accent-primary w-4 h-4" />
+                            <input type="radio" name="deliverySpeed" checked={true} readOnly className="accent-primary w-4 h-4" />
                             <div>
                               <span className="font-bold text-sm block">Standard Delivery</span>
                               <span className="text-xs text-gray-500">Delivered in 3-5 days</span>
                             </div>
                           </div>
                           <span className="text-green-600 font-bold text-sm">Free</span>
-                        </label>
-
-                        <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${isFastDelivery ? 'bg-white border-primary ring-1 ring-primary' : 'bg-white border-gray-200'}`}>
-                          <div className="flex items-center gap-3">
-                            <input type="radio" name="deliverySpeed" checked={isFastDelivery} onChange={() => setIsFastDelivery(true)} className="accent-primary w-4 h-4" />
-                            <div>
-                              <span className="font-bold text-sm block flex items-center gap-1">Fast Delivery <Icons.Zap className="w-3 h-3 text-yellow-500 fill-yellow-500" /></span>
-                              <span className="text-xs text-gray-500">Delivered within 24-48 hours</span>
-                            </div>
-                          </div>
-                          <span className="font-bold text-sm">+&#8377;100</span>
                         </label>
                       </div>
                     </div>
@@ -668,7 +858,7 @@ export const Checkout = () => {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="mt-4 pl-8 flex flex-col items-center">
                           <div className="bg-white p-4 rounded-xl border-2 border-gray-100 shadow-sm flex flex-col items-center w-full">
                             <p className="text-sm font-bold text-gray-700 mb-3">Scan to Pay</p>
-                            <img src="/upi-qr.png" alt="UPI QR Code" className="w-48 h-auto object-contain mb-4 border-2 border-gray-200 rounded-lg" />
+                            <img src="/upi-qr.png" alt="UPI QR Code" className="w-64 h-auto object-contain mb-4 border-2 border-gray-200 rounded-lg shadow-md" />
                             <div className="w-full border-t pt-4">
                               <label className="block text-sm font-bold text-gray-700 mb-2">Upload Payment Screenshot</label>
                               <input type="file" accept="image/*" onChange={handleFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
@@ -819,6 +1009,14 @@ export const Checkout = () => {
                         <span>Gift Wrapping</span>
                         <span className="font-medium text-green-600">Free</span>
                       </div>
+
+                      {/* Reward Points Discount */}
+                      {pointsDiscount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Reward Points Used</span>
+                          <span className="font-medium">- &#8377;{pointsDiscount.toLocaleString()}</span>
+                        </div>
+                      )}
 
                       {/* You Saved Badge */}
                       {hasDiscount && (

@@ -9,16 +9,26 @@ import { LightRays } from '../components/ui/LightRays';
 import { useAuth } from '../contexts/AuthContext';
 import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 import { Toast } from '../components/Toast';
+import { calculatePointsEarned } from '../utils/rewards';
+import { AuthRequiredModal } from '../components/AuthRequiredModal';
 
 export const ProductDetail = () => {
     const { slug } = useParams<{ slug: string }>();
+
+    // Guest Lead State
+    // Auth Modal State
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
     const navigate = useNavigate();
     const { addToCart, cartCount } = useCart();
+    const { user } = useAuth();
+    const { alertState, showAlert, closeAlert } = useCustomAlert(); // Fix: Destructure all properties
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState<string>('');
     const [isAdding, setIsAdding] = useState(false);
     const [hasBeenAdded, setHasBeenAdded] = useState(false);
+    const [showFullScreen, setShowFullScreen] = useState(false);
     const [isBuying, setIsBuying] = useState(false);
 
     // Variant State
@@ -166,7 +176,16 @@ export const ProductDetail = () => {
         }
     };
 
+    // Handle guest actions is removed as we now force redirect/modal
+
     const handleAddToCart = async () => {
+        // Guest User Logic
+        // Auth Check
+        if (!user) {
+            setIsAuthModalOpen(true);
+            return;
+        }
+
         if (!product || isAdding) return;
 
         setIsAdding(true);
@@ -189,6 +208,11 @@ export const ProductDetail = () => {
     };
 
     const handleBuyNow = () => {
+        if (!user) {
+            setIsAuthModalOpen(true);
+            return;
+        }
+
         if (!product) return;
 
         const cartItem: Product = {
@@ -267,6 +291,24 @@ export const ProductDetail = () => {
 
     return (
         <>
+            {/* Full Screen Image Modal */}
+            {showFullScreen && (
+                <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4" onClick={() => setShowFullScreen(false)}>
+                    <button
+                        onClick={() => setShowFullScreen(false)}
+                        className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors z-[210]"
+                    >
+                        <Icons.XCircle className="w-8 h-8 sm:w-10 sm:h-10" />
+                    </button>
+                    <img
+                        src={selectedImage}
+                        alt="Full screen view"
+                        className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
+
             {/* Light Rays Background */}
             <LightRays />
 
@@ -309,7 +351,7 @@ export const ProductDetail = () => {
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-16 md:pt-0">
+                <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-0 md:pt-0">
                     {/* Desktop Back Button */}
                     <motion.button
                         initial={{ opacity: 0, y: -20 }}
@@ -323,6 +365,26 @@ export const ProductDetail = () => {
                         <span className="hidden xs:inline">Back to Shop</span>
                     </motion.button>
 
+                    {/* Mobile Product Header (Name & Rating) */}
+                    <div className="lg:hidden mb-1 px-2">
+                        <div className="mb-2">
+                            <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border border-rose-100">
+                                {product.category.replace('-', ' ')}
+                            </span>
+                        </div>
+                        <h1 className="font-serif text-xl font-bold text-gray-900 leading-tight mb-2">
+                            {product.name}
+                        </h1>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center text-yellow-400">
+                                <Icons.Star className="w-4 h-4 fill-current" />
+                                <span className="ml-1 text-sm font-bold text-gray-700">{product.rating || '4.8'}</span>
+                            </div>
+                            <span className="text-gray-400 text-sm">•</span>
+                            <span className="text-gray-500 text-sm">{product.reviewCount || 128} reviews</span>
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-8 lg:gap-12">
                         {/* Image Gallery - Left Side */}
                         <motion.div
@@ -333,7 +395,7 @@ export const ProductDetail = () => {
                         >
                             {/* Stacked Image Gallery */}
                             <div
-                                className="relative h-[260px] sm:h-[450px] lg:h-[600px] flex items-center justify-center pt-0 sm:pt-8"
+                                className="relative aspect-square w-[calc(100%+1.5rem)] -mx-3 sm:w-auto sm:mx-0 sm:aspect-auto sm:h-[450px] lg:h-[600px] flex items-center justify-center pt-0 sm:pt-8"
                                 onTouchStart={(e) => setTouchStart(e.targetTouches[0].clientX)}
                                 onTouchMove={(e) => setTouchEnd(e.targetTouches[0].clientX)}
                                 onTouchEnd={() => {
@@ -363,10 +425,14 @@ export const ProductDetail = () => {
                                             const reverseIndex = totalImages - 1 - index;
 
                                             const handleCardClick = () => {
-                                                // Find current index and go to next
-                                                const currentIndex = images.indexOf(selectedImage);
-                                                const nextIndex = (currentIndex + 1) % images.length;
-                                                setSelectedImage(images[nextIndex]);
+                                                if (isSelected) {
+                                                    setShowFullScreen(true);
+                                                } else {
+                                                    // Find current index and go to next
+                                                    const currentIndex = images.indexOf(selectedImage);
+                                                    const nextIndex = (currentIndex + 1) % images.length;
+                                                    setSelectedImage(images[nextIndex]);
+                                                }
                                             };
 
                                             return (
@@ -393,12 +459,12 @@ export const ProductDetail = () => {
                                                         transformOrigin: 'center center',
                                                     }}
                                                 >
-                                                    <div className={`relative w-full h-full bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden ${isSelected ? 'ring-2 sm:ring-4 ring-rose-400' : ''
+                                                    <div className={`relative w-full h-full bg-white rounded-none sm:rounded-3xl shadow-none sm:shadow-xl overflow-hidden ${isSelected ? 'ring-0 sm:ring-4 ring-rose-400' : ''
                                                         }`}>
                                                         <img
                                                             src={img}
                                                             alt={`${product.name} ${index + 1}`}
-                                                            className="w-full h-full object-contain p-4 hover:scale-105 transition-transform duration-500"
+                                                            className="w-full h-full object-contain p-0 sm:p-4 hover:scale-105 transition-transform duration-500"
                                                         />
 
                                                         {/* Discount Badge - Only on first image */}
@@ -407,22 +473,10 @@ export const ProductDetail = () => {
                                                                 initial={{ scale: 0, rotate: -180 }}
                                                                 animate={{ scale: 1, rotate: 0 }}
                                                                 transition={{ delay: 0.4, type: "spring" }}
-                                                                className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-gradient-to-br from-rose-500 to-rose-600 text-white px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-xl flex items-center gap-1 sm:gap-2 z-10"
+                                                                className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-gradient-to-br from-rose-500 to-rose-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold shadow-xl flex items-center gap-1 z-10"
                                                             >
-                                                                <Icons.TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                                                                <Icons.TrendingUp className="w-3 h-3" />
                                                                 {discountPercentage}% OFF
-                                                            </motion.div>
-                                                        )}
-
-                                                        {/* Trending Badge - Only on first image */}
-                                                        {index === 0 && product.trending && (
-                                                            <motion.div
-                                                                initial={{ scale: 0 }}
-                                                                animate={{ scale: 1 }}
-                                                                transition={{ delay: 0.5, type: "spring" }}
-                                                                className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-gradient-to-br from-orange-400 to-orange-500 text-white px-2.5 py-1 sm:px-4 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold shadow-lg z-10"
-                                                            >
-                                                                🔥 TRENDING
                                                             </motion.div>
                                                         )}
 
@@ -454,11 +508,14 @@ export const ProductDetail = () => {
                                         transition={{ delay: 0.2 }}
                                         className="relative w-full h-full"
                                     >
-                                        <div className="relative w-full h-full bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden p-2 sm:p-4">
+                                        <div
+                                            className="relative w-full h-full bg-white rounded-none sm:rounded-3xl shadow-none sm:shadow-xl overflow-hidden p-0 sm:p-4 cursor-pointer"
+                                            onClick={() => setShowFullScreen(true)}
+                                        >
                                             <img
                                                 src={selectedImage}
                                                 alt={product.name}
-                                                className="w-full h-full object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+                                                className="w-full h-full object-contain p-0 sm:p-4 drop-shadow-2xl hover:scale-105 transition-transform duration-500"
                                             />
 
                                             {discountPercentage > 0 && (
@@ -466,21 +523,10 @@ export const ProductDetail = () => {
                                                     initial={{ scale: 0, rotate: -180 }}
                                                     animate={{ scale: 1, rotate: 0 }}
                                                     transition={{ delay: 0.4, type: "spring" }}
-                                                    className="absolute top-4 left-4 bg-gradient-to-br from-rose-500 to-rose-600 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-xl flex items-center gap-2"
+                                                    className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-gradient-to-br from-rose-500 to-rose-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold shadow-xl flex items-center gap-1 z-10"
                                                 >
-                                                    <Icons.TrendingUp className="w-4 h-4" />
+                                                    <Icons.TrendingUp className="w-3 h-3" />
                                                     {discountPercentage}% OFF
-                                                </motion.div>
-                                            )}
-
-                                            {product.trending && (
-                                                <motion.div
-                                                    initial={{ scale: 0 }}
-                                                    animate={{ scale: 1 }}
-                                                    transition={{ delay: 0.5, type: "spring" }}
-                                                    className="absolute top-4 right-4 bg-gradient-to-br from-orange-400 to-orange-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg"
-                                                >
-                                                    🔥 TRENDING
                                                 </motion.div>
                                             )}
                                         </div>
@@ -518,12 +564,12 @@ export const ProductDetail = () => {
                             transition={{ delay: 0.2 }}
                             className="flex flex-col"
                         >
-                            {/* Category Badge */}
+                            {/* Desktop Category Badge - Hidden on Mobile */}
                             <motion.div
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 }}
-                                className="mb-1.5 sm:mb-4"
+                                className="hidden lg:block mb-1.5 sm:mb-4"
                             >
                                 <span className="inline-flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-rose-100 to-purple-100 text-rose-700 px-2.5 py-1 sm:px-4 sm:py-2 rounded-full text-[10px] sm:text-sm font-bold uppercase tracking-wide sm:tracking-wider shadow-sm">
                                     <Icons.Gift className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -531,12 +577,12 @@ export const ProductDetail = () => {
                                 </span>
                             </motion.div>
 
-                            {/* Product Name */}
+                            {/* Desktop Product Name - Hidden on Mobile */}
                             <motion.h1
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 }}
-                                className="font-serif text-lg sm:text-3xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-2 sm:mb-6 leading-tight bg-gradient-to-r from-gray-900 via-rose-900 to-purple-900 bg-clip-text text-transparent"
+                                className="hidden lg:block font-serif text-lg sm:text-3xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-2 sm:mb-6 leading-tight bg-gradient-to-r from-gray-900 via-rose-900 to-purple-900 bg-clip-text text-transparent"
                             >
                                 {product.name}
                             </motion.h1>
@@ -563,6 +609,20 @@ export const ProductDetail = () => {
                                         </>
                                     )}
                                 </div>
+                            </motion.div>
+
+                            {/* Rewards Badge */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.55 }}
+                                className="mb-6 flex items-center gap-2"
+                            >
+                                <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-200 to-yellow-400 text-yellow-900 font-bold text-sm flex items-center gap-1.5 shadow-sm">
+                                    <Icons.Star className="w-4 h-4 fill-current" />
+                                    <span>Earn {calculatePointsEarned(product.price)} Points</span>
+                                </div>
+                                <span className="text-xs text-gray-500 font-medium">with this purchase</span>
                             </motion.div>
 
                             {/* Description */}
@@ -607,7 +667,7 @@ export const ProductDetail = () => {
                                     <div className="p-2 sm:p-3 bg-blue-100 rounded-full text-blue-600 shadow-sm">
                                         <Icons.Truck className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
-                                    <span className="font-bold text-xs sm:text-sm text-gray-900">Fast Delivery</span>
+                                    <span className="font-bold text-xs sm:text-sm text-gray-900">Free Delivery</span>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-gradient-to-br from-purple-50 to-white rounded-lg sm:rounded-xl border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
                                     <div className="p-2 sm:p-3 bg-purple-100 rounded-full text-purple-600 shadow-sm">
@@ -855,6 +915,12 @@ export const ProductDetail = () => {
                     </div>
                 </div>
             </div>
+            {/* Auth Required Modal */}
+            <AuthRequiredModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                message="Please login to add items to your cart or make a purchase."
+            />
         </>
     );
 };
@@ -1343,6 +1409,8 @@ const ReviewsList = ({ productId }: { productId: string }) => {
                 onConfirm={alertState.onConfirm}
                 cancelText={alertState.cancelText}
             />
+
+
 
             {/* Toast Notification */}
             <Toast

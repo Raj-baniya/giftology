@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { store } from '../services/store';
 import { getContactMessages, seedDatabase } from '../services/supabaseService';
@@ -22,7 +22,7 @@ export const Admin = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [leads, setLeads] = useState<any[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'leads' | 'reviews' | 'categories' | 'themes' | 'play'>('inventory');
+    const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'leads' | 'reviews' | 'categories' | 'themes' | 'play' | 'users'>('inventory');
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
     const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
 
@@ -42,6 +42,7 @@ export const Admin = () => {
     // Auth & Loading State
     const [isAdmin, setIsAdmin] = useState(false);
     const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+    const [sbUser, setSbUser] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [seeding, setSeeding] = useState(false);
 
@@ -52,21 +53,35 @@ export const Admin = () => {
     useEffect(() => {
         const checkAdminAuth = async () => {
             try {
-                // 1. Check Supabase Session
-                const { data: { session } } = await supabase.auth.getSession();
-                const ADMIN_EMAILS = ['giftology.in01@gmail.com', 'giftology.in02@gmail.com', 'giftology.in14@gmail.com'];
-                const isSupabaseAdmin = session?.user?.email && ADMIN_EMAILS.includes(session.user.email);
+                // Add a timeout to the auth check
+                const timeout = new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('Auth timeout')), 5000)
+                );
 
-                // 2. Check SessionStorage Fallback
-                const isFallbackAuth = sessionStorage.getItem('giftology_admin_auth') === 'true';
+                const checkPromise = (async () => {
+                    // 1. Check SessionStorage Fallback
+                    const isFallbackAuth = sessionStorage.getItem('giftology_admin_auth') === 'true';
 
-                if (isSupabaseAdmin || isFallbackAuth) {
-                    setIsAdmin(true);
-                } else {
-                    setIsAdmin(false);
-                }
+                    // 2. Check Supabase Session
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                    if (sessionError) console.error('Admin: Session error:', sessionError);
+
+                    const ADMIN_EMAILS = ['giftology.in01@gmail.com', 'giftology.in02@gmail.com', 'giftology.in14@gmail.com', 'rajbaniya81083@gmail.com'];
+                    const currentEmail = session?.user?.email;
+                    setSbUser(currentEmail || 'NOT AUTHENTICATED');
+
+                    const isSupabaseAdmin = currentEmail && ADMIN_EMAILS.includes(currentEmail);
+
+                    if (isFallbackAuth || isSupabaseAdmin) {
+                        console.log("Admin auth verified. Fallback:", isFallbackAuth, "SB:", isSupabaseAdmin);
+                        return true;
+                    }
+                })();
+
+                const result = await Promise.race([checkPromise, timeout]);
+                setIsAdmin(!!result);
             } catch (e) {
-                console.error("Auth check failed:", e);
+                console.error("Auth check failed or timed out:", e);
                 setIsAdmin(false);
             } finally {
                 setIsLoadingAuth(false);
@@ -78,10 +93,19 @@ export const Admin = () => {
     // --- Data Loading ---
     const loadData = async () => {
         try {
-            setError(null);
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log('Admin: Supabase Session:', session ? 'ACTIVE' : 'NONE');
+            console.log('Admin: Supabase User:', session?.user?.email || 'N/A');
+
+            // Log total orders in DB (ignoring errors for count)
+            const { count } = await supabase.from('orders').select('*', { count: 'exact', head: true });
+            console.log('Admin: Total orders in table (ignoring RLS filter):', count);
+
             // Fetch Categories
             try {
+                console.log('Admin: Fetching categories...');
                 const catData = await store.getCategories();
+                console.log('Admin: Categories loaded:', catData?.length || 0);
                 setCategories(catData || []);
             } catch (e) {
                 console.error('Failed to load categories:', e);
@@ -89,23 +113,30 @@ export const Admin = () => {
 
             // Fetch Products
             try {
+                console.log('Admin: Fetching products...');
                 const productData = await store.getAdminProducts();
-                console.log('Admin Product Data:', productData);
+                console.log('Admin: Products loaded:', productData?.length || 0);
                 setProducts(productData || []);
             } catch (e) {
                 console.error('Failed to load products:', e);
                 setError('Failed to load products. Check console for details.');
             }
 
-            const orderData = await store.getOrders();
-            console.log('Admin Orders Data:', orderData); // Debugging
-            setOrders((orderData || []).sort((a, b) => {
-                // 1. Fast Delivery First
-                if (a.deliveryType === 'Fast Delivery' && b.deliveryType !== 'Fast Delivery') return -1;
-                if (a.deliveryType !== 'Fast Delivery' && b.deliveryType === 'Fast Delivery') return 1;
-                // 2. Newest Date First
-                return new Date(b.date).getTime() - new Date(a.date).getTime();
-            }));
+            // Fetch Orders
+            try {
+                console.log('Admin: Fetching orders...');
+                const result = await store.getOrders();
+                console.log('Admin: Orders fetched result count:', result?.length || 0);
+
+                setOrders((result || []).sort((a, b) => {
+                    if (a.deliveryType === 'Fast Delivery' && b.deliveryType !== 'Fast Delivery') return -1;
+                    if (a.deliveryType !== 'Fast Delivery' && b.deliveryType === 'Fast Delivery') return 1;
+                    return new Date(b.date).getTime() - new Date(a.date).getTime();
+                }));
+            } catch (e: any) {
+                console.error('Failed to load orders:', e);
+                setError(`Order Error: ${e.message || JSON.stringify(e)}`);
+            }
 
             const leadsData = await getContactMessages();
             setLeads(leadsData || []);
@@ -261,55 +292,99 @@ export const Admin = () => {
             {/* Analytics Modal Removed */}
 
             <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+                {/* ULTIMATE CACHE TEST BANNER */}
+                <div className="bg-red-600 text-white p-4 rounded-xl mb-6 shadow-2xl">
+                    <h2 className="font-bold text-lg">⚠️ ADMIN SYSTEM DIAGNOSTICS</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                        <div className="bg-black/20 p-2 rounded">
+                            <p className="font-bold border-b border-white/20 mb-1">AUTH STATUS</p>
+                            <p className="text-xs">Browser Emulated Admin: <span className={isAdmin ? "text-green-300 font-bold" : "text-yellow-300"}>{isAdmin ? "YES" : "NO"}</span></p>
+                            <p className="text-xs">Supabase Authenticated: <span className={sbUser && sbUser !== 'NOT AUTHENTICATED' ? "text-green-300 font-bold" : "text-yellow-300"}>{sbUser || "CHECKING..."}</span></p>
+                        </div>
+                        <div className="bg-black/20 p-2 rounded text-[10px] leading-tight">
+                            <p className="font-bold border-b border-white/20 mb-1">TROUBLESHOOTING</p>
+                            <p>1. If SB AUTH says "NOT AUTHENTICATED", order fetching WILL fail due to RLS.</p>
+                            <p>2. Solution: Click "CLEAR & LOGOUT", then log in with <b>rajbaniya81083@gmail.com</b>.</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                        <button onClick={() => {
+                            sessionStorage.clear();
+                            localStorage.clear();
+                            supabase.auth.signOut();
+                            window.location.reload();
+                        }} className="bg-white text-red-600 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-gray-100 transition-colors">
+                            Clear Everything & Re-Login
+                        </button>
+                        <button onClick={() => window.location.reload()} className="bg-red-800 text-white px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-red-900 transition-colors border border-white/20">
+                            Hard Refresh
+                        </button>
+                    </div>
+                </div>
+
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900">Admin Dashboard</h1>
-                        <p className="text-gray-600 text-base md:text-lg mt-1">Manage products and view orders</p>
+                        <h1 className="font-bold text-gray-900" style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}>Admin Dashboard</h1>
+                        <p className="text-gray-600 mt-1" style={{ fontSize: '10px', fontFamily: 'Times New Roman, serif' }}>Manage products and view orders</p>
                         <div className="text-xs text-gray-400 mt-2">
                             Debug: Products: {products.length}, Loading: {isLoadingAuth ? 'Yes' : 'No'}, Admin: {isAdmin ? 'Yes' : 'No'}
-                            {error && <div className="text-red-500">Error: {error}</div>}
+                            <br />User: {user?.email || 'None'}
+                            {error && <div className="bg-red-100 text-red-700 p-2 rounded mt-2 text-xs font-mono">{error}</div>}
                         </div>
                     </div>
                     <div className="flex gap-3 flex-wrap w-full md:w-auto">
+                        <button onClick={loadData} className="px-3 py-2 bg-gray-200 rounded-xl hover:bg-gray-300 transition-colors text-xs font-bold">
+                            Force Refresh
+                        </button>
                         <button
                             onClick={() => window.location.href = '/admin/sales'}
-                            className="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:from-purple-700 hover:to-pink-700 shadow-lg transition-all duration-200 active:scale-95 min-h-[48px]"
+                            className="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:from-purple-700 hover:to-pink-700 shadow-lg transition-all duration-200 active:scale-95 min-h-[36px]"
+                            style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                         >
-                            <Icons.TrendingUp className="w-5 h-5" />
+                            <Icons.TrendingUp className="w-4 h-4" />
                             <span className="hidden sm:inline">Sales Analytics</span>
                             <span className="sm:hidden">Sales</span>
                         </button>
                         <button
                             onClick={loadData}
-                            className="bg-white text-gray-700 px-5 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 shadow-md border-2 border-gray-200 transition-all duration-200 active:scale-95 min-h-[48px]"
+                            className="bg-white text-gray-700 px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 shadow-md border-2 border-gray-200 transition-all duration-200 active:scale-95 min-h-[36px]"
                             title="Refresh Data"
+                            style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                         >
-                            <Icons.RefreshCw className="w-5 h-5" />
+                            <Icons.RefreshCw className="w-4 h-4" />
                             <span className="hidden sm:inline">Refresh</span>
                         </button>
                         <button
                             onClick={handleLogout}
-                            className="bg-red-600 text-white px-5 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-700 shadow-lg transition-all duration-200 active:scale-95 min-h-[48px]"
+                            className="bg-red-600 text-white px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-700 shadow-lg transition-all duration-200 active:scale-95 min-h-[36px]"
+                            style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                         >
-                            <Icons.LogOut className="w-5 h-5" />
+                            <Icons.LogOut className="w-4 h-4" />
                             <span className="hidden sm:inline">Logout</span>
                         </button>
                         <button
                             onClick={handleSeed}
                             disabled={seeding}
-                            className="flex-1 md:flex-none bg-green-600 text-white px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-700 shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
+                            className="flex-1 md:flex-none bg-green-600 text-white px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-700 shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-h-[36px]"
+                            style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                         >
-                            {seeding ? <Icons.RefreshCw className="w-5 h-5 animate-spin" /> : <Icons.Package className="w-5 h-5" />}
+                            {seeding ? <Icons.RefreshCw className="w-4 h-4 animate-spin" /> : <Icons.Package className="w-4 h-4" />}
                             {seeding ? 'Seeding...' : <span className="hidden sm:inline">Seed Database</span>}
                             {!seeding && <span className="sm:hidden">Seed DB</span>}
                         </button>
                         {activeTab === 'inventory' && (
                             <button
                                 onClick={() => navigate('/admin/products/new')}
-                                className="flex-1 md:flex-none bg-black text-white px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 shadow-lg transition-all duration-200 active:scale-95 relative z-10 min-h-[48px]"
+                                className="flex-1 md:flex-none px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all duration-200 active:scale-95 relative z-10 min-h-[36px]"
+                                style={{
+                                    fontSize: '12px',
+                                    fontFamily: 'Times New Roman, serif',
+                                    backgroundColor: '#000000',
+                                    color: '#ffffff'
+                                }}
                             >
-                                <Icons.Plus className="w-5 h-5" /> Add Product
+                                <Icons.Plus className="w-4 h-4" /> Add Product
                             </button>
                         )}
                     </div>
@@ -319,64 +394,81 @@ export const Admin = () => {
                 <div className="flex gap-2 md:gap-4 mb-6 border-b-2 border-gray-200 overflow-x-auto pb-0">
                     <button
                         onClick={() => setActiveTab('inventory')}
-                        className={`pb-4 px-4 text-sm md:text-base font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'inventory'
+                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'inventory'
                             ? 'border-b-4 border-black text-black -mb-0.5'
                             : 'text-gray-400 hover:text-gray-600'
                             }`}
+                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Product Inventory
                     </button>
                     <button
                         onClick={() => setActiveTab('orders')}
-                        className={`pb-4 px-4 text-sm md:text-base font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'orders'
+                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'orders'
                             ? 'border-b-4 border-black text-black -mb-0.5'
                             : 'text-gray-400 hover:text-gray-600'
                             }`}
+                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Order Management
                     </button>
                     <button
-                        onClick={() => setActiveTab('leads')}
-                        className={`pb-4 px-4 text-sm md:text-base font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'leads'
+                        onClick={() => setActiveTab('users')}
+                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'users'
                             ? 'border-b-4 border-black text-black -mb-0.5'
                             : 'text-gray-400 hover:text-gray-600'
                             }`}
+                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
+                    >
+                        Users & Rewards
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('leads')}
+                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'leads'
+                            ? 'border-b-4 border-black text-black -mb-0.5'
+                            : 'text-gray-400 hover:text-gray-600'
+                            }`}
+                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Leads & Messages
                     </button>
                     <button
                         onClick={() => setActiveTab('reviews')}
-                        className={`pb-4 px-4 text-sm md:text-base font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'reviews'
+                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'reviews'
                             ? 'border-b-4 border-black text-black -mb-0.5'
                             : 'text-gray-400 hover:text-gray-600'
                             }`}
+                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Reviews
                     </button>
                     <button
                         onClick={() => setActiveTab('categories')}
-                        className={`pb-4 px-4 text-sm md:text-base font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'categories'
+                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'categories'
                             ? 'border-b-4 border-black text-black -mb-0.5'
                             : 'text-gray-400 hover:text-gray-600'
                             }`}
+                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Categories
                     </button>
                     <button
                         onClick={() => setActiveTab('themes')}
-                        className={`pb-4 px-4 text-sm md:text-base font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'themes'
+                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'themes'
                             ? 'border-b-4 border-black text-black -mb-0.5'
                             : 'text-gray-400 hover:text-gray-600'
                             }`}
+                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Themes
                     </button>
                     <button
                         onClick={() => setActiveTab('play')}
-                        className={`pb-4 px-4 text-sm md:text-base font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'play'
+                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'play'
                             ? 'border-b-4 border-black text-black -mb-0.5'
                             : 'text-gray-400 hover:text-gray-600'
                             }`}
+                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Play Management
                     </button>
@@ -600,10 +692,10 @@ export const Admin = () => {
                                             <img src={product.imageUrl} alt={product.name} className="w-20 h-20 rounded-lg object-cover bg-gray-100 shrink-0" />
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start">
-                                                    <h3 className="font-bold text-gray-900 line-clamp-2 mb-1 pr-2">{product.name}</h3>
+                                                    <h3 className="font-bold text-gray-900 line-clamp-2 mb-1 pr-2" style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}>{product.name}</h3>
                                                     {product.trending && <Icons.TrendingUp className="w-4 h-4 text-orange-500 shrink-0" />}
                                                 </div>
-                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">{product.category.replace('-', ' ')} {product.subcategory ? `> ${product.subcategory.replace('-', ' ')}` : ''}</p>
+                                                <p className="text-gray-500 uppercase font-bold mb-1" style={{ fontSize: '10px', fontFamily: 'Times New Roman, serif' }}>{product.category.replace('-', ' ')} {product.subcategory ? `> ${product.subcategory.replace('-', ' ')}` : ''}</p>
                                                 <div className="flex justify-between items-center">
                                                     <div>
                                                         <p className="font-bold text-lg text-gray-900" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{product.price.toLocaleString()}</p>
@@ -640,18 +732,24 @@ export const Admin = () => {
                                             </div>
                                         )}
 
-                                        <div className="flex gap-3 pt-3 border-t border-gray-100 mt-3">
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); navigate(`/admin/products/edit/${product.id}`); }}
-                                                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-blue-700 active:scale-95 transition-all shadow-md min-h-[48px]"
+                                        <div className="flex gap-2 pt-2 border-t border-gray-100 mt-2" onClick={(e) => e.stopPropagation()}>
+                                            <a
+                                                href={`/admin/products/edit/${product.id}`}
+                                                className="flex-1 flex items-center justify-center gap-1 bg-blue-600 text-white py-2 rounded-xl font-bold hover:bg-blue-700 active:scale-95 transition-all shadow-md min-h-[36px] no-underline"
+                                                style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                                             >
-                                                <Icons.Edit2 className="w-5 h-5" /> Edit
-                                            </button>
+                                                <Icons.Edit2 className="w-4 h-4" /> Edit
+                                            </a>
                                             <button
-                                                onClick={(e) => { e.stopPropagation(); deleteProduct(product.id); }}
-                                                className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-red-700 active:scale-95 transition-all shadow-md min-h-[48px]"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    e.preventDefault();
+                                                    deleteProduct(product.id);
+                                                }}
+                                                className="flex-1 flex items-center justify-center gap-1 bg-red-600 text-white py-2 rounded-xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-md min-h-[36px]"
+                                                style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                                             >
-                                                <Icons.Trash2 className="w-5 h-5" /> Delete
+                                                <Icons.Trash2 className="w-4 h-4" /> Delete
                                             </button>
                                         </div>
                                     </div>
@@ -1025,27 +1123,73 @@ export const Admin = () => {
                             <h2 className="text-xl font-bold mb-4">Homepage Theme</h2>
                             <p className="text-gray-600 mb-6">Select a theme for the homepage. This will change the look and feel of the main landing page.</p>
 
+                            <button
+                                onClick={async () => {
+                                    showAlert('Testing...', 'Checking connection to "settings" table...', 'info');
+                                    try {
+                                        const { data, error } = await supabase.from('settings').select('*');
+                                        if (error) {
+                                            closeAlert();
+                                            showAlert('Connection Failed', `Error: ${error.message}\nDetail: ${error.details || ''}\nHint: ${error.hint || ''}`, 'error');
+                                        } else {
+                                            closeAlert();
+                                            showAlert('Connection Success', `Found ${data.length} settings rows.\nCurrent value: ${data.find(r => r.key === 'current_theme')?.value}`, 'success');
+                                        }
+                                    } catch (e: any) {
+                                        closeAlert();
+                                        showAlert('Connection Error', `Exception: ${e.message}`, 'error');
+                                    }
+                                }}
+                                className="mb-6 px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-bold hover:bg-gray-700"
+                            >
+                                🛠️ Test Database Connection
+                            </button>
+
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {/* Default Theme */}
+                                {/* Sparkling Normal Theme */}
                                 <div
-                                    onClick={async () => await setTheme('default')}
-                                    className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${currentTheme === 'default' ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-200 hover:border-gray-300'}`}
+                                    onClick={async () => {
+                                        showAlert('Updating Theme', 'Applying New Year Theme...', 'info');
+                                        const result = await setTheme('sparkling');
+                                        if (result.success) {
+                                            setTimeout(() => {
+                                                closeAlert();
+                                                showAlert('Success', 'Theme updated to New Year Theme', 'success');
+                                            }, 500);
+                                        } else {
+                                            closeAlert();
+                                            showAlert('Error', `Failed to update theme: ${result.error?.message || 'Unknown error'}`, 'error');
+                                        }
+                                    }}
+                                    className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${currentTheme === 'sparkling' || currentTheme === 'default' ? 'border-black ring-2 ring-black ring-offset-2' : 'border-gray-200 hover:border-gray-300'}`}
                                 >
                                     <div className="h-40 bg-gray-100 flex items-center justify-center">
-                                        <span className="text-4xl">🏠</span>
+                                        <span className="text-4xl">✨</span>
                                     </div>
                                     <div className="p-4 bg-white">
                                         <div className="flex justify-between items-center">
-                                            <h3 className="font-bold text-lg">Default</h3>
-                                            {currentTheme === 'default' && <Icons.Check className="w-5 h-5 text-green-500" />}
+                                            <h3 className="font-bold text-lg">New Year Theme</h3>
+                                            {(currentTheme === 'sparkling' || currentTheme === 'default') && <Icons.Check className="w-5 h-5 text-green-500" />}
                                         </div>
-                                        <p className="text-sm text-gray-500 mt-1">Standard Giftology design</p>
+                                        <p className="text-sm text-gray-500 mt-1">Elegant Blue & Gold Celebration</p>
                                     </div>
                                 </div>
 
                                 {/* Christmas Theme */}
                                 <div
-                                    onClick={async () => await setTheme('christmas')}
+                                    onClick={async () => {
+                                        showAlert('Updating Theme', 'Applying Christmas theme...', 'info');
+                                        const result = await setTheme('christmas');
+                                        if (result.success) {
+                                            setTimeout(() => {
+                                                closeAlert();
+                                                showAlert('Success', 'Theme updated to Christmas', 'success');
+                                            }, 500);
+                                        } else {
+                                            closeAlert();
+                                            showAlert('Error', `Failed to update theme: ${result.error?.message || 'Unknown error'}`, 'error');
+                                        }
+                                    }}
                                     className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${currentTheme === 'christmas' ? 'border-red-600 ring-2 ring-red-600 ring-offset-2' : 'border-gray-200 hover:border-red-200'}`}
                                 >
                                     <div className="h-40 bg-red-50 flex items-center justify-center">
@@ -1062,7 +1206,19 @@ export const Admin = () => {
 
                                 {/* Diwali Theme */}
                                 <div
-                                    onClick={async () => await setTheme('diwali')}
+                                    onClick={async () => {
+                                        showAlert('Updating Theme', 'Applying Diwali theme...', 'info');
+                                        const result = await setTheme('diwali');
+                                        if (result.success) {
+                                            setTimeout(() => {
+                                                closeAlert();
+                                                showAlert('Success', 'Theme updated to Diwali', 'success');
+                                            }, 500);
+                                        } else {
+                                            closeAlert();
+                                            showAlert('Error', `Failed to update theme: ${result.error?.message || 'Unknown error'}`, 'error');
+                                        }
+                                    }}
                                     className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${currentTheme === 'diwali' ? 'border-orange-500 ring-2 ring-orange-500 ring-offset-2' : 'border-gray-200 hover:border-orange-200'}`}
                                 >
                                     <div className="h-40 bg-orange-50 flex items-center justify-center">
@@ -1082,6 +1238,9 @@ export const Admin = () => {
                 ) : activeTab === 'play' ? (
                     /* Play Management Tab */
                     <PlayManagement />
+                ) : activeTab === 'users' ? (
+                    /* Users Tab */
+                    <UsersTab />
                 ) : null}
             </div>
 
@@ -1261,6 +1420,28 @@ const PlayManagement = () => {
         }
     };
 
+    const handleDeleteVideo = async (videoId: string) => {
+        showAlert(
+            'Delete Video?',
+            'Are you sure you want to delete this video? This will also remove all its likes and comments.',
+            'warning',
+            {
+                confirmText: 'Delete',
+                cancelText: 'Cancel',
+                onConfirm: async () => {
+                    try {
+                        await store.deletePlayVideo(videoId);
+                        showAlert('Success', 'Video deleted successfully', 'success');
+                        loadVideos();
+                    } catch (e) {
+                        console.error('Failed to delete video:', e);
+                        showAlert('Error', 'Failed to delete video', 'error');
+                    }
+                }
+            }
+        );
+    };
+
     return (
         <div className="space-y-8">
             {/* Upload Section */}
@@ -1340,12 +1521,22 @@ const PlayManagement = () => {
                                             <span>💬 {video.commentsCount}</span>
                                             <span>↗️ {video.sharesCount}</span>
                                         </div>
-                                        <button
-                                            onClick={() => loadComments(video.id)}
-                                            className="w-full border border-gray-200 py-2 rounded hover:bg-gray-50 text-sm font-medium"
-                                        >
-                                            Manage Comments
-                                        </button>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button
+                                                onClick={() => loadComments(video.id)}
+                                                className="border border-gray-200 py-2 rounded hover:bg-gray-50 text-xs font-medium flex items-center justify-center gap-1"
+                                            >
+                                                <Icons.MessageSquare className="w-3.5 h-3.5" />
+                                                Comments
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteVideo(video.id)}
+                                                className="border border-red-100 py-2 rounded bg-red-50 text-red-600 hover:bg-red-100 text-xs font-medium flex items-center justify-center gap-1"
+                                            >
+                                                <Icons.Trash2 className="w-3.5 h-3.5" />
+                                                Delete
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -1639,7 +1830,10 @@ const ReviewsTab = () => {
                         </div>
                     </>
                 )}
+
             </div>
+
+            {/* Custom Alert */}
 
 
 
@@ -1654,5 +1848,136 @@ const ReviewsTab = () => {
                 cancelText={alertState.cancelText}
             />
         </>
+    );
+
+};
+
+const UsersTab = () => {
+    const [users, setUsers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { showAlert } = useCustomAlert();
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                // Fetch profiles with enriched stats
+                const data = await store.getAllUsersWithStats();
+                setUsers(data || []);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    const updateUserPoints = async (userId: string, currentPoints: number) => {
+        // Simple prompt for now
+        const points = prompt('Enter new points balance:', currentPoints.toString());
+        if (points === null) return;
+        const newPoints = parseInt(points);
+        if (isNaN(newPoints)) return;
+
+        try {
+            // 1. Attempt to get session (Silent Recovery)
+            let { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                console.log('[Admin] Session missing, attempting silent refresh...');
+                const { data: refreshData } = await supabase.auth.refreshSession();
+                session = refreshData.session;
+            }
+
+            // 2. Fetch User Details for Debugging (User Request)
+            const { data: { user } } = await supabase.auth.getUser();
+            console.log('[Admin] Update Points Action - Current State:');
+            console.log(' - Session ID:', session?.access_token ? 'Present' : 'Missing');
+            console.log(' - User Email:', user?.email || 'Unknown');
+            console.log(' - User Role:', user?.role || 'Unknown');
+
+            // 3. Execute RPC regardless of client-side doubts (Server decides)
+            console.log('[Admin] Invoking update_user_points...');
+            // Use RPC for secure admin update
+            const { data, error } = await supabase.rpc('update_user_points', {
+                target_user_id: userId,
+                new_points: newPoints
+            });
+
+            if (error) throw error;
+
+            // Optimistic update
+            setUsers(users.map(u => u.id === userId ? { ...u, reward_points: newPoints } : u));
+            alert('Points updated successfully!');
+        } catch (error: any) {
+            console.error('Update failed:', error);
+            alert('Failed: ' + (error.message || error.details || 'Unknown error'));
+        }
+    };
+
+    if (loading) return <div className="text-center py-10">Loading users...</div>;
+
+    return (
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="text-xl font-bold">Registered Users ({users.length})</h2>
+            </div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                    <thead className="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th className="p-4 font-bold border-b">User</th>
+                            <th className="p-4 font-bold border-b text-center">Reward Points</th>
+                            <th className="p-4 font-bold border-b text-center">Coupons (Active)</th>
+                            <th className="p-4 font-bold border-b text-center">Coupons (Used)</th>
+                            <th className="p-4 font-bold border-b text-right">Total Spent</th>
+                            <th className="p-4 font-bold border-b text-right">Joined</th>
+                            <th className="p-4 font-bold border-b text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 text-sm">
+                        {users.map((user) => (
+                            <tr key={user.id} className="hover:bg-gray-50/50">
+                                <td className="p-4">
+                                    <div className="font-bold text-gray-900">{user.full_name || user.display_name || 'No Name'}</div>
+                                    <div className="text-xs text-gray-500">{user.email || 'No Email (Auth check needed)'}</div>
+                                    <div className="text-[10px] text-gray-400 font-mono mt-1">{user.id}</div>
+                                </td>
+                                <td className="p-4 text-center">
+                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-bold">
+                                        <Icons.Star className="w-3.5 h-3.5 fill-current" />
+                                        {user.reward_points || 0}
+                                    </div>
+                                </td>
+                                <td className="p-4 text-center">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {user.coupons_active || 0}
+                                    </span>
+                                </td>
+                                <td className="p-4 text-center">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        {user.coupons_used || 0}
+                                    </span>
+                                </td>
+                                <td className="p-4 text-right font-mono">
+                                    &#8377;{(user.total_spent || 0).toLocaleString()}
+                                </td>
+                                <td className="p-4 text-right text-gray-500">
+                                    {new Date(user.created_at || user.updated_at || Date.now()).toLocaleDateString()}
+                                </td>
+                                <td className="p-4 text-right">
+                                    <button
+                                        onClick={() => updateUserPoints(user.id, user.reward_points || 0)}
+                                        className="text-blue-600 hover:text-blue-800 text-xs font-bold border border-blue-200 px-3 py-1.5 rounded hover:bg-blue-50 transition-colors"
+                                    >
+                                        Edit Points
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     );
 };

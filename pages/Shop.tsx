@@ -30,35 +30,41 @@ export const Shop = () => {
 
     useEffect(() => {
         const load = async () => {
-            setLoading(true);
-            const [allProducts, allCategories] = await Promise.all([
-                store.getProducts(),
-                store.getCategories()
-            ]);
+            try {
+                setLoading(true);
+                const [allProducts, allCategories] = await Promise.all([
+                    store.getProducts(),
+                    store.getCategories()
+                ]);
 
-            setCategories(allCategories);
-            console.log('All Products:', allProducts);
+                setCategories(allCategories);
+                console.log('All Products:', allProducts);
 
-            let filtered = allProducts;
+                let filtered = allProducts;
 
-            if (categoryFilter && categoryFilter !== 'all') {
-                if (categoryFilter === 'trending') {
-                    filtered = filtered.filter(p => p.trending === true);
-                } else {
-                    filtered = filtered.filter(p => p.category === categoryFilter);
+                if (categoryFilter && categoryFilter !== 'all') {
+                    if (categoryFilter === 'trending') {
+                        filtered = filtered.filter(p => p.trending === true);
+                    } else {
+                        filtered = filtered.filter(p => p.category === categoryFilter);
+                    }
                 }
+
+                // Handle search from URL parameter or local state
+                const activeSearch = searchParam || searchQuery;
+                if (activeSearch) {
+                    filtered = filtered.filter(p => p.name.toLowerCase().includes(activeSearch.toLowerCase()));
+                }
+
+                filtered = filtered.filter(p => p.price <= priceRange);
+
+                setProducts(filtered);
+            } catch (error) {
+                console.error('Failed to load shop data:', error);
+                // Optionally set an error state here
+            } finally {
+                setLoading(false);
             }
-
-            // Handle search from URL parameter or local state
-            const activeSearch = searchParam || searchQuery;
-            if (activeSearch) {
-                filtered = filtered.filter(p => p.name.toLowerCase().includes(activeSearch.toLowerCase()));
-            }
-
-            filtered = filtered.filter(p => p.price <= priceRange);
-
-            setProducts(filtered);
-            setLoading(false);
         };
         load();
     }, [categoryFilter, searchQuery, searchParam, priceRange]);
@@ -80,36 +86,9 @@ export const Shop = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-background">
-
-            {/* Enhanced Header Banner - Compact height on mobile */}
-            <div className="relative h-[200px] md:h-[350px] w-full flex items-center overflow-hidden">
-                {/* Background Image */}
-                <div
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-105"
-                    style={{
-                        backgroundImage: "url('https://images.pexels.com/photos/5414005/pexels-photo-5414005.jpeg?auto=compress&cs=tinysrgb&w=1600')",
-                    }}
-                />
-
-                {/* Dark Overlay */}
-                <div className="absolute inset-0 bg-black/40" />
-
-                {/* Content */}
-                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                        className="text-center md:text-left"
-                    >
-                        <h1 className="font-serif text-3xl md:text-6xl font-bold text-white mb-2 md:mb-4 drop-shadow-lg leading-tight">
-                            Explore Our <br />
-                            <span className="text-primary italic">Collection</span>
-                        </h1>
-                    </motion.div>
-                </div>
-            </div>
+        <div className="min-h-screen">
+            {/* Header Banner Removed */}
+            <div className="pt-0"></div>
 
             <div className="max-w-[1600px] mx-auto px-4 py-6 md:py-12">
 
@@ -127,7 +106,7 @@ export const Shop = () => {
                     <button
                         onClick={() => setViewMode('grid')}
                         className={`px-6 py-3 rounded-lg font-bold flex items-center gap-2 smooth-transition ${viewMode === 'grid'
-                            ? 'bg-black text-white'
+                            ? 'bg-gray-900 text-white'
                             : 'bg-white text-black border border-gray-200 hover:bg-gray-50'
                             }`}
                     >
@@ -137,7 +116,7 @@ export const Shop = () => {
                     <button
                         onClick={() => setViewMode('infinite')}
                         className={`px-6 py-3 rounded-lg font-bold flex items-center gap-2 smooth-transition ${viewMode === 'infinite'
-                            ? 'bg-black text-white'
+                            ? 'bg-gray-900 text-white'
                             : 'bg-white text-black border border-gray-200 hover:bg-gray-50'
                             }`}
                     >
@@ -242,9 +221,9 @@ export const Shop = () => {
                                                 alt={product.name}
                                                 className="w-full h-full object-contain smooth-transition-slow md:group-hover:scale-110 p-2"
                                             />
-                                            {product.trending && (
-                                                <div className="absolute top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md flex items-center gap-1 z-10">
-                                                    <Icons.TrendingUp className="w-3 h-3" /> Trending
+                                            {product.marketPrice && product.marketPrice > product.price && (
+                                                <div className="absolute top-2 right-2 bg-rose-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md flex items-center gap-1 z-10">
+                                                    {Math.round(((product.marketPrice - product.price) / product.marketPrice) * 100)}% OFF
                                                 </div>
                                             )}
                                             {(!product.stock || product.stock <= 0) && (
@@ -285,7 +264,7 @@ export const Shop = () => {
                                                     ) : product.id.length % 2 === 0 ? (
                                                         <div className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
                                                             <Icons.Truck className="w-3 h-3" />
-                                                            <span>Fast Delivery</span>
+                                                            <span>Free Delivery</span>
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center gap-1 text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">

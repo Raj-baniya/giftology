@@ -4,13 +4,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { Icons } from '../components/ui/Icons';
 import { motion } from 'framer-motion';
 import { store } from '../services/store';
+import { supabase } from '../services/supabaseClient';
 import { Order } from '../types';
 import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
   <button
     onClick={onClick}
-    className={`flex items-center justify-center md:justify-start gap-2 px-4 py-3 rounded-lg transition-all flex-shrink-0 whitespace-nowrap text-sm md:text-base ${active ? 'bg-primary/20 text-black font-bold border border-primary/20' : 'text-textMuted hover:bg-gray-100 border border-transparent'
+    className={`flex items-center justify-center md:justify-start gap-2 px-4 py-3 rounded-lg transition-all flex-shrink-0 whitespace-nowrap text-sm md:text-base ${active ? 'bg-gray-900 text-white font-bold shadow-md' : 'text-textMuted hover:bg-gray-100 border border-transparent'
       } ${window.innerWidth < 768 ? 'w-auto' : 'w-full text-left'}`}
   >
     <Icon className="w-4 h-4 md:w-5 md:h-5" />
@@ -98,8 +99,168 @@ const ChangePasswordForm = () => {
   );
 };
 
+// Rewards Tab Component
+const RewardsTab = ({ showAlert }: any) => {
+  const { user, profile } = useAuth();
+  const [points, setPoints] = useState(0);
+  const [couponCode, setCouponCode] = useState('');
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [redeeming, setRedeeming] = useState(false);
+
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      if (!user) return;
+      setLoading(true);
+      try {
+        const { data: userCoupons } = await supabase
+          .from('user_coupons')
+          .select('*, coupon:coupons(*)')
+          .eq('user_id', user.id)
+          .order('redeemed_at', { ascending: false });
+        setCoupons(userCoupons || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCoupons();
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (profile) {
+      setPoints(profile.reward_points || 0);
+    }
+  }, [profile]);
+
+  const handleRedeem = async () => {
+    if (!couponCode || couponCode.length !== 6) {
+      showAlert('Invalid Code', 'Please enter a valid 6-digit coupon code.', 'error');
+      return;
+    }
+
+    setRedeeming(true);
+    try {
+      // 1. Check if coupon exists
+      const { data: coupon, error: couponError } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode.toUpperCase())
+        .eq('is_active', true)
+        .single();
+
+      if (couponError || !coupon) {
+        throw new Error('Invalid or expired coupon code.');
+      }
+
+      // 2. Add to user wallet
+      const { error: redeemError } = await supabase
+        .from('user_coupons')
+        .insert([{
+          user_id: user.id,
+          coupon_code: coupon.code,
+          valid_until: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000) // 180 days
+        }]);
+
+      if (redeemError) {
+        if (redeemError.code === '23505') throw new Error('You have already redeemed this coupon.');
+        throw redeemError;
+      }
+
+      showAlert('Success!', `Coupon for ${coupon.discount_percent}% OFF added to your wallet!`, 'success');
+      setCouponCode('');
+      // Refresh list
+      const { data: updatedCoupons } = await supabase
+        .from('user_coupons')
+        .select('*, coupon:coupons(*)')
+        .eq('user_id', user.id)
+        .order('redeemed_at', { ascending: false });
+      setCoupons(updatedCoupons || []);
+
+    } catch (err: any) {
+      showAlert('Error', err.message || 'Failed to redeem coupon.', 'error');
+    } finally {
+      setRedeeming(false);
+    }
+  };
+
+  if (loading) return <div className="p-8 text-center"><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full text-indigo-600"></div></div>;
+
+  return (
+    <div className="space-y-6">
+      {/* Points Summary */}
+      <div className="bg-gradient-to-r from-amber-200 to-yellow-400 p-6 rounded-xl shadow-sm text-yellow-900">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/30 rounded-full backdrop-blur-sm">
+            <Icons.Star className="w-8 h-8 fill-current" />
+          </div>
+          <div>
+            <p className="font-bold text-lg opacity-80">My Reward Points</p>
+            <h2 className="text-4xl font-bold">{points} <span className="text-lg opacity-70">pts</span></h2>
+            <p className="text-sm font-medium mt-1">Worth &#8377;{points / 10}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Redeem Coupon */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <h3 className="font-bold text-lg mb-4">Redeem a Coupon</h3>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+            placeholder="Enter 6-digit Code"
+            className="flex-1 border-2 border-gray-200 rounded-lg px-4 py-3 font-mono uppercase focus:border-black focus:outline-none transition-colors"
+            maxLength={6}
+          />
+          <button
+            onClick={handleRedeem}
+            disabled={redeeming}
+            className="w-full sm:w-auto bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50 transition-colors"
+          >
+            {redeeming ? 'Processing...' : 'Redeem Code'}
+          </button>
+        </div>
+      </div>
+
+      {/* My Coupons */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <h3 className="font-bold text-lg mb-4">My Coupons Wallet</h3>
+        {coupons.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Icons.Tag className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <p>No coupons yet. Keep an eye out for special codes!</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {coupons.map((uc) => (
+              <div key={uc.id} className={`relative p-4 rounded-xl border-2 ${uc.status === 'active' ? 'border-dashed border-green-300 bg-green-50' : 'border-gray-200 bg-gray-50 grayscale'}`}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 ${uc.status === 'active' ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600'}`}>
+                      {uc.status}
+                    </span>
+                    <h4 className="text-2xl font-bold text-gray-800">{uc.coupon.discount_percent}% OFF</h4>
+                    <p className="font-mono text-sm text-gray-500 mt-1">Code: {uc.coupon_code}</p>
+                  </div>
+                  <Icons.Tag className={`w-8 h-8 ${uc.status === 'active' ? 'text-green-400' : 'text-gray-300'}`} />
+                </div>
+                <div className="mt-4 pt-3 border-t border-gray-200/50 text-xs text-gray-500 flex justify-between">
+                  <span>Expires: {new Date(uc.valid_until).toLocaleDateString()}</span>
+                  {uc.status === 'active' && <span className="font-bold text-green-600">Apply at Checkout</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const Account = () => {
-  const { user, updateProfile, loading, logout } = useAuth();
+  const { user, profile, updateProfile, loading, logout } = useAuth();
   const { alertState, showAlert, closeAlert } = useCustomAlert();
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
@@ -109,6 +270,7 @@ export const Account = () => {
   const [addresses, setAddresses] = useState<any[]>([]);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [editingAddressIndex, setEditingAddressIndex] = useState<number | null>(null);
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [editFormData, setEditFormData] = useState<any>({});
 
   useEffect(() => {
@@ -131,8 +293,79 @@ export const Account = () => {
 
     if (!loading && user) {
       fetchData();
+
+      // Realtime Subscription for Profile Changes (Points/Addresses)
+      const profileSubscription = supabase
+        .channel('public:profiles')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+          (payload) => {
+            console.log('Profile updated realtime:', payload);
+            fetchData(); // Refresh data on any profile change
+          }
+        )
+        .subscribe();
+
+      // Realtime Subscription for Orders
+      const ordersSubscription = supabase
+        .channel('public:orders')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'orders', filter: `user_id=eq.${user.id}` },
+          (payload) => {
+            console.log('Order updated realtime:', payload);
+            fetchData();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(profileSubscription);
+        supabase.removeChannel(ordersSubscription);
+      };
     }
   }, [user, loading]);
+
+  // --- Guest Prompt (If not logged in) ---
+  if (!loading && !user) {
+    return (
+      <div className="bg-white md:bg-gray-50 flex items-start justify-center p-4 pt-8 md:pt-16 pb-12">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center space-y-6">
+          <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Icons.User className="w-10 h-10 text-rose-500" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h2>
+            <p className="text-gray-600 mb-4">
+              Please log in to view your orders and account details.
+            </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 text-sm font-medium">
+              🎁 <strong>Special Offer:</strong><br />
+              Sign up today and get <span className="text-amber-700 font-bold">₹50 (500 Points)</span> instantly in your wallet!
+            </div>
+          </div>
+
+          <div className="flex gap-4 pt-2">
+            <button
+              onClick={() => window.location.href = '/login'}
+              className="flex-1 bg-rose-600 text-white py-3 rounded-xl font-bold hover:bg-rose-700 transition-all shadow-lg shadow-rose-200"
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => window.location.href = '/login?mode=signup'}
+              className="flex-1 bg-white text-gray-900 border border-gray-200 py-3 rounded-xl font-bold hover:bg-gray-50 transition-all"
+            >
+              Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
 
   const handleDeleteAddress = async (index: number) => {
     showAlert(
@@ -181,6 +414,27 @@ export const Account = () => {
     setEditFormData({});
   };
 
+  const handleSaveNewAddress = async () => {
+    if (!user) return;
+
+    // Basic Validation
+    if (!editFormData.address || !editFormData.city || !editFormData.zipCode) {
+      showAlert('Missing Information', 'Please fill in at least Address, City, and Zip Code.', 'error');
+      return;
+    }
+
+    try {
+      const updated = await store.saveUserAddress(user.id, editFormData);
+      setAddresses(updated);
+      setIsAddingAddress(false);
+      setEditFormData({});
+      showAlert('Success', 'New address added successfully.', 'success');
+    } catch (error) {
+      console.error('Failed to add address', error);
+      showAlert('Error', 'Failed to add address.', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -199,13 +453,13 @@ export const Account = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 md:py-10 px-4">
+    <div className="pt-[0.4cm] pb-6 md:py-10 px-4">
       <div className="max-w-6xl mx-auto">
 
         {/* Header Card */}
         <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 mb-8 flex flex-col md:flex-row items-center md:items-start gap-6">
           <div className="w-20 h-20 md:w-24 md:h-24 bg-primary/30 rounded-full flex items-center justify-center text-2xl md:text-3xl font-serif text-primary-dark flex-shrink-0">
-            {user.displayName.charAt(0)}
+            {(profile?.full_name || user?.displayName || 'U').charAt(0)}
           </div>
           <div className="flex-1 text-center md:text-left w-full">
             <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
@@ -215,15 +469,15 @@ export const Account = () => {
                     value={newName}
                     onChange={e => setNewName(e.target.value)}
                     className="border rounded px-2 py-1 text-sm bg-white text-gray-900 focus:outline-none focus:border-primary"
-                    placeholder={user.displayName}
+                    placeholder={profile?.full_name || user?.displayName}
                   />
                   <button onClick={handleUpdateName} className="text-green-600"><Icons.CheckCircle className="w-5 h-5" /></button>
                   <button onClick={() => setIsEditing(false)} className="text-red-400"><Icons.X className="w-5 h-5" /></button>
                 </div>
               ) : (
                 <>
-                  <h1 className="text-2xl md:text-3xl font-serif font-bold">{user.displayName}</h1>
-                  <button onClick={() => { setNewName(user.displayName); setIsEditing(true); }} className="text-textMuted hover:text-primary">
+                  <h1 className="text-2xl md:text-3xl font-serif font-bold">{profile?.full_name || user?.displayName || 'User'}</h1>
+                  <button onClick={() => { setNewName(profile?.full_name || user?.displayName); setIsEditing(true); }} className="text-textMuted hover:text-primary">
                     <Icons.Edit2 className="w-4 h-4" />
                   </button>
                 </>
@@ -262,6 +516,7 @@ export const Account = () => {
           {/* Scrollable Tabs for Mobile */}
           <div className="bg-white rounded-xl shadow-sm p-2 md:p-4 flex md:flex-col overflow-x-auto gap-2 md:gap-1 scrollbar-hide sticky top-20 z-20 md:static md:h-fit">
             <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={Icons.Package} label="Overview" />
+            <TabButton active={activeTab === 'rewards'} onClick={() => setActiveTab('rewards')} icon={Icons.Star} label="My Rewards" />
             <TabButton active={activeTab === 'addresses'} onClick={() => setActiveTab('addresses')} icon={Icons.MapPin} label="Addresses" />
             <TabButton active={activeTab === 'spending'} onClick={() => setActiveTab('spending')} icon={Icons.Wallet} label="Spending" />
             <TabButton active={activeTab === 'security'} onClick={() => setActiveTab('security')} icon={Icons.Shield} label="Security" />
@@ -345,17 +600,47 @@ export const Account = () => {
                                     e.stopPropagation();
                                     showAlert(
                                       'Cancel Order',
-                                      'Are you sure you want to cancel this order?',
+                                      'Are you sure you want to cancel this order? Points used will be refunded.',
                                       'warning',
                                       {
                                         confirmText: 'Yes, Cancel Order',
                                         onConfirm: async () => {
                                           try {
-                                            await store.updateOrderStatus(order.id, 'cancelled');
+                                            // 1. Refund Points if any were used
+                                            if (order.pointsRedeemed && order.pointsRedeemed > 0) {
+                                              const { data: profile } = await supabase
+                                                .from('profiles')
+                                                .select('reward_points')
+                                                .eq('id', user.id)
+                                                .single();
+
+                                              const currentPoints = profile?.reward_points || 0;
+                                              const newPoints = currentPoints + order.pointsRedeemed;
+
+                                              await supabase
+                                                .from('profiles')
+                                                .update({ reward_points: newPoints })
+                                                .eq('id', user.id);
+
+                                              console.log(`Refunded ${order.pointsRedeemed} points.`);
+                                            }
+
+                                            // 2. Update Order Status in DB
+                                            const { error: updateError } = await supabase
+                                              .from('orders')
+                                              .update({ status: 'cancelled' })
+                                              .eq('id', order.id);
+
+                                            if (updateError) throw updateError;
+
+                                            // 3. Update Local State
                                             setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o));
-                                            showAlert('Success', 'Order cancelled successfully.', 'success');
+
+                                            showAlert('Success', order.pointsRedeemed && order.pointsRedeemed > 0
+                                              ? `Order cancelled. ${order.pointsRedeemed} points have been refunded to your account.`
+                                              : 'Order cancelled successfully.', 'success');
                                           } catch (err) {
-                                            console.error(err);
+                                            console.error('Failed to cancel order:', err);
                                             showAlert('Error', 'Failed to cancel order.', 'error');
                                           }
                                         },
@@ -426,18 +711,7 @@ export const Account = () => {
                                   <span className="text-gray-500">Delivery Type</span>
                                   <span className="font-bold text-gray-900">{order.deliveryType || 'Standard Delivery'}</span>
                                 </div>
-                                {order.deliveryDate && (
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-gray-500">Delivery Date</span>
-                                    <span className="font-bold text-gray-900">
-                                      {new Date(order.deliveryDate).toLocaleDateString('en-IN', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        year: 'numeric'
-                                      })}
-                                    </span>
-                                  </div>
-                                )}
+
                               </div>
                             </div>
                           )}
@@ -494,114 +768,214 @@ export const Account = () => {
               </div>
             ) : activeTab === 'addresses' ? (
               <div className="bg-white p-6 rounded-xl shadow-sm">
-                <h3 className="font-serif text-xl font-bold mb-6">Saved Addresses</h3>
-                {addresses.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {addresses.map((addr, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4 relative hover:border-primary transition-colors">
-                        {editingAddressIndex === index ? (
-                          // Edit Form
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-2">
-                              <input
-                                value={editFormData.firstName || ''}
-                                onChange={(e) => setEditFormData({ ...editFormData, firstName: e.target.value })}
-                                placeholder="First Name"
-                                className="border rounded p-2 text-sm"
-                              />
-                              <input
-                                value={editFormData.lastName || ''}
-                                onChange={(e) => setEditFormData({ ...editFormData, lastName: e.target.value })}
-                                placeholder="Last Name"
-                                className="border rounded p-2 text-sm"
-                              />
-                            </div>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-serif text-xl font-bold">Saved Addresses</h3>
+                  {!isAddingAddress && (
+                    <button
+                      onClick={() => {
+                        setIsAddingAddress(true);
+                        setEditFormData({});
+                      }}
+                      className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 transition-all"
+                    >
+                      <Icons.Plus className="w-4 h-4" />
+                      Add Address
+                    </button>
+                  )}
+                </div>
+
+                {isAddingAddress && (
+                  <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm">
+                    <h4 className="font-bold mb-3">Add New Address</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                      <input
+                        value={editFormData.firstName || ''}
+                        onChange={e => setEditFormData({ ...editFormData, firstName: e.target.value })}
+                        placeholder="First Name"
+                        className="border rounded p-2 text-sm w-full"
+                      />
+                      <input
+                        value={editFormData.lastName || ''}
+                        onChange={e => setEditFormData({ ...editFormData, lastName: e.target.value })}
+                        placeholder="Last Name"
+                        className="border rounded p-2 text-sm w-full"
+                      />
+                    </div>
+                    <input
+                      value={editFormData.address || ''}
+                      onChange={e => setEditFormData({ ...editFormData, address: e.target.value })}
+                      placeholder="Address"
+                      className="border rounded p-2 text-sm w-full mb-3"
+                    />
+                    <input
+                      value={editFormData.phone || ''}
+                      onChange={e => setEditFormData({ ...editFormData, phone: e.target.value })}
+                      placeholder="Phone Number"
+                      className="border rounded p-2 text-sm w-full mb-3"
+                    />
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                      <input
+                        value={editFormData.city || ''}
+                        onChange={e => setEditFormData({ ...editFormData, city: e.target.value })}
+                        placeholder="City"
+                        className="border rounded p-2 text-sm w-full"
+                      />
+                      <input
+                        value={editFormData.state || ''}
+                        onChange={e => setEditFormData({ ...editFormData, state: e.target.value })}
+                        placeholder="State"
+                        className="border rounded p-2 text-sm w-full"
+                      />
+                      <input
+                        value={editFormData.zipCode || ''}
+                        onChange={e => setEditFormData({ ...editFormData, zipCode: e.target.value })}
+                        placeholder="Zip Code"
+                        className="border rounded p-2 text-sm w-full"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleSaveNewAddress}
+                        className="bg-black text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-gray-800"
+                      >
+                        Save Address
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsAddingAddress(false);
+                          setEditFormData({});
+                        }}
+                        className="border border-gray-300 px-6 py-2 rounded-lg text-sm font-bold hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {addresses.map((addr, index) => (
+                    <div key={index} className="border border-gray-200 rounded-xl p-4 relative bg-white shadow-sm hover:shadow-md transition-shadow">
+                      {editingAddressIndex === index ? (
+                        // Edit Mode
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-2">
                             <input
-                              value={editFormData.phone || ''}
-                              onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                              placeholder="Phone"
+                              value={editFormData.firstName || ''}
+                              onChange={e => setEditFormData({ ...editFormData, firstName: e.target.value })}
+                              placeholder="First Name"
                               className="border rounded p-2 text-sm w-full"
                             />
                             <input
-                              value={editFormData.address || ''}
-                              onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
-                              placeholder="Address"
+                              value={editFormData.lastName || ''}
+                              onChange={e => setEditFormData({ ...editFormData, lastName: e.target.value })}
+                              placeholder="Last Name"
                               className="border rounded p-2 text-sm w-full"
                             />
-                            <div className="grid grid-cols-2 gap-2">
-                              <input
-                                value={editFormData.city || ''}
-                                onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
-                                placeholder="City"
-                                className="border rounded p-2 text-sm"
-                              />
-                              <input
-                                value={editFormData.state || ''}
-                                onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
-                                placeholder="State"
-                                className="border rounded p-2 text-sm"
-                              />
-                            </div>
+                          </div>
+                          <input
+                            value={editFormData.address || ''}
+                            onChange={e => setEditFormData({ ...editFormData, address: e.target.value })}
+                            placeholder="Address"
+                            className="border rounded p-2 text-sm w-full"
+                          />
+                          <input
+                            value={editFormData.phone || ''}
+                            onChange={e => setEditFormData({ ...editFormData, phone: e.target.value })}
+                            placeholder="Phone Number"
+                            className="border rounded p-2 text-sm w-full"
+                          />
+                          <div className="grid grid-cols-3 gap-2">
+                            <input
+                              value={editFormData.city || ''}
+                              onChange={e => setEditFormData({ ...editFormData, city: e.target.value })}
+                              placeholder="City"
+                              className="border rounded p-2 text-sm w-full"
+                            />
+                            <input
+                              value={editFormData.state || ''}
+                              onChange={e => setEditFormData({ ...editFormData, state: e.target.value })}
+                              placeholder="State"
+                              className="border rounded p-2 text-sm w-full"
+                            />
                             <input
                               value={editFormData.zipCode || ''}
-                              onChange={(e) => setEditFormData({ ...editFormData, zipCode: e.target.value })}
+                              onChange={e => setEditFormData({ ...editFormData, zipCode: e.target.value })}
                               placeholder="Zip Code"
                               className="border rounded p-2 text-sm w-full"
                             />
-                            <div className="flex gap-2 pt-2">
-                              <button
-                                onClick={handleSaveEditedAddress}
-                                className="flex-1 bg-black text-white py-2 rounded text-sm font-bold hover:bg-gray-800"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="flex-1 border border-gray-300 py-2 rounded text-sm font-bold hover:bg-gray-50"
-                              >
-                                Cancel
-                              </button>
-                            </div>
                           </div>
-                        ) : (
-                          // Display Mode
-                          <>
-                            <div className="absolute top-3 right-3 flex gap-2">
-                              <button
-                                onClick={() => handleEditAddress(index, addr)}
-                                className="text-gray-400 hover:text-blue-500"
-                              >
-                                <Icons.Edit2 className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteAddress(index)}
-                                className="text-gray-400 hover:text-red-500"
-                              >
-                                <Icons.Trash2 className="w-4 h-4" />
-                              </button>
+                          <div className="flex gap-2 pt-2">
+                            <button
+                              onClick={handleSaveEditedAddress}
+                              className="flex-1 bg-black text-white py-2 rounded text-sm font-bold hover:bg-gray-800"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="flex-1 border border-gray-300 py-2 rounded text-sm font-bold hover:bg-gray-50"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        // Display Mode
+                        <>
+                          <div className="absolute top-3 right-3 flex gap-2">
+                            <button
+                              onClick={() => handleEditAddress(index, addr)}
+                              className="text-gray-400 hover:text-blue-500 bg-gray-50 p-1.5 rounded-full"
+                              title="Edit Address"
+                            >
+                              <Icons.Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAddress(index)}
+                              className="text-gray-400 hover:text-red-500 bg-gray-50 p-1.5 rounded-full"
+                              title="Delete Address"
+                            >
+                              <Icons.Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="mt-1 bg-gray-100 p-2 rounded-full">
+                              <Icons.MapPin className="w-5 h-5 text-gray-600" />
                             </div>
-                            <div className="flex items-start gap-3">
-                              <Icons.MapPin className="w-5 h-5 text-primary mt-1" />
-                              <div>
-                                <p className="font-bold text-gray-900">{addr.firstName} {addr.lastName}</p>
-                                <p className="text-sm text-gray-600 mt-1">{addr.address}</p>
-                                <p className="text-sm text-gray-600">{addr.city}, {addr.state} - {addr.zipCode}</p>
-                                <p className="text-sm text-gray-600 mt-1">{addr.phone}</p>
+                            <div>
+                              <p className="font-bold text-gray-900">{addr.firstName} {addr.lastName}</p>
+                              <p className="text-sm text-gray-600 mt-1">{addr.address}</p>
+                              <p className="text-sm text-gray-600">{addr.city}, {addr.state} - {addr.zipCode}</p>
+                              <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+                                <Icons.Phone className="w-3 h-3" />
+                                <span>{addr.phone}</span>
                               </div>
                             </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-10 text-gray-500">
-                    <Icons.MapPin className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p>No saved addresses found.</p>
-                    <p className="text-sm">Addresses used during checkout will be saved here.</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {addresses.length === 0 && !isAddingAddress && (
+                  <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                    <div className="bg-white inline-flex p-4 rounded-full shadow-sm mb-3">
+                      <Icons.MapPin className="w-8 h-8 text-gray-300" />
+                    </div>
+                    <p className="font-medium">No addresses saved yet</p>
+                    <button
+                      onClick={() => setIsAddingAddress(true)}
+                      className="mt-4 text-primary font-bold hover:underline"
+                    >
+                      Add your first address
+                    </button>
                   </div>
                 )}
               </div>
+            ) : activeTab === 'rewards' ? (
+              <RewardsTab showAlert={showAlert} />
             ) : activeTab === 'security' ? (
               <div className="bg-white p-6 rounded-xl shadow-sm max-w-lg">
                 <h3 className="font-serif text-xl font-bold mb-6">Security Settings</h3>

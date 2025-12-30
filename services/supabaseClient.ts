@@ -65,6 +65,7 @@ export async function queryWithTimeout<T>(
 
         if (result.error) {
             console.error(`❌ Query error (${queryName}):`, result.error);
+            // Return both data and error so caller can handle it
             return { data: defaultValue, error: result.error };
         }
 

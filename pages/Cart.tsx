@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { store } from '../services/store';
 import { Icons } from '../components/ui/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { calculatePointsEarned } from '../utils/rewards';
 
 export const Cart = () => {
     const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -108,7 +109,7 @@ export const Cart = () => {
     const finalAmount = cartTotal + deliveryCharges;
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-24 md:pb-0 relative">
+        <div className="min-h-screen pb-24 md:pb-0 relative">
             {/* Header - Back button removed as requested (MobileSearchBar has one) */}
             <div className="bg-white p-4 flex items-center gap-4 shadow-sm sticky top-0 z-10">
                 <h2 className="font-bold text-lg ml-2">My Cart</h2>
@@ -285,6 +286,16 @@ export const Cart = () => {
                                                     </>
                                                 )}
                                             </div>
+
+                                            {/* Rewards per item */}
+                                            <div className="flex items-center gap-1 mt-1">
+                                                <Icons.Star className="w-3 h-3 text-amber-500 fill-current" />
+                                                <span className="text-xs text-amber-600 font-bold">
+                                                    Earn {calculatePointsEarned(item.price * item.quantity)} pts
+                                                </span>
+                                            </div>
+
+
                                         </div>
                                     </div>
 

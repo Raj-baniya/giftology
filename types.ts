@@ -77,6 +77,7 @@ export interface Order {
     email: string;
     phone: string;
   };
+  pointsRedeemed?: number;
 }
 
 export interface Category {

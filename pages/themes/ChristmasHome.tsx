@@ -27,13 +27,26 @@ export const ChristmasHome = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const [allCategories, allProducts] = await Promise.all([
-                store.getCategories(),
-                store.getProducts()
-            ]);
-            setCategories(allCategories);
-            // Show trending products as Best Sellers
-            setBestSellers(allProducts.filter(p => p.trending));
+            try {
+                const [allCategories, allProducts] = await Promise.all([
+                    store.getCategories(),
+                    store.getProducts()
+                ]);
+                setCategories(allCategories);
+                setCategories(allCategories);
+
+                // Show trending products as Best Sellers
+                const trending = allProducts.filter(p => p.trending);
+
+                // FALLBACK: If no trending products, show top 8 products so the section always appears
+                if (trending.length > 0) {
+                    setBestSellers(trending);
+                } else {
+                    setBestSellers(allProducts.slice(0, 8));
+                }
+            } catch (error) {
+                console.error('Failed to fetch home data:', error);
+            }
         };
         fetchData();
     }, []);
@@ -56,7 +69,7 @@ export const ChristmasHome = () => {
                 <div className="absolute inset-0 bg-black"></div>
                 <div className="absolute inset-0 opacity-40 animate-aurora mix-blend-screen"
                     style={{
-                        background: 'linear-gradient(120deg, #000000 0%, #1a0b2e 20%, #004d40 40%, #1a0b2e 60%, #000000 100%)',
+                        background: 'linear-gradient(120deg, #063737 0%, #032222 20%, #808000 40%, #032222 60%, #063737 100%)',
                         backgroundSize: '400% 400%'
                     }}>
                 </div>
@@ -79,19 +92,19 @@ export const ChristmasHome = () => {
             </div>
 
             {/* --- Hero Section --- */}
-            <ParallaxSection className="h-[60vh] md:h-[70vh] flex items-center justify-center relative overflow-hidden">
+            <ParallaxSection className="h-[40vh] md:h-[50vh] flex items-center justify-center relative overflow-hidden pb-4">
                 <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
                     <FadeInUp delay={0.2}>
-                        <div className="flex flex-wrap justify-center gap-x-4 md:gap-x-8 mb-6">
-                            <h1 className="text-5xl md:text-8xl font-bold drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]" style={{
+                        <div className="flex flex-wrap justify-center gap-x-4 md:gap-x-8 mb-2">
+                            <h1 className="text-4xl md:text-7xl font-bold drop-shadow-[0_0_15px_rgba(232,201,207,0.5)]" style={{
                                 fontFamily: '"Playfair Display", serif',
-                                color: '#FFFFFF',
+                                color: '#E8C9CF',
                             }}>
                                 <TextReveal text="Merry" />
                             </h1>
-                            <h1 className="text-5xl md:text-8xl font-bold drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]" style={{
+                            <h1 className="text-4xl md:text-7xl font-bold drop-shadow-[0_0_15px_rgba(232,201,207,0.5)]" style={{
                                 fontFamily: '"Playfair Display", serif',
-                                color: '#FFFFFF',
+                                color: '#E8C9CF',
                             }}>
                                 <TextReveal text="Christmas" />
                             </h1>
@@ -99,12 +112,12 @@ export const ChristmasHome = () => {
                     </FadeInUp>
 
                     <FadeInUp delay={0.8}>
-                        <div className="flex items-center justify-center gap-6 mb-8">
-                            <div className="h-[1px] w-16 bg-gradient-to-r from-transparent to-white/60"></div>
-                            <p className="text-lg md:text-2xl font-light tracking-[0.3em] text-gray-200 uppercase drop-shadow-md leading-relaxed">
+                        <div className="flex items-center justify-center gap-4 mb-4">
+                            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-white/60"></div>
+                            <p className="text-base md:text-xl font-light tracking-[0.3em] text-gray-200 uppercase drop-shadow-md leading-relaxed">
                                 Season of Giving
                             </p>
-                            <div className="h-[1px] w-16 bg-gradient-to-l from-transparent to-white/60"></div>
+                            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-white/60"></div>
                         </div>
                     </FadeInUp>
 
@@ -112,21 +125,88 @@ export const ChristmasHome = () => {
                         <MagneticButton>
                             <Link
                                 to="/shop?category=christmas"
-                                className="group relative inline-flex items-center gap-3 px-12 py-4 rounded-full font-bold text-base md:text-lg transition-all border border-white/30 hover:border-white/80 bg-white/10 backdrop-blur-md hover:bg-white/20"
+                                className="group relative inline-flex items-center gap-2 px-8 py-2.5 rounded-full font-bold text-sm md:text-base transition-all border border-[#E8C9CF]/30 hover:border-[#E8C9CF]/80 bg-[#A25524] backdrop-blur-md hover:bg-[#808000]"
                             >
-                                <span className="relative z-10 text-white group-hover:text-white">Shop Collection</span>
-                                <Icons.ArrowRight className="w-5 h-5 relative z-10 text-white group-hover:translate-x-1 transition-transform" />
+                                <span className="relative z-10 text-[#E8C9CF] group-hover:text-white">Shop Collection</span>
+                                <Icons.ArrowRight className="w-4 h-4 relative z-10 text-[#E8C9CF] group-hover:translate-x-1 transition-transform group-hover:text-white" />
                             </Link>
                         </MagneticButton>
                     </FadeInUp>
                 </div>
             </ParallaxSection>
 
+            {/* --- Best Sellers --- */}
+            {bestSellers.length > 0 && (
+                <section className="py-4 relative z-10">
+                    <div className="max-w-7xl mx-auto px-4">
+                        <FadeInUp className="flex items-center justify-center gap-6 mb-8">
+                            <h2 className="text-4xl md:text-6xl font-bold animate-gradient-text drop-shadow-md" style={{
+                                fontFamily: '"Playfair Display", serif',
+                                background: 'linear-gradient(to right, #E8C9CF, #A25524, #808000, #E8C9CF)',
+                                backgroundSize: '300% auto',
+                                WebkitBackgroundClip: 'text',
+                                backgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                color: 'transparent', // Fallback
+                            }}>
+                                Best Sellers
+                            </h2>
+                        </FadeInUp>
+
+                        <StaggerChildren key={`${visibleTrending}-${displayedTrending.length}`} className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-16">
+                            {displayedTrending.map((product) => (
+                                <StaggerItem key={product.id}>
+                                    <Link to={`/product/${product.slug}`}>
+                                        <div className="group relative rounded-xl overflow-hidden bg-[#063737]/50 border border-[#A25524]/30 hover:border-[#A25524] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_20px_rgba(162,85,36,0.3)]">
+                                            {/* Gift Tag Badge - Improved Visibility */}
+                                            <div className="absolute top-3 right-3 z-10 bg-[#A25524] text-white text-xs font-bold px-3 py-1 rounded shadow-lg shadow-black/50 tracking-wider">
+                                                BEST SELLER
+                                            </div>
+
+                                            <div className="aspect-square overflow-hidden relative">
+                                                <img
+                                                    src={product.imageUrl}
+                                                    alt={product.name}
+                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-[#063737] via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500"></div>
+                                            </div>
+                                            <div className="p-5 text-center relative bg-[#063737]">
+                                                <h3 className="font-bold text-[#E8C9CF] text-base mb-2 line-clamp-1 group-hover:text-white transition-colors drop-shadow-sm">{product.name}</h3>
+                                                <p className="text-[#A25524] font-bold text-xl drop-shadow-md">₹{product.sale_price || product.price}</p>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </StaggerItem>
+                            ))}
+                        </StaggerChildren>
+
+                        <div className="text-center mt-8 relative z-50">
+                            {/* Render button if there are more items OR if we have expanded (to allow showing less) */}
+                            {(bestSellers.length > 4) && (
+                                <button
+                                    onClick={() => {
+                                        if (visibleTrending >= bestSellers.length) {
+                                            setVisibleTrending(4); // Show Less
+                                        } else {
+                                            handleShowMoreTrending(); // Show More
+                                        }
+                                    }}
+                                    className="relative z-50 inline-block px-10 py-3 rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all duration-300 font-medium text-sm tracking-widest uppercase cursor-pointer backdrop-blur-sm bg-black/30"
+                                >
+                                    {visibleTrending >= bestSellers.length ? 'Show Less' : 'Show More Trending'}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* --- Santa's Choice Section --- */}
-            <section className="py-12 relative z-10">
+            <section className="py-2 relative z-10">
                 <div className="max-w-6xl mx-auto px-4">
                     <div className="relative rounded-3xl overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 p-1 shadow-2xl">
-                        <div className="grid md:grid-cols-2 gap-10 items-center bg-black/40 rounded-[1.3rem] overflow-hidden">
+                        <div className="grid md:grid-cols-2 gap-0 md:gap-10 items-center bg-black/40 rounded-[1.3rem] overflow-hidden">
                             <FadeInUp className="relative h-[400px] md:h-[500px] overflow-hidden group">
                                 <img
                                     src="https://imgs.search.brave.com/r4_YugodAlGz5rFlvWoHSNQ9CFKqKOkse3xR4WlzgDU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvNDg1/MTI0MzA0L3Bob3Rv/L3JlYWwtc2FudGEt/d2l0aC1iYWctb2Yt/Z2lmdHMuanBnP3M9/NjEyeDYxMiZ3PTAm/az0yMCZjPUxabjdX/VTVGbTlzSE1jZUdL/SllTdnRkZ2xnWFQx/OXFYTHJjSnFZY0hp/bEk9"
@@ -136,14 +216,14 @@ export const ChristmasHome = () => {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
                             </FadeInUp>
 
-                            <FadeInUp delay={0.3} className="p-10 text-center md:text-left">
-                                <div className="inline-block px-4 py-1 rounded-full border border-white/30 text-white/80 text-xs font-bold tracking-[0.2em] mb-6">
+                            <FadeInUp delay={0.3} className="px-6 pb-6 pt-3 md:p-8 text-center md:text-left">
+                                <div className="inline-block px-4 py-1 rounded-full border border-white/30 text-white/80 text-xs font-bold tracking-[0.2em] mb-3">
                                     SANTA'S FAVORITES
                                 </div>
-                                <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight" style={{ fontFamily: '"Playfair Display", serif' }}>
+                                <h2 className="text-3xl md:text-5xl font-bold mb-3 text-[#E8C9CF] leading-tight" style={{ fontFamily: '"Playfair Display", serif' }}>
                                     The Joy of Giving
                                 </h2>
-                                <p className="text-gray-300 text-lg mb-10 leading-relaxed font-light">
+                                <p className="text-gray-300 text-base md:text-lg mb-5 leading-relaxed font-light">
                                     "Christmas isn't just a day, it's a frame of mind." <br />
                                     Discover our handpicked selection of gifts that bring warmth, joy, and magic to your loved ones this holiday season.
                                 </p>
@@ -159,60 +239,10 @@ export const ChristmasHome = () => {
                 </div>
             </section>
 
-            {/* --- Best Sellers --- */}
-            {bestSellers.length > 0 && (
-                <section className="py-20 relative z-10">
-                    <div className="max-w-7xl mx-auto px-4">
-                        <FadeInUp className="flex items-center justify-center gap-6 mb-16">
-                            <h2 className="text-4xl md:text-6xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ fontFamily: '"Playfair Display", serif' }}>
-                                Trending Gifts
-                            </h2>
-                        </FadeInUp>
 
-                        <StaggerChildren className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-16">
-                            {displayedTrending.map((product) => (
-                                <StaggerItem key={product.id}>
-                                    <Link to={`/product/${product.slug}`}>
-                                        <div className="group relative rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/40 transition-all duration-500 hover:-translate-y-2">
-                                            {/* Gift Tag Badge - Made SMALLER per request */}
-                                            <div className="absolute top-3 right-3 z-10 bg-white text-black text-[10px] font-bold px-2 py-0.5 rounded-sm tracking-wide shadow-lg">
-                                                BEST SELLER
-                                            </div>
-
-                                            <div className="aspect-square overflow-hidden relative">
-                                                <img
-                                                    src={product.imageUrl}
-                                                    alt={product.name}
-                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500"></div>
-                                            </div>
-                                            <div className="p-4 text-center relative">
-                                                <h3 className="font-medium text-gray-200 text-sm mb-2 line-clamp-1 group-hover:text-white transition-colors">{product.name}</h3>
-                                                <p className="text-white font-bold text-lg">₹{product.sale_price || product.price}</p>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </StaggerItem>
-                            ))}
-                        </StaggerChildren>
-
-                        {bestSellers.length > visibleTrending && (
-                            <div className="text-center mt-8 relative z-50">
-                                <button
-                                    onClick={handleShowMoreTrending}
-                                    className="relative z-50 inline-block px-10 py-3 rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all duration-300 font-medium text-sm tracking-widest uppercase cursor-pointer backdrop-blur-sm bg-black/30"
-                                >
-                                    Show More Trending
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </section>
-            )}
 
             {/* --- Curated Collections --- */}
-            <section className="py-20 pb-40 relative z-10">
+            <section className="py-20 pb-10 relative z-10">
                 <div className="max-w-7xl mx-auto px-4">
                     <FadeInUp className="text-center mb-16">
                         <h2 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: '"Playfair Display", serif' }}>
@@ -221,7 +251,7 @@ export const ChristmasHome = () => {
                         <p className="text-gray-400 text-lg font-light tracking-wide">Find the perfect category for everyone on your list</p>
                     </FadeInUp>
 
-                    <StaggerChildren className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 mb-12">
+                    <StaggerChildren key={`${visibleCategories}-${displayedCategories.length}`} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 mb-12">
                         {displayedCategories.map((cat) => (
                             <StaggerItem key={cat.id}>
                                 <Link to={`/shop?category=${cat.slug}`}>
@@ -244,16 +274,22 @@ export const ChristmasHome = () => {
                         ))}
                     </StaggerChildren>
 
-                    {categories.length > visibleCategories && (
-                        <div className="text-center mt-12 relative z-50">
+                    <div className="text-center mt-8 relative z-50">
+                        {(categories.length > 8) && (
                             <button
-                                onClick={handleShowMoreCategories}
+                                onClick={() => {
+                                    if (visibleCategories >= categories.length) {
+                                        setVisibleCategories(8); // Show Less
+                                    } else {
+                                        handleShowMoreCategories(); // Show More
+                                    }
+                                }}
                                 className="relative z-50 inline-block px-10 py-3 rounded-full border border-white/30 text-white hover:bg-white hover:text-black transition-all duration-300 font-medium text-sm tracking-widest uppercase cursor-pointer backdrop-blur-sm bg-black/30"
                             >
-                                Show More Collections
+                                {visibleCategories >= categories.length ? 'Show Less' : 'Show More Collections'}
                             </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </section>
 
@@ -275,6 +311,14 @@ export const ChristmasHome = () => {
                     animation-name: snow;
                     animation-timing-function: linear;
                     animation-iteration-count: infinite;
+                }
+                @keyframes gradient-text {
+                    to {
+                        background-position: 200% center;
+                    }
+                }
+                .animate-gradient-text {
+                    animation: gradient-text 8s linear infinite;
                 }
             `}</style>
         </div>

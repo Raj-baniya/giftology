@@ -15,34 +15,46 @@ export const AdminLogin = () => {
     e.preventDefault();
     setError('');
 
-    // Check fallback credentials FIRST to avoid Supabase timeout
-    const ALLOWED_EMAILS = ['giftology.in01@gmail.com', 'giftology.in02@gmail.com', 'giftology.in14@gmail.com'];
+    // Email Normalization
+    let finalEmail = email.trim();
+    if (finalEmail && !finalEmail.includes('@')) {
+      finalEmail += '@gmail.com';
+      setEmail(finalEmail);
+    }
+
+    // 1. Try Supabase Auth FIRST (Preferred)
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: finalEmail,
+        password: password,
+      });
+
+      if (!authError && data.user) {
+        console.log('✅ Supabase Admin Auth Success');
+        navigate('/admin');
+        return;
+      }
+
+      // If error is not "Invalid login credentials", it might be a connectivity issue
+      if (authError && authError.message !== 'Invalid login credentials') {
+        console.warn('⚠️ Supabase Auth Error:', authError.message);
+      }
+    } catch (err: any) {
+      console.warn('⚠️ Supabase Auth exception:', err.message);
+    }
+
+    // 2. Fallback Mechanism (Only if Supabase fails or credentials match fallback)
+    const ALLOWED_EMAILS = ['giftology.in01@gmail.com', 'giftology.in02@gmail.com', 'giftology.in14@gmail.com', 'rajbaniya81083@gmail.com'];
     const ADMIN_PASS = 'Giftology.in@giftstore';
 
-    if (ALLOWED_EMAILS.includes(email) && password === ADMIN_PASS) {
-      // Set a fallback auth token in SESSION storage (clears on close)
+    if (ALLOWED_EMAILS.includes(finalEmail) && password === ADMIN_PASS) {
+      console.log('🛡️ Entering via Fallback Auth');
       sessionStorage.setItem('giftology_admin_auth', 'true');
       navigate('/admin');
       return;
     }
 
-    // If fallback credentials don't match, try Supabase
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        // Successful Login
-        navigate('/admin');
-      }
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setError('Invalid credentials. Please check your email and password.');
-    }
+    setError('Invalid credentials. Please check your email and password.');
   };
 
   return (

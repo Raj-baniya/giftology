@@ -55,7 +55,12 @@ import {
   Loader2,
   Upload,
   PlayCircle,
-  LayoutGrid
+  LayoutGrid,
+  Ticket,
+  Eye,
+  EyeOff,
+  Compass,
+  Lock
 } from 'lucide-react';
 
 export const Icons = {
@@ -115,5 +120,10 @@ export const Icons = {
   Loader2,
   Upload,
   PlayCircle,
-  LayoutGrid
+  LayoutGrid,
+  Ticket,
+  Eye,
+  EyeOff,
+  Compass,
+  Lock
 };

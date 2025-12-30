@@ -231,3 +231,30 @@ export const SUBCATEGORIES = [
   { category_id: '20', name: 'Tools', slug: 'tools', imageUrl: 'https://images.unsplash.com/photo-1581783342308-f792ca11df53?auto=format&fit=crop&w=300&q=80' },
   { category_id: '20', name: 'Gadgets', slug: 'gadgets', imageUrl: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=300&q=80' }
 ];
+
+export const PLAY_VIDEOS = [
+  {
+    id: 'v1',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-girl-opening-a-gift-box-462-large.mp4',
+    thumbnailUrl: 'https://images.pexels.com/photos/1666068/pexels-photo-1666068.jpeg?auto=compress&cs=tinysrgb&w=400',
+    caption: 'The joy of giving! 🎁 #Giftology #Joy',
+    userId: 'admin',
+    createdAt: new Date().toISOString(),
+    likesCount: 120,
+    commentsCount: 15,
+    sharesCount: 45,
+    isLiked: false
+  },
+  {
+    id: 'v2',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-christmas-gift-box-40072-large.mp4',
+    thumbnailUrl: 'https://images.pexels.com/photos/1303082/pexels-photo-1303082.jpeg?auto=compress&cs=tinysrgb&w=400',
+    caption: 'Magical moments with Giftology. ✨ #GiftologyMagic',
+    userId: 'admin',
+    createdAt: new Date().toISOString(),
+    likesCount: 85,
+    commentsCount: 8,
+    sharesCount: 12,
+    isLiked: false
+  }
+];

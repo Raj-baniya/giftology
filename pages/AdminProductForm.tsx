@@ -72,10 +72,15 @@ export const AdminProductForm = () => {
                 const dbCategories = await store.getCategories();
                 setCategories(dbCategories);
                 if (isEditing && id) {
+                    console.log('Loading product for edit:', id);
                     const product = await store.getProductById(id);
+                    console.log('Product loaded response:', product);
+
                     if (!product) {
+                        console.error('Product not found for ID:', id);
                         showAlert('Error', 'Product not found', 'error');
-                        navigate('/admin');
+                        // Temporary comment out navigate to see the error
+                        // navigate('/admin');
                         return;
                     }
                     // Basic fields
@@ -299,7 +304,10 @@ export const AdminProductForm = () => {
                     variants: finalVariants,
                 };
                 if (isEditing && id) {
-                    await store.updateProduct(id, productData);
+                    const result = await store.updateProduct(id, productData);
+                    if (!result) {
+                        throw new Error("Update failed: Product not found or ID mismatch.");
+                    }
                     showAlert('Success', 'Product updated successfully!', 'success');
                 } else {
                     await store.addProduct(productData);
