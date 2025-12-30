@@ -331,7 +331,7 @@ export const AdminProductForm = () => {
             <div className="max-w-4xl mx-auto pt-8 px-4">
                 <div className="flex items-center gap-4 mb-6">
                     <button onClick={() => navigate('/admin')} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-                        <Icons.ChevronLeft className="w-6 h-6" />
+                        <Icons.ChevronLeft className="w-6 h-6 text-gray-900" />
                     </button>
                     <h1 className="text-2xl font-bold">{isEditing ? 'Edit Product' : 'Add New Product'}</h1>
                 </div>
@@ -684,7 +684,7 @@ export const AdminProductForm = () => {
 
                         {/* Actions */}
                         <div className="flex justify-end gap-4 pt-6 border-t">
-                            <button type="button" onClick={() => navigate('/admin')} className="px-6 py-3 rounded-xl font-bold border hover:bg-gray-50">
+                            <button type="button" onClick={() => navigate('/admin')} className="px-6 py-3 rounded-xl font-bold border hover:bg-gray-50 text-gray-900">
                                 Cancel
                             </button>
                             <button

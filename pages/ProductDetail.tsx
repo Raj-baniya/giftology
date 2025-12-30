@@ -353,8 +353,7 @@ export const ProductDetail = () => {
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 0.95 }}
                                                 transition={{ duration: 0.5, ease: "easeOut" }}
-                                                className="w-full h-full object-contain p-4 lg:p-8 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] cursor-pointer"
-                                                onClick={() => setShowFullScreen(true)}
+                                                className="w-full h-full object-contain p-4 lg:p-8 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]"
                                             />
                                         </AnimatePresence>
 
@@ -376,7 +375,6 @@ export const ProductDetail = () => {
                                             src={selectedImage}
                                             alt={product.name}
                                             className="w-full h-full object-contain p-4 lg:p-8 drop-shadow-2xl"
-                                            onClick={() => setShowFullScreen(true)}
                                         />
                                     </div>
                                 )}

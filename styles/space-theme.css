@@ -92,25 +92,42 @@
     opacity: 0.6;
 }
 
-/* Admin form text visibility fix */
-input,
-select,
-textarea,
-label,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-span,
-td,
-th,
-button {
-    color: #111827;
+/* Admin form text visibility fix - only applies to admin pages with light backgrounds */
+.bg-gray-50 input,
+.bg-gray-50 select,
+.bg-gray-50 textarea,
+.bg-gray-50 label,
+.bg-gray-50 h1,
+.bg-gray-50 h2,
+.bg-gray-50 h3,
+.bg-gray-50 h4,
+.bg-gray-50 h5,
+.bg-gray-50 h6,
+.bg-gray-50 span,
+.bg-gray-50 td,
+.bg-gray-50 th {
+    color: #111827 !important;
 }
 
-input::placeholder,
-textarea::placeholder {
-    color: #9CA3AF;
+.bg-white input,
+.bg-white select,
+.bg-white textarea,
+.bg-white label,
+.bg-white h1:not(.text-white),
+.bg-white h2:not(.text-white),
+.bg-white h3:not(.text-white),
+.bg-white h4:not(.text-white),
+.bg-white h5:not(.text-white),
+.bg-white h6:not(.text-white),
+.bg-white span:not(.text-white):not([class*="text-"]),
+.bg-white td,
+.bg-white th {
+    color: #111827 !important;
+}
+
+.bg-gray-50 input::placeholder,
+.bg-gray-50 textarea::placeholder,
+.bg-white input::placeholder,
+.bg-white textarea::placeholder {
+    color: #9CA3AF !important;
 }
