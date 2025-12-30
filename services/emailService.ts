@@ -35,6 +35,7 @@ export interface OrderEmailParams {
   delivery_speed?: string;
   gift_wrapping?: string;
   shipping_address?: string;
+  invoice_html?: string;
 }
 
 /**
@@ -74,6 +75,7 @@ export const sendOrderConfirmationToUser = async (params: OrderEmailParams): Pro
       gift_wrapping: params.gift_wrapping || 'No Wrapping',
       shipping_address: params.shipping_address || '',
       order_items: params.orderItems || '',
+      invoice_html: params.invoice_html || '',
       message: `Thank you for your order! We will deliver it as per the scheduled date.`,
       view_order_url: 'https://giftology-in.web.app/account' // Production link to Account page
     };

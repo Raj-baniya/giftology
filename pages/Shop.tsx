@@ -86,16 +86,16 @@ export const Shop = () => {
     ];
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-transparent">
             {/* Header Banner Removed */}
             <div className="pt-0"></div>
 
-            <div className="max-w-[1600px] mx-auto px-4 py-6 md:py-12">
+            <div className="max-w-[1600px] mx-auto px-1.5 py-6 md:py-12">
 
                 {/* Mobile Filter Toggle - Fixed Position */}
                 <button
                     onClick={() => setShowMobileFilters(!showMobileFilters)}
-                    className="lg:hidden w-full mb-6 bg-white border border-gray-200 py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm px-4 z-40 smooth-transition hover-lift btn-animated"
+                    className="lg:hidden w-full mb-6 bg-white/5 backdrop-blur-md border border-white/10 py-3 rounded-lg font-black text-white flex items-center justify-center gap-2 shadow-sm px-4 z-40 smooth-transition hover-lift btn-animated uppercase tracking-widest text-xs"
                 >
                     <Icons.Menu className="w-4 h-4" />
                     {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
@@ -105,9 +105,9 @@ export const Shop = () => {
                 <div className="mb-6 flex justify-center gap-2">
                     <button
                         onClick={() => setViewMode('grid')}
-                        className={`px-6 py-3 rounded-lg font-bold flex items-center gap-2 smooth-transition ${viewMode === 'grid'
-                            ? 'bg-gray-900 text-white'
-                            : 'bg-white text-black border border-gray-200 hover:bg-gray-50'
+                        className={`px-6 py-3 rounded-xl font-black flex items-center gap-2 smooth-transition uppercase tracking-widest text-[10px] ${viewMode === 'grid'
+                            ? 'bg-[#E60000] text-white shadow-[0_0_15px_rgba(230,0,0,0.4)]'
+                            : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
                             }`}
                     >
                         <Icons.Filter className="w-4 h-4" />
@@ -115,13 +115,13 @@ export const Shop = () => {
                     </button>
                     <button
                         onClick={() => setViewMode('infinite')}
-                        className={`px-6 py-3 rounded-lg font-bold flex items-center gap-2 smooth-transition ${viewMode === 'infinite'
-                            ? 'bg-gray-900 text-white'
-                            : 'bg-white text-black border border-gray-200 hover:bg-gray-50'
+                        className={`px-6 py-3 rounded-xl font-black flex items-center gap-2 smooth-transition uppercase tracking-widest text-[10px] ${viewMode === 'infinite'
+                            ? 'bg-[#E60000] text-white shadow-[0_0_15px_rgba(230,0,0,0.4)]'
+                            : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
                             }`}
                     >
                         <Icons.Sparkles className="w-4 h-4" />
-                        Fun View
+                        Interactive View
                     </button>
                 </div>
 
@@ -136,36 +136,36 @@ export const Shop = () => {
                                 exit={{ height: 0, opacity: 0 }}
                                 className="w-full lg:w-64 flex-shrink-0 space-y-6 lg:block overflow-hidden"
                             >
-                                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                <div className="bg-white/5 backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-2xl">
                                     <div className="mb-6">
-                                        <h4 className="font-bold text-sm mb-2 text-textMuted">Search</h4>
+                                        <h4 className="font-black text-[10px] mb-2 text-gray-400 uppercase tracking-widest">Search Products</h4>
                                         <div className="relative group">
                                             <input
                                                 type="text"
-                                                placeholder="Product name..."
+                                                placeholder="Search gifts..."
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                                className="w-full border border-gray-200 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary smooth-transition"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#E60000] smooth-transition placeholder:text-gray-600 font-bold"
                                             />
-                                            <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                                         </div>
                                     </div>
 
                                     <div className="mb-6">
-                                        <h4 className="font-bold text-sm mb-3 text-textMuted">Categories</h4>
+                                        <h4 className="font-black text-[10px] mb-3 text-gray-400 uppercase tracking-widest">Categories</h4>
                                         <div className="relative">
                                             <select
                                                 value={categoryFilter || 'all'}
                                                 onChange={(e) => handleCategoryClick(e.target.value)}
-                                                className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-10 rounded-lg leading-tight focus:outline-none focus:ring-1 focus:ring-primary smooth-transition cursor-pointer text-sm font-medium"
+                                                className="w-full appearance-none bg-white/5 border border-white/10 text-white py-3 px-4 pr-10 rounded-xl leading-tight focus:outline-none focus:ring-1 focus:ring-[#E60000] smooth-transition cursor-pointer text-xs font-black uppercase tracking-widest"
                                             >
                                                 {categoriesList.map(cat => (
-                                                    <option key={cat.id} value={cat.slug}>
+                                                    <option key={cat.id} value={cat.slug} className="bg-[#1A1A2E] text-white">
                                                         {cat.name}
                                                     </option>
                                                 ))}
                                             </select>
-                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#E60000]">
                                                 <Icons.ChevronDown className="w-4 h-4" />
                                             </div>
                                         </div>
@@ -173,8 +173,8 @@ export const Shop = () => {
 
                                     <div>
                                         <div className="flex justify-between items-center mb-2">
-                                            <h4 className="font-bold text-sm text-textMuted">Max Price</h4>
-                                            <span className="text-xs font-bold bg-gray-100 px-2 py-1 rounded" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{priceRange}</span>
+                                            <h4 className="font-black text-[10px] text-gray-400 uppercase tracking-widest">Price Range</h4>
+                                            <span className="text-[10px] font-black bg-[#E60000] text-white px-2 py-1 rounded shadow-lg shadow-[#E60000]/20 tracking-wider font-sans">&#8377;{priceRange}</span>
                                         </div>
                                         <input
                                             type="range"
@@ -182,9 +182,9 @@ export const Shop = () => {
                                             max="5000"
                                             value={priceRange}
                                             onChange={(e) => setPriceRange(Number(e.target.value))}
-                                            className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#E94E77]"
+                                            className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#E60000]"
                                         />
-                                        <div className="flex justify-between text-xs text-gray-400 mt-2" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                        <div className="flex justify-between text-[10px] text-gray-600 font-black mt-2 font-sans">
                                             <span>&#8377;0</span>
                                             <span>&#8377;5000</span>
                                         </div>
@@ -201,7 +201,7 @@ export const Shop = () => {
                                 <LoadingSpinner size="lg" />
                             </div>
                         ) : viewMode === 'infinite' ? (
-                            <div className="w-full h-[65vh] rounded-2xl overflow-hidden shadow-2xl bg-black mb-8">
+                            <div className="w-full h-[65vh] rounded-2xl overflow-hidden shadow-2xl bg-transparent mb-8">
                                 <ProductInfiniteMenu products={products} />
                             </div>
                         ) : (
@@ -213,7 +213,7 @@ export const Shop = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         whileHover={{ y: -5 }}
                                         onClick={() => navigate(`/product/${product.slug || product.id}`)}
-                                        className="bg-white rounded-lg md:rounded-xl overflow-hidden shadow-sm hover:shadow-xl smooth-transition-slow group border border-gray-100 flex flex-col relative cursor-pointer card-hover"
+                                        className="bg-white/5 backdrop-blur-xl rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 group border border-white/10 flex flex-col relative cursor-pointer hover:shadow-[0_0_40px_rgba(230,0,0,0.15)]"
                                     >
                                         <div className="relative aspect-square overflow-hidden bg-gray-50">
                                             <img
@@ -246,30 +246,30 @@ export const Shop = () => {
                                         </div>
                                         <div className="p-3 md:p-5 flex flex-col flex-1">
                                             <div className="flex-1 min-h-[60px]">
-                                                <p className="text-[10px] md:text-xs text-gray-400 capitalize mb-1 truncate">{product.category.replace('-', ' ')}</p>
-                                                <h3 className="font-bold text-sm md:text-lg text-gray-900 leading-tight line-clamp-2">{product.name}</h3>
+                                                <p className="text-[10px] md:text-xs text-gray-500 font-black uppercase tracking-widest mb-1 truncate">{product.category.replace('-', ' ')}</p>
+                                                <h3 className="font-black text-sm md:text-lg text-white leading-tight line-clamp-2 uppercase tracking-tight group-hover:text-[#E60000] transition-colors">{product.name}</h3>
                                             </div>
                                             <div className="flex flex-col md:flex-row md:items-end justify-between mt-3 gap-2">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm md:text-xl font-bold text-gray-900" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{product.price}</span>
+                                                    <span className="text-sm md:text-xl font-black text-white" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{product.price}</span>
                                                     {product.marketPrice && product.marketPrice > product.price && (
-                                                        <span className="text-xs text-gray-400 line-through" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{product.marketPrice}</span>
+                                                        <span className="text-xs text-gray-500 font-bold line-through italic" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{product.marketPrice}</span>
                                                     )}
                                                 </div>
                                                 <div className="flex flex-col items-end gap-1 min-h-[32px] justify-center">
                                                     {(!product.stock || product.stock <= 0) ? (
-                                                        <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                                        <div className="flex items-center gap-1 text-[10px] font-black text-gray-500 bg-white/5 border border-white/10 px-2 py-1 rounded-full uppercase tracking-tighter">
                                                             <span>Sold Out</span>
                                                         </div>
                                                     ) : product.id.length % 2 === 0 ? (
-                                                        <div className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                                                        <div className="flex items-center gap-1 text-[10px] font-black text-green-400 bg-green-950/30 border border-green-500/20 px-2 py-1 rounded-full uppercase tracking-tighter">
                                                             <Icons.Truck className="w-3 h-3" />
                                                             <span>Free Delivery</span>
                                                         </div>
                                                     ) : (
-                                                        <div className="flex items-center gap-1 text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
+                                                        <div className="flex items-center gap-1 text-[10px] font-black text-purple-400 bg-purple-950/30 border border-purple-500/20 px-2 py-1 rounded-full uppercase tracking-tighter">
                                                             <Icons.Gift className="w-3 h-3" />
-                                                            <span>Free Gift Wrapping</span>
+                                                            <span>Gift Wrapping</span>
                                                         </div>
                                                     )}
                                                 </div>

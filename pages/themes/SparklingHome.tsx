@@ -16,10 +16,12 @@ import {
     HoverCard,
     ShimmerBorder
 } from '../../components/christmas/ChristmasAnimations';
+import { AIProductAssistant } from '../../components/AIProductAssistant';
 
 export const SparklingHome = () => {
     const [categories, setCategories] = useState<any[]>([]);
     const [bestSellers, setBestSellers] = useState<Product[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
 
     // Pagination State
     const [visibleTrending, setVisibleTrending] = useState(4);
@@ -40,16 +42,17 @@ export const SparklingHome = () => {
                     store.getProducts()
                 ]);
                 setCategories(allCategories);
+                setProducts(allProducts); // Store all products for AI Assistant
                 setCategories(allCategories); // Intentionally kept to minimize diff from ChristmasHome
 
-                // Show trending products as Best Sellers
+                // Show trending products as Best Sellers, but include ALL products for 'Show More'
                 const trending = allProducts.filter(p => p.trending);
+                const nonTrending = allProducts.filter(p => !p.trending);
 
-                // FALLBACK: If no trending products, show top 8 products so the section always appears
                 if (trending.length > 0) {
-                    setBestSellers(trending);
+                    setBestSellers([...trending, ...nonTrending]);
                 } else {
-                    setBestSellers(allProducts.slice(0, 8));
+                    setBestSellers(allProducts);
                 }
             } catch (error) {
                 console.error('Failed to fetch home data:', error);
@@ -70,37 +73,12 @@ export const SparklingHome = () => {
     const displayedCategories = categories.slice(0, visibleCategories);
 
     return (
-        <div className="min-h-screen overflow-x-hidden font-serif bg-black text-[#F4E6D0] selection:bg-purple-500 selection:text-white">
-            {/* --- Live Aurora Background --- */}
-            <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute inset-0 bg-black"></div>
-                <div className="absolute inset-0 opacity-40 animate-aurora mix-blend-screen"
-                    style={{
-                        background: 'linear-gradient(120deg, #1A1A2E 0%, #16213E 20%, #E94560 40%, #16213E 60%, #1A1A2E 100%)', // Gold/Dark Blue/Rose theme
-                        backgroundSize: '400% 400%'
-                    }}>
-                </div>
-                {/* Stars/Noise for texture */}
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
-            </div>
+        <div className="min-h-screen overflow-x-hidden font-serif bg-transparent text-[#F4E6D0] selection:bg-purple-500 selection:text-white">
 
-            {/* --- Subtle Sparkle Effect (Replaces Snow) --- */}
-            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-                {[...Array(30)].map((_, i) => (
-                    <div key={i} className="absolute rounded-full bg-[#F4E6D0] opacity-60 animate-sparkle" style={{
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
-                        width: `${Math.random() * 2 + 1}px`,
-                        height: `${Math.random() * 2 + 1}px`,
-                        animationDuration: `${Math.random() * 3 + 2}s`,
-                        animationDelay: `${Math.random() * 2}s`,
-                    }} />
-                ))}
-            </div>
 
             {/* --- Hero Section --- */}
-            <ParallaxSection className="h-auto md:h-[50vh] pt-12 pb-4 flex items-center justify-center relative overflow-hidden">
-                <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
+            <ParallaxSection className="h-auto md:h-[50vh] pt-12 pb-16 flex items-center justify-center relative overflow-hidden">
+                <div className="relative z-10 text-center px-3 max-w-5xl mx-auto">
                     <FadeInUp delay={0.2}>
                         <div className="flex flex-wrap justify-center gap-x-4 md:gap-x-8 mb-2">
                             <h1 className="text-4xl md:text-7xl font-bold drop-shadow-[0_0_15px_rgba(232,201,207,0.5)]" style={{
@@ -295,6 +273,9 @@ export const SparklingHome = () => {
                 </div>
             </section>
 
+            {/* --- AI Product Assistant --- */}
+            <AIProductAssistant products={products} />
+
             {/* --- Contact Us Section --- */}
             <section className="py-24 relative z-10">
                 <div className="max-w-4xl mx-auto px-4">
@@ -381,10 +362,11 @@ export const SparklingHome = () => {
                                     <div className="text-center">
                                         <div className="text-purple-400 mb-2 flex justify-center"><Icons.Phone className="w-5 h-5" /></div>
                                         <p className="text-sm text-gray-400">+91 9137645161</p>
+                                        <p className="text-sm text-gray-400">+91 8108303255</p>
                                     </div>
                                     <div className="text-center">
                                         <div className="text-purple-400 mb-2 flex justify-center"><Icons.Mail className="w-5 h-5" /></div>
-                                        <p className="text-sm text-gray-400">giftology.in14@gmail.com</p>
+                                        <p className="text-sm text-gray-400 break-all">giftology.in14@gmail.com</p>
                                     </div>
                                     <div className="text-center col-span-2 md:col-span-1">
                                         <div className="text-purple-400 mb-2 flex justify-center"><Icons.MapPin className="w-5 h-5" /></div>
@@ -397,43 +379,6 @@ export const SparklingHome = () => {
                 </div>
             </section>
 
-            <style>{`
-                @keyframes aurora {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                }
-                .animate-aurora {
-                    animation: aurora 20s ease infinite;
-                }
-                @keyframes sparkle {
-                    0% { opacity: 0; transform: scale(0); }
-                    50% { opacity: 1; transform: scale(1); }
-                    100% { opacity: 0; transform: scale(0); }
-                }
-                .animate-sparkle {
-                    animation-name: sparkle;
-                    animation-timing-function: ease-in-out;
-                    animation-iteration-count: infinite;
-                }
-                @keyframes gradient-text {
-                    to {
-                        background-position: 200% center;
-                    }
-                }
-                .animate-gradient-text {
-                    animation: gradient-text 8s linear infinite;
-                }
-                @keyframes space-glow {
-                    0% { border-color: #E94560; box-shadow: 0 0 15px rgba(233, 69, 96, 0.4), inset 0 0 10px rgba(233, 69, 96, 0.2); }
-                    33% { border-color: #4CC9F0; box-shadow: 0 0 15px rgba(76, 201, 240, 0.4), inset 0 0 10px rgba(76, 201, 240, 0.2); }
-                    66% { border-color: #FFD700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), inset 0 0 10px rgba(255, 215, 0, 0.2); }
-                    100% { border-color: #E94560; box-shadow: 0 0 15px rgba(233, 69, 96, 0.4), inset 0 0 10px rgba(233, 69, 96, 0.2); }
-                }
-                .animate-space-glow {
-                    animation: space-glow 4s linear infinite;
-                }
-            `}</style>
         </div>
     );
 };

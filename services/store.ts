@@ -453,11 +453,19 @@ class StoreService {
 
   // --- Reviews ---
   async addReview(review: any): Promise<any> {
-    return await supabaseService.addReview(review);
+    // Sanitize product_id (strip leading zeros) to match DB Key
+    const cleanProductId = String(review.product_id).replace(/^0+/, '');
+    const sanitizedReview = {
+      ...review,
+      product_id: cleanProductId === '' ? '0' : cleanProductId
+    };
+    return await supabaseService.addReview(sanitizedReview);
   }
 
   async getProductReviews(productId: string): Promise<any[]> {
-    return await supabaseService.getProductReviews(productId);
+    const cleanId = String(productId).replace(/^0+/, '');
+    const lookupId = cleanId === '' ? '0' : cleanId;
+    return await supabaseService.getProductReviews(lookupId);
   }
 
   async getAllReviews(): Promise<any[]> {
@@ -593,7 +601,9 @@ class StoreService {
 
   // --- Analytics ---
   async getProductAnalytics(productId: string): Promise<any> {
-    return await supabaseService.getProductAnalytics(productId);
+    const cleanId = String(productId).replace(/^0+/, '');
+    const lookupId = cleanId === '' ? '0' : cleanId;
+    return await supabaseService.getProductAnalytics(lookupId);
   }
 
   // --- Seeding ---

@@ -60,7 +60,11 @@ import {
   Eye,
   EyeOff,
   Compass,
-  Lock
+  Lock,
+  Bot,
+  Smile,
+  Briefcase,
+  ShieldCheck
 } from 'lucide-react';
 
 export const Icons = {
@@ -125,5 +129,9 @@ export const Icons = {
   Eye,
   EyeOff,
   Compass,
-  Lock
+  Lock,
+  Bot,
+  Smile,
+  Briefcase,
+  ShieldCheck
 };

@@ -190,32 +190,35 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12 relative z-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4 py-12 relative z-50">
+      <div className="w-full max-w-md bg-white/5 backdrop-blur-2xl p-8 rounded-[2.5rem] shadow-2xl border border-white/10 relative overflow-hidden group">
+        {/* Subtle decorative glow */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#E60000]/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-[#E60000]/20 transition-all duration-700"></div>
+
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-serif font-bold text-textMain mb-2">
-            {isOtpLogin ? 'Login with OTP' : (isLogin ? 'Welcome Back' : 'Join Giftology')}
+          <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">
+            {isOtpLogin ? 'Verify OTP' : (isLogin ? 'Login' : 'Sign Up')}
           </h1>
-          <p className="text-textMuted">
+          <p className="text-gray-500 font-bold uppercase tracking-tighter text-xs italic">
             {isOtpLogin
-              ? (otpSent ? 'Enter the code sent to your email' : 'Sign in without a password')
-              : (isLogin ? 'Sign in to access your account' : 'Create an account to start gifting')}
+              ? (otpSent ? 'Enter verification code' : 'Login securely with your email')
+              : (isLogin ? 'Sign in to your account' : 'Create your account')}
           </p>
         </div>
 
         {/* Main Toggle (Sign In / Sign Up) - Hide in OTP mode */}
         {!isOtpLogin && (
           <div className="flex justify-center mb-8">
-            <div className="bg-gray-100 p-1 rounded-lg inline-flex w-full">
+            <div className="bg-white/5 p-1 rounded-xl inline-flex w-full border border-white/10 shadow-inner">
               <button
                 onClick={() => { setIsLogin(true); resetState(); }}
-                className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${isLogin ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${isLogin ? 'bg-[#E60000] text-white shadow-[0_0_15px_rgba(230,0,0,0.3)]' : 'text-gray-500 hover:text-white'}`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => { setIsLogin(false); resetState(); }}
-                className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${!isLogin ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${!isLogin ? 'bg-[#E60000] text-white shadow-[0_0_15px_rgba(230,0,0,0.3)]' : 'text-gray-500 hover:text-white'}`}
               >
                 Sign Up
               </button>
@@ -241,13 +244,13 @@ export const Login = () => {
           {/* Name Field (Only for Registration) */}
           {!isLogin && !isOtpLogin && (
             <div>
-              <label className="block text-sm font-bold mb-1">Full Name <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Full Name <span className="text-[#E60000]">*</span></label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
-                placeholder="John Doe"
+                className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-700 font-bold"
+                placeholder="Enter your name"
                 required={!isLogin}
               />
             </div>
@@ -256,19 +259,19 @@ export const Login = () => {
           {/* Email Field (Always visible unless OTP sent) */}
           {(!isOtpLogin || !otpSent) && (
             <div>
-              <label className="block text-sm font-bold mb-1">Email Address <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Email Address <span className="text-[#E60000]">*</span></label>
               <div className="relative">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none ${!email.includes('@') && !otpSent ? 'pr-24' : ''}`}
-                  placeholder="username"
+                  className={`w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-700 font-bold ${!email.includes('@') && !otpSent ? 'pr-28' : ''}`}
+                  placeholder="email"
                   required
                   disabled={otpSent}
                 />
                 {!email.includes('@') && !otpSent && (
-                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-medium pointer-events-none select-none">
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 font-black text-xs pointer-events-none select-none italic">
                     @gmail.com
                   </span>
                 )}
@@ -279,13 +282,13 @@ export const Login = () => {
           {/* Password Field (Only for Password Login/Register) */}
           {!isOtpLogin && (
             <div>
-              <label className="block text-sm font-bold mb-1">Password <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Password <span className="text-[#E60000]">*</span></label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 pr-12 text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-700 font-bold"
                   placeholder="••••••••"
                   required
                   minLength={6}
@@ -293,7 +296,7 @@ export const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#E60000] focus:outline-none transition-colors"
                 >
                   {showPassword ? <Icons.EyeOff className="w-5 h-5" /> : <Icons.Eye className="w-5 h-5" />}
                 </button>
@@ -304,22 +307,22 @@ export const Login = () => {
           {/* OTP Input (Only if OTP sent) */}
           {isOtpLogin && otpSent && (
             <div>
-              <label className="block text-sm font-bold mb-1">Enter OTP <span className="text-red-500">*</span></label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Verification Code <span className="text-[#E60000]">*</span></label>
               <input
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none text-center tracking-widest text-lg"
-                placeholder="123456"
+                className="w-full bg-white/5 border border-[#E60000]/30 rounded-xl p-5 text-white focus:ring-2 focus:ring-[#E60000] outline-none text-center tracking-[1em] text-2xl font-black shadow-[inset_0_0_20px_rgba(230,0,0,0.1)]"
+                placeholder="000000"
                 required
                 autoFocus
               />
               <button
                 type="button"
                 onClick={() => setOtpSent(false)}
-                className="text-xs text-primary hover:underline mt-2"
+                className="text-[10px] font-black text-[#E60000] hover:underline mt-2 uppercase tracking-widest"
               >
-                Change Email / Resend
+                Change Email / Resend OTP
               </button>
             </div>
           )}
@@ -328,14 +331,14 @@ export const Login = () => {
             type={isOtpLogin && otpSent ? "button" : "submit"}
             onClick={isOtpLogin && otpSent ? handleVerify : undefined}
             disabled={loading}
-            className="w-full bg-gray-900 text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-[#E60000] text-white py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:bg-[#ff0000] transition-all disabled:opacity-50 flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(230,0,0,0.3)] hover:shadow-[0_0_40px_rgba(230,0,0,0.5)] active:scale-95"
           >
             {loading ? (
               <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
             ) : (
               <>
                 {isOtpLogin
-                  ? (otpSent ? 'Verify & Login' : 'Send OTP')
+                  ? (otpSent ? 'Verify OTP' : 'Request OTP')
                   : (isLogin ? 'Sign In' : 'Create Account')}
                 <Icons.ArrowRight className="w-4 h-4" />
               </>
@@ -344,12 +347,12 @@ export const Login = () => {
         </form>
 
         {/* OTP Toggle Button */}
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           <button
             onClick={() => { setIsOtpLogin(!isOtpLogin); resetState(); }}
-            className="text-sm font-medium text-gray-600 hover:text-black underline transition-colors"
+            className="text-[10px] font-black text-gray-600 hover:text-[#E60000] underline transition-colors uppercase tracking-widest"
           >
-            {isOtpLogin ? 'Back to Password Login' : 'Login with OTP'}
+            {isOtpLogin ? 'Back to password login' : 'Login with OTP'}
           </button>
         </div>
 

@@ -735,11 +735,13 @@ class InfiniteGridMenu {
                     offsetY = (cellSize - drawHeight) / 2; // Center vertically
                 }
 
-                // Fill cell with white background first
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(x, y, cellSize, cellSize);
+                // Draw image centered with correct aspect ratio
+                // Clear cell first (ensures transparency if needed)
+                ctx.clearRect(x, y, cellSize, cellSize);
 
                 // Draw image centered with correct aspect ratio
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, x + offsetX, y + offsetY, drawWidth, drawHeight);
             });
 

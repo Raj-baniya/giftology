@@ -7,6 +7,8 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { MobileNumberModal } from './components/MobileNumberModal';
 import { CustomAlert, useCustomAlert } from './components/CustomAlert';
 import './styles/christmas-theme.css';
+import './styles/space-theme.css';
+import { SpaceBackground } from './components/SpaceBackground';
 
 import { Navbar } from './components/Navbar';
 import { Home } from './pages/Home';
@@ -43,6 +45,7 @@ const ScrollToTop = () => {
 const AppContent = () => {
   const location = useLocation();
   const isPlayPage = location.pathname === '/play';
+  const isAdminPage = location.pathname.startsWith('/admin');
   const { currentTheme } = useTheme();
   const { alertState, showAlert, closeAlert } = useCustomAlert();
 
@@ -76,24 +79,31 @@ const AppContent = () => {
   }, [showAlert]);
 
   return (
-    <div className={`flex flex-col min-h-screen bg-background font-sans text-textMain pb-16 md:pb-0 theme-${currentTheme}`}>
+    <div className={`flex flex-col min-h-screen bg-transparent font-sans text-white pb-16 md:pb-0 theme-${currentTheme}`}>
       {/* Christmas effects - only if theme is christmas */}
-      {currentTheme === 'christmas' && (
-        <>
-          <SnowEffect />
-          <SantaCartAnimation />
-        </>
-      )}
+      {
+        currentTheme === 'christmas' && (
+          <>
+            <SnowEffect />
+            <SantaCartAnimation />
+          </>
+        )
+      }
 
-      {!isPlayPage && (
-        <>
-          <div className="hidden md:block">
-            <Navbar />
-          </div>
-          <MobileSearchBar />
-          <MobileNavbar />
-        </>
-      )}
+      {/* Global Space Theme Background (Shared with Home's Aurora) */}
+      {!isAdminPage && <SpaceBackground />}
+
+      {
+        !isPlayPage && (
+          <>
+            <div className="hidden md:block">
+              <Navbar />
+            </div>
+            <MobileSearchBar />
+            <MobileNavbar />
+          </>
+        )
+      }
       <MobileNumberModal />
       <CustomAlert
         isOpen={alertState.isOpen}
@@ -127,15 +137,17 @@ const AppContent = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      {!isPlayPage && (
-        <footer className="bg-white py-8 border-t border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 text-center text-textMuted text-sm flex flex-col items-center gap-4">
-            <img src="/logo.png" alt="Giftology" className="h-8 w-auto opacity-50 grayscale hover:grayscale-0 transition-all" />
-            <p>&copy; 2025 Giftology. All rights reserved.</p>
-          </div>
-        </footer>
-      )}
-    </div>
+      {
+        !isPlayPage && (
+          <footer className="py-12 border-t border-white/5 relative z-10 bg-transparent">
+            <div className="max-w-7xl mx-auto px-3 text-center text-white/40 text-[10px] font-black uppercase tracking-widest flex flex-col items-center gap-6">
+              <img src="/logo.png" alt="Giftology" className="h-8 w-auto invert hover:opacity-100 transition-all duration-500" />
+              <p className="">&copy; 2025 Giftology. All rights reserved.</p>
+            </div>
+          </footer>
+        )
+      }
+    </div >
   );
 };
 

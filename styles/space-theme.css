@@ -1,0 +1,116 @@
+@keyframes aurora {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.animate-aurora {
+    animation: aurora 20s ease infinite;
+}
+
+@keyframes sparkle {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+
+.animate-sparkle {
+    animation-name: sparkle;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+}
+
+@keyframes blood-sparkle {
+
+    0%,
+    100% {
+        text-shadow: 0 0 5px rgba(34, 197, 94, 0.5), 0 0 10px rgba(34, 197, 94, 0.3);
+        color: #22c55e;
+    }
+
+    50% {
+        text-shadow: 0 0 15px rgba(34, 197, 94, 0.8), 0 0 25px rgba(34, 197, 94, 0.5);
+        color: #4ade80;
+    }
+}
+
+.active-blood-sparkle {
+    animation: blood-sparkle 1.5s ease-in-out infinite;
+    color: #22c55e;
+    font-weight: 900 !important;
+}
+
+.space-background {
+    background: #000;
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.space-aurora {
+    position: absolute;
+    inset: 0;
+    opacity: 0.4;
+    mix-blend-mode: screen;
+    background: linear-gradient(120deg, #1A1A2E 0%, #16213E 20%, #E94560 40%, #16213E 60%, #1A1A2E 100%);
+    background-size: 400% 400%;
+}
+
+.space-noise {
+    position: absolute;
+    inset: 0;
+    background: url('https://grainy-gradients.vercel.app/noise.svg');
+    opacity: 0.2;
+    filter: brightness(100) contrast(150);
+    pointer-events: none;
+}
+
+.star {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0.6;
+}
+
+/* Admin form text visibility fix */
+input,
+select,
+textarea,
+label,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+td,
+th,
+button {
+    color: #111827;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #9CA3AF;
+}

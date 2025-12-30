@@ -11,10 +11,10 @@ import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
   <button
     onClick={onClick}
-    className={`flex items-center justify-center md:justify-start gap-2 px-4 py-3 rounded-lg transition-all flex-shrink-0 whitespace-nowrap text-sm md:text-base ${active ? 'bg-gray-900 text-white font-bold shadow-md' : 'text-textMuted hover:bg-gray-100 border border-transparent'
+    className={`flex items-center justify-center md:justify-start gap-2 px-4 py-3 rounded-lg transition-all flex-shrink-0 whitespace-nowrap text-sm md:text-base ${active ? 'bg-white/10 text-white font-black shadow-[0_0_15px_rgba(230,0,0,0.3)] border border-[#E60000]/30 active-blood-sparkle' : 'text-gray-400 hover:bg-white/5 border border-transparent'
       } ${window.innerWidth < 768 ? 'w-auto' : 'w-full text-left'}`}
   >
-    <Icon className="w-4 h-4 md:w-5 md:h-5" />
+    <Icon className={`w-4 h-4 md:w-5 md:h-5 ${active ? 'text-[#E60000]' : ''}`} />
     {label}
   </button>
 );
@@ -56,34 +56,34 @@ const ChangePasswordForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {message.text && (
-        <div className={`p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+        <div className={`p-4 rounded-xl text-xs font-black uppercase tracking-widest ${message.type === 'success' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
           {message.text}
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">New Password</label>
         <div className="relative">
-          <Icons.Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Icons.Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+            className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-700 font-bold"
             placeholder="••••••••"
           />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Confirm Password</label>
         <div className="relative">
-          <Icons.Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Icons.Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="password"
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+            className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-700 font-bold"
             placeholder="••••••••"
           />
         </div>
@@ -91,9 +91,9 @@ const ChangePasswordForm = () => {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-black text-white py-2 rounded-lg font-bold hover:bg-gray-800 transition-colors disabled:opacity-70"
+        className="w-full bg-[#E60000] text-white py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:bg-[#ff0000] transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(230,0,0,0.2)]"
       >
-        {loading ? 'Updating...' : 'Update Password'}
+        {loading ? 'Changing...' : 'Update Password'}
       </button>
     </form>
   );
@@ -190,65 +190,66 @@ const RewardsTab = ({ showAlert }: any) => {
   return (
     <div className="space-y-6">
       {/* Points Summary */}
-      <div className="bg-gradient-to-r from-amber-200 to-yellow-400 p-6 rounded-xl shadow-sm text-yellow-900">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-white/30 rounded-full backdrop-blur-sm">
-            <Icons.Star className="w-8 h-8 fill-current" />
+      <div className="bg-gradient-to-r from-amber-400 to-yellow-600 p-6 rounded-2xl shadow-2xl text-black border border-white/10 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div className="flex items-center gap-6 relative z-10">
+          <div className="p-4 bg-black/20 rounded-2xl backdrop-blur-md border border-white/20 shadow-xl">
+            <Icons.Star className="w-8 h-8 fill-black" />
           </div>
           <div>
-            <p className="font-bold text-lg opacity-80">My Reward Points</p>
-            <h2 className="text-4xl font-bold">{points} <span className="text-lg opacity-70">pts</span></h2>
-            <p className="text-sm font-medium mt-1">Worth &#8377;{points / 10}</p>
+            <p className="font-black text-[10px] uppercase tracking-[0.2em] mb-1 opacity-70">Reward Points</p>
+            <h2 className="text-4xl font-black">{points} <span className="text-sm uppercase tracking-widest opacity-70">Points</span></h2>
+            <p className="text-[10px] font-black uppercase tracking-widest mt-1 bg-black/10 px-2 py-0.5 rounded-full inline-block">Cash Value: &#8377;{points / 10}</p>
           </div>
         </div>
       </div>
 
       {/* Redeem Coupon */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="font-bold text-lg mb-4">Redeem a Coupon</h3>
+      <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-2xl">
+        <h3 className="font-black text-xs text-white mb-4 uppercase tracking-[0.2em]">Redeem Coupon</h3>
         <div className="flex flex-col sm:flex-row gap-3">
           <input
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-            placeholder="Enter 6-digit Code"
-            className="flex-1 border-2 border-gray-200 rounded-lg px-4 py-3 font-mono uppercase focus:border-black focus:outline-none transition-colors"
+            placeholder="ENTER 6-DIGIT CODE"
+            className="flex-1 bg-white/5 border-2 border-white/10 rounded-xl px-4 py-4 font-mono uppercase text-white focus:border-[#E60000] focus:outline-none transition-all placeholder:text-gray-700 font-black tracking-widest"
             maxLength={6}
           />
           <button
             onClick={handleRedeem}
             disabled={redeeming}
-            className="w-full sm:w-auto bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50 transition-colors"
+            className="w-full sm:w-auto bg-[#E60000] text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-[#ff0000] disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(230,0,0,0.2)]"
           >
-            {redeeming ? 'Processing...' : 'Redeem Code'}
+            {redeeming ? 'Checking...' : 'Redeem Now'}
           </button>
         </div>
       </div>
 
       {/* My Coupons */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="font-bold text-lg mb-4">My Coupons Wallet</h3>
+      <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-2xl">
+        <h3 className="font-black text-xs text-white mb-4 uppercase tracking-[0.2em]">My Wallet</h3>
         {coupons.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Icons.Tag className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-            <p>No coupons yet. Keep an eye out for special codes!</p>
+          <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-2xl">
+            <Icons.Tag className="w-12 h-12 mx-auto mb-3 text-gray-700" />
+            <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Wallet is currently empty</p>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {coupons.map((uc) => (
-              <div key={uc.id} className={`relative p-4 rounded-xl border-2 ${uc.status === 'active' ? 'border-dashed border-green-300 bg-green-50' : 'border-gray-200 bg-gray-50 grayscale'}`}>
+              <div key={uc.id} className={`relative p-5 rounded-2xl border-2 transition-all group ${uc.status === 'active' ? 'border-dashed border-green-500/30 bg-green-500/5 hover:bg-green-500/10' : 'border-white/5 bg-white/5 grayscale opacity-50'}`}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 ${uc.status === 'active' ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600'}`}>
-                      {uc.status}
+                    <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-3 ${uc.status === 'active' ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-400'}`}>
+                      {uc.status === 'active' ? 'ACTIVE' : 'EXPIRED'}
                     </span>
-                    <h4 className="text-2xl font-bold text-gray-800">{uc.coupon.discount_percent}% OFF</h4>
-                    <p className="font-mono text-sm text-gray-500 mt-1">Code: {uc.coupon_code}</p>
+                    <h4 className="text-3xl font-black text-white mb-1">{uc.coupon.discount_percent}% OFF</h4>
+                    <p className="font-mono text-xs text-gray-400 tracking-widest uppercase">CODE: {uc.coupon_code}</p>
                   </div>
-                  <Icons.Tag className={`w-8 h-8 ${uc.status === 'active' ? 'text-green-400' : 'text-gray-300'}`} />
+                  <Icons.Tag className={`w-10 h-10 ${uc.status === 'active' ? 'text-green-500 drop-shadow-[0_0_10px_rgba(34,197,94,0.3)]' : 'text-gray-700'}`} />
                 </div>
-                <div className="mt-4 pt-3 border-t border-gray-200/50 text-xs text-gray-500 flex justify-between">
-                  <span>Expires: {new Date(uc.valid_until).toLocaleDateString()}</span>
-                  {uc.status === 'active' && <span className="font-bold text-green-600">Apply at Checkout</span>}
+                <div className="mt-6 pt-4 border-t border-white/5 text-[10px] font-black uppercase tracking-widest text-gray-500 flex justify-between items-center">
+                  <span>EXP: {new Date(uc.valid_until).toLocaleDateString()}</span>
+                  {uc.status === 'active' && <span className="text-green-500">READY TO USE</span>}
                 </div>
               </div>
             ))}
@@ -330,34 +331,36 @@ export const Account = () => {
   // --- Guest Prompt (If not logged in) ---
   if (!loading && !user) {
     return (
-      <div className="bg-white md:bg-gray-50 flex items-start justify-center p-4 pt-8 md:pt-16 pb-12">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center space-y-6">
-          <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Icons.User className="w-10 h-10 text-rose-500" />
+      <div className="bg-transparent flex items-start justify-center p-4 pt-8 md:pt-16 pb-12">
+        <div className="bg-white/5 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 max-w-md w-full text-center space-y-8 border border-white/10 relative overflow-hidden group">
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#E60000]/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-[#E60000]/20 transition-all duration-700"></div>
+
+          <div className="w-24 h-24 bg-[#E60000]/10 border border-[#E60000]/20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(230,0,0,0.1)]">
+            <Icons.User className="w-12 h-12 text-[#E60000]" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h2>
-            <p className="text-gray-600 mb-4">
-              Please log in to view your orders and account details.
+            <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">Member Access</h2>
+            <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] italic mb-6">
+              Login to access your rewards and orders
             </p>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 text-sm font-medium">
-              🎁 <strong>Special Offer:</strong><br />
-              Sign up today and get <span className="text-amber-700 font-bold">₹50 (500 Points)</span> instantly in your wallet!
+            <div className="bg-[#E60000]/10 border border-[#E60000]/20 rounded-2xl p-6 text-white text-xs font-black uppercase tracking-[0.1em] shadow-[inset_0_0_20px_rgba(230,0,0,0.05)]">
+              🚀 <strong className="text-[#E60000]">SIGNUP BONUS:</strong><br />
+              Join the ranks today and receive <br /><span className="text-[#E60000] text-lg font-black">500 POINTS</span> instantly!
             </div>
           </div>
 
-          <div className="flex gap-4 pt-2">
+          <div className="flex flex-col gap-3 pt-2">
             <button
               onClick={() => window.location.href = '/login'}
-              className="flex-1 bg-rose-600 text-white py-3 rounded-xl font-bold hover:bg-rose-700 transition-all shadow-lg shadow-rose-200"
+              className="w-full bg-[#E60000] text-white py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:bg-[#ff0000] transition-all shadow-[0_0_30px_rgba(230,0,0,0.3)] hover:shadow-[0_0_40px_rgba(230,0,0,0.5)] active:scale-95"
             >
-              Log In
+              Login Now
             </button>
             <button
               onClick={() => window.location.href = '/login?mode=signup'}
-              className="flex-1 bg-white text-gray-900 border border-gray-200 py-3 rounded-xl font-bold hover:bg-gray-50 transition-all"
+              className="w-full bg-white/5 text-white border border-white/10 py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white/10 transition-all active:scale-95"
             >
-              Sign Up
+              Signup Now
             </button>
           </div>
         </div>
@@ -453,40 +456,16 @@ export const Account = () => {
   }
 
   return (
-    <div className="pt-[0.4cm] pb-6 md:py-10 px-4">
-      <div className="max-w-6xl mx-auto">
-
-        {/* Header Card */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 mb-8 flex flex-col md:flex-row items-center md:items-start gap-6">
-          <div className="w-20 h-20 md:w-24 md:h-24 bg-primary/30 rounded-full flex items-center justify-center text-2xl md:text-3xl font-serif text-primary-dark flex-shrink-0">
-            {(profile?.full_name || user?.displayName || 'U').charAt(0)}
-          </div>
-          <div className="flex-1 text-center md:text-left w-full">
-            <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-              {isEditing ? (
-                <div className="flex gap-2 items-center justify-center md:justify-start">
-                  <input
-                    value={newName}
-                    onChange={e => setNewName(e.target.value)}
-                    className="border rounded px-2 py-1 text-sm bg-white text-gray-900 focus:outline-none focus:border-primary"
-                    placeholder={profile?.full_name || user?.displayName}
-                  />
-                  <button onClick={handleUpdateName} className="text-green-600"><Icons.CheckCircle className="w-5 h-5" /></button>
-                  <button onClick={() => setIsEditing(false)} className="text-red-400"><Icons.X className="w-5 h-5" /></button>
-                </div>
-              ) : (
-                <>
-                  <h1 className="text-2xl md:text-3xl font-serif font-bold">{profile?.full_name || user?.displayName || 'User'}</h1>
-                  <button onClick={() => { setNewName(profile?.full_name || user?.displayName); setIsEditing(true); }} className="text-textMuted hover:text-primary">
-                    <Icons.Edit2 className="w-4 h-4" />
-                  </button>
-                </>
-              )}
+    <div className="min-h-screen bg-transparent relative">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 md:py-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12">
+          <div className="flex items-center gap-4 md:gap-6">
+            <div className="w-16 h-16 md:w-24 md:h-24 bg-white/10 backdrop-blur-md rounded-full border-2 border-[#E60000]/30 flex items-center justify-center text-2xl md:text-4xl font-serif font-black text-white shadow-[0_0_20px_rgba(230,0,0,0.2)]">
+              {user.email?.[0].toUpperCase()}
             </div>
-            <p className="text-textMuted mb-3 text-sm">{user.email}</p>
-            <div className="inline-flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-xs font-bold text-textMuted uppercase tracking-wide">
-              <Icons.User className="w-3 h-3" />
-              Member since {new Date(user.joinDate).getFullYear()}
+            <div>
+              <h1 className="font-serif text-2xl md:text-4xl font-black text-white mb-1 uppercase tracking-wider">{user.user_metadata?.first_name || 'My'} Account</h1>
+              <p className="text-gray-400 text-sm md:text-base font-medium">{user.email}</p>
             </div>
           </div>
           <button
@@ -512,9 +491,66 @@ export const Account = () => {
           </button>
         </div>
 
+        {/* Header Card */}
+        <div className="bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 p-6 md:p-10 mb-8 flex flex-col md:flex-row items-center md:items-start gap-8 shadow-2xl relative overflow-hidden group">
+          <div className="absolute -top-24 -right-24 w-60 h-60 bg-[#E60000]/10 blur-[100px] rounded-full group-hover:bg-[#E60000]/15 transition-all duration-1000"></div>
+
+          <div className="w-24 h-24 md:w-32 md:h-32 bg-[#E60000]/20 rounded-full flex items-center justify-center text-3xl md:text-5xl font-black text-white flex-shrink-0 border-2 border-[#E60000]/30 shadow-[0_0_30px_rgba(230,0,0,0.3)] relative z-10">
+            {(profile?.full_name || user?.displayName || 'U').charAt(0)}
+          </div>
+          <div className="flex-1 text-center md:text-left w-full relative z-10">
+            <div className="flex items-center justify-center md:justify-start gap-4 mb-3">
+              {isEditing ? (
+                <div className="flex gap-2 items-center justify-center md:justify-start">
+                  <input
+                    value={newName}
+                    onChange={e => setNewName(e.target.value)}
+                    className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-[#E60000] outline-none font-bold placeholder:text-gray-600"
+                    placeholder={profile?.full_name || user?.displayName}
+                  />
+                  <button onClick={handleUpdateName} className="text-green-400 hover:text-green-300 transition-colors"><Icons.CheckCircle className="w-6 h-6" /></button>
+                  <button onClick={() => setIsEditing(false)} className="text-red-400 hover:text-red-300 transition-colors"><Icons.X className="w-6 h-6" /></button>
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-3xl md:text-4xl font-black text-white uppercase tracking-wider">{profile?.full_name || user?.displayName || 'User'}</h1>
+                  <button onClick={() => { setNewName(profile?.full_name || user?.displayName); setIsEditing(true); }} className="text-gray-500 hover:text-[#E60000] transition-colors">
+                    <Icons.Edit2 className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+            </div>
+            <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-4 bg-white/5 py-1 px-3 rounded-full inline-block border border-white/5">{user.email}</p>
+            <div className="flex justify-center md:justify-start items-center gap-2 text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">
+              <Icons.User className="w-3 h-3 text-[#E60000]" />
+              Member Since {new Date(user.joinDate || Date.now()).getFullYear()}
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              showAlert(
+                'Sign Out',
+                'Are you sure you want to log out?',
+                'warning',
+                {
+                  confirmText: 'Sign Out',
+                  onConfirm: () => {
+                    setTimeout(() => logout(), 0);
+                  },
+                  cancelText: 'Cancel'
+                }
+              );
+            }}
+            className="hidden md:flex items-center gap-2 px-6 py-3 bg-red-600/10 text-red-500 border border-red-500/20 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-red-500 hover:text-white transition-all self-start relative z-10"
+          >
+            <Icons.LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
+        </div>
+
         <div className="flex flex-col md:grid md:grid-cols-4 gap-6">
           {/* Scrollable Tabs for Mobile */}
-          <div className="bg-white rounded-xl shadow-sm p-2 md:p-4 flex md:flex-col overflow-x-auto gap-2 md:gap-1 scrollbar-hide sticky top-20 z-20 md:static md:h-fit">
+          <div className="bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 p-2 md:p-4 flex md:flex-col overflow-x-auto gap-2 md:gap-1 scrollbar-hide sticky top-20 z-20 md:static md:h-fit shadow-2xl">
             <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={Icons.Package} label="Overview" />
             <TabButton active={activeTab === 'rewards'} onClick={() => setActiveTab('rewards')} icon={Icons.Star} label="My Rewards" />
             <TabButton active={activeTab === 'addresses'} onClick={() => setActiveTab('addresses')} icon={Icons.MapPin} label="Addresses" />
@@ -548,50 +584,54 @@ export const Account = () => {
           <div className="md:col-span-3 space-y-6">
             {activeTab === 'overview' ? (
               <>
-                <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm">
-                  <h3 className="font-serif text-lg md:text-xl font-bold mb-4">Your Orders</h3>
+                <div className="bg-white/5 backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#E60000]/5 blur-3xl rounded-full"></div>
+                  <h3 className="font-black text-xs text-white mb-8 uppercase tracking-[0.2em] flex items-center gap-3">
+                    <span className="w-2 h-2 bg-[#E60000] rounded-full animate-pulse"></span>
+                    Recent Orders
+                  </h3>
                   {ordersLoading ? (
                     <div className="flex justify-center items-center py-10">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E60000]"></div>
                     </div>
                   ) : orders.length > 0 ? (
                     <div className="space-y-4">
                       {orders.map((order) => (
-                        <div key={order.id} className="border border-gray-100 rounded-lg overflow-hidden transition-all hover:shadow-md bg-white">
+                        <div key={order.id} className="border border-white/5 rounded-xl overflow-hidden transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] bg-white/5 group">
                           <div
                             onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
-                            className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4 p-3 md:p-4 cursor-pointer hover:bg-gray-50"
+                            className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4 p-3 md:p-4 cursor-pointer hover:bg-white/[0.02]"
                           >
                             <div className="flex items-center gap-4 w-full sm:w-auto">
-                              <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-md shrink-0 flex items-center justify-center text-gray-400 overflow-hidden border border-gray-200">
+                              <div className="w-12 h-12 md:w-16 md:h-16 bg-white/5 rounded-lg shrink-0 flex items-center justify-center text-gray-500 overflow-hidden border border-white/10 group-hover:border-[#E60000]/30 transition-colors">
                                 {order.items?.[0]?.imageUrl ? (
                                   <img
                                     src={order.items[0].imageUrl}
                                     alt="Product"
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100"
                                   />
                                 ) : (
                                   <Icons.Package />
                                 )}
                               </div>
                               <div className="flex-1 sm:hidden">
-                                <h4 className="font-bold text-sm">Order #{order.readableId || order.id.slice(0, 8)}</h4>
-                                <span className="font-bold text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
+                                <h4 className="font-black text-sm text-white">Order #{order.readableId || order.id.slice(0, 8)}</h4>
+                                <span className="font-black text-sm text-green-500" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
                               </div>
                             </div>
 
                             <div className="flex-1 hidden sm:block">
-                              <h4 className="font-bold">Order #{order.readableId || order.id.slice(0, 8)}</h4>
-                              <p className="text-sm text-textMuted">Placed on {new Date(order.date).toLocaleDateString()}</p>
+                              <h4 className="font-black text-white uppercase tracking-wider">Order #{order.readableId || order.id.slice(0, 8)}</h4>
+                              <p className="text-sm text-gray-400 font-medium">Placed on {new Date(order.date).toLocaleDateString()}</p>
                             </div>
                             <div className="flex justify-between items-center w-full sm:w-auto gap-3">
-                              <span className={`px-2 py-1 text-[10px] md:text-xs font-bold rounded-full ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                                order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
-                                  order.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                              <span className={`px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-tighter rounded-full ${order.status === 'delivered' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                                order.status === 'shipped' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                                  order.status === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
                                 }`}>
-                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                {order.status}
                               </span>
-                              <span className="font-bold text-sm hidden sm:block" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
+                              <span className="font-black text-sm text-green-500 hidden sm:block" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
 
                               {/* Cancel Button for User */}
                               {order.status === 'processing' && (
@@ -729,57 +769,54 @@ export const Account = () => {
             ) : activeTab === 'spending' ? (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-primary">
-                    <p className="text-sm text-textMuted mb-1">Total Spent</p>
-                    <p className="text-2xl font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{orders.reduce((sum, order) => sum + order.total, 0).toLocaleString()}</p>
+                  <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-xl border-l-4 border-[#E60000]">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 font-sans">Total Spent</p>
+                    <p className="text-2xl font-black text-white" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{orders.reduce((sum, order) => sum + order.total, 0).toLocaleString()}</p>
                   </div>
-                  <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-                    <p className="text-sm text-textMuted mb-1">Total Orders</p>
-                    <p className="text-2xl font-bold">{orders.length}</p>
+                  <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-xl border-l-4 border-blue-500">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 font-sans">Total Orders</p>
+                    <p className="text-2xl font-black text-white">{orders.length}</p>
                   </div>
-                  <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                    <p className="text-sm text-textMuted mb-1">Average Order</p>
-                    <p className="text-2xl font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{orders.length > 0 ? Math.round(orders.reduce((sum, order) => sum + order.total, 0) / orders.length).toLocaleString() : 0}</p>
+                  <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-xl border-l-4 border-green-500">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 font-sans">Average Order</p>
+                    <p className="text-2xl font-black text-white" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{orders.length > 0 ? Math.round(orders.reduce((sum, order) => sum + order.total, 0) / orders.length).toLocaleString() : 0}</p>
                   </div>
                 </div>
 
                 {/* Recent Spending */}
-                <div className="bg-white p-6 rounded-xl shadow-sm">
-                  <h3 className="font-serif text-xl font-bold mb-4">Spending History</h3>
+                <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] border border-white/10 shadow-2xl">
+                  <h3 className="font-black text-xs text-white mb-6 uppercase tracking-[0.2em]">Spending History</h3>
                   {orders.length > 0 ? (
                     <div className="space-y-3">
                       {orders.slice(0, 10).map((order) => (
-                        <div key={order.id} className="flex justify-between items-center p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div key={order.id} className="flex justify-between items-center p-4 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all group">
                           <div>
-                            <p className="font-medium">Order #{order.readableId || order.id.slice(0, 8)}</p>
-                            <p className="text-xs text-textMuted">{new Date(order.date).toLocaleDateString()}</p>
+                            <p className="font-black text-sm text-white uppercase tracking-widest group-hover:text-[#E60000]">Order #{order.readableId || order.id.slice(0, 8)}</p>
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">{new Date(order.date).toLocaleDateString()}</p>
                           </div>
-                          <p className="font-bold text-lg" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</p>
+                          <p className="font-black text-lg text-green-500" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</p>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-10 text-gray-500">
-                      <Icons.Wallet className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                      <p>No spending data yet</p>
+                    <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-2xl">
+                      <Icons.Wallet className="w-12 h-12 mx-auto mb-3 text-gray-700" />
+                      <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">No transaction data found</p>
                     </div>
                   )}
                 </div>
               </div>
             ) : activeTab === 'addresses' ? (
-              <div className="bg-white p-6 rounded-xl shadow-sm">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-serif text-xl font-bold">Saved Addresses</h3>
+              <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] border border-white/10 shadow-2xl">
+                <div className="flex justify-between items-center mb-8">
+                  <h3 className="font-black text-xs text-white uppercase tracking-[0.2em]">Saved Addresses</h3>
                   {!isAddingAddress && (
                     <button
-                      onClick={() => {
-                        setIsAddingAddress(true);
-                        setEditFormData({});
-                      }}
-                      className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 transition-all"
+                      onClick={() => { setIsAddingAddress(true); setEditFormData({}); }}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#E60000] text-white rounded-lg font-black uppercase tracking-widest text-[10px] hover:bg-[#ff0000] transition-all shadow-[0_0_15px_rgba(230,0,0,0.3)]"
                     >
                       <Icons.Plus className="w-4 h-4" />
-                      Add Address
+                      Add New Address
                     </button>
                   )}
                 </div>
@@ -977,8 +1014,8 @@ export const Account = () => {
             ) : activeTab === 'rewards' ? (
               <RewardsTab showAlert={showAlert} />
             ) : activeTab === 'security' ? (
-              <div className="bg-white p-6 rounded-xl shadow-sm max-w-lg">
-                <h3 className="font-serif text-xl font-bold mb-6">Security Settings</h3>
+              <div className="bg-white/5 backdrop-blur-xl p-6 md:p-10 rounded-[2rem] border border-white/10 shadow-2xl max-w-lg">
+                <h3 className="font-black text-xs text-white mb-8 uppercase tracking-[0.2em]">Security Settings</h3>
                 <ChangePasswordForm />
               </div>
             ) : null}

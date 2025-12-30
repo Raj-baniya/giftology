@@ -244,10 +244,10 @@ export const ProductDetail = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-purple-50">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-rose-500 mx-auto mb-4"></div>
-                    <p className="text-gray-600 font-medium">Loading amazing gift...</p>
+            <div className="min-h-screen flex items-center justify-center bg-transparent relative">
+                <div className="relative z-10 flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E60000]"></div>
+                    <p className="text-white font-black tracking-widest uppercase text-xs animate-pulse">Loading Product...</p>
                 </div>
             </div>
         );
@@ -290,312 +290,106 @@ export const ProductDetail = () => {
     const images = displayImages;
 
     return (
-        <>
-            {/* Full Screen Image Modal */}
-            {showFullScreen && (
-                <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4" onClick={() => setShowFullScreen(false)}>
+        <div className="min-h-screen bg-transparent text-white relative overflow-x-hidden font-sans">
+            <div className="max-w-7xl mx-auto px-1.5 py-8 md:py-16 relative z-10">
+                {/* Mobile Back Button - Redesigned for Space */}
+                <div className="lg:hidden fixed top-4 left-4 z-50">
                     <button
-                        onClick={() => setShowFullScreen(false)}
-                        className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors z-[210]"
-                    >
-                        <Icons.XCircle className="w-8 h-8 sm:w-10 sm:h-10" />
-                    </button>
-                    <img
-                        src={selectedImage}
-                        alt="Full screen view"
-                        className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in duration-300"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                </div>
-            )}
-
-            {/* Light Rays Background */}
-            <LightRays />
-
-            <div className="min-h-screen pt-0 sm:pt-20 pb-3 sm:pb-16">
-                {/* Top Navigation - Mobile */}
-                <div className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-white border-b border-gray-200 shadow-sm">
-                    <div className="flex items-center gap-2 px-3 py-2">
-                        {/* Back Button */}
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
-                        >
-                            <Icons.ChevronLeft className="w-6 h-6 text-gray-700" />
-                        </button>
-
-                        {/* Search Bar */}
-                        <div className="flex-1 relative">
-                            <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search products"
-                                className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-                                onClick={() => navigate('/shop')}
-                                readOnly
-                            />
-                        </div>
-
-                        {/* Cart Icon */}
-                        <button
-                            onClick={() => navigate('/cart')}
-                            className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer shrink-0"
-                        >
-                            <Icons.ShoppingCart className="w-6 h-6 text-gray-700" />
-                            {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                                    {cartCount}
-                                </span>
-                            )}
-                        </button>
-                    </div>
-                </div>
-
-                <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-0 md:pt-0">
-                    {/* Desktop Back Button */}
-                    <motion.button
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
                         onClick={() => navigate(-1)}
-                        className="hidden md:inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 text-gray-700 hover:text-rose-600 px-3 sm:px-6 py-1.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold shadow-md hover:shadow-xl border border-gray-100 hover:border-rose-200 transition-all duration-300 group mb-1.5 sm:mb-8 text-sm sm:text-base"
+                        className="p-3 bg-black/40 backdrop-blur-md rounded-full text-white border border-white/10 shadow-xl active:scale-90 transition-all"
                     >
-                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-100 group-hover:bg-rose-100 flex items-center justify-center transition-colors">
-                            <Icons.ChevronLeft className="w-3.5 h-3.5 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
-                        </div>
-                        <span className="hidden xs:inline">Back to Shop</span>
-                    </motion.button>
+                        <Icons.ChevronLeft className="w-5 h-5" />
+                    </button>
+                </div>
 
-                    {/* Mobile Product Header (Name & Rating) */}
-                    <div className="lg:hidden mb-1 px-2">
-                        <div className="mb-2">
-                            <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border border-rose-100">
+                <div className="max-w-[1440px] mx-auto pt-0 lg:pt-12 px-1.5 lg:px-8">
+                    {/* Product Header - Above Image & Info */}
+                    <div className="px-6 lg:px-0 mb-8">
+                        <div className="mb-4">
+                            <span className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-[#E60000] px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-lg">
+                                <Icons.Sparkles className="w-4 h-4" />
                                 {product.category.replace('-', ' ')}
                             </span>
                         </div>
-                        <h1 className="font-serif text-xl font-bold text-gray-900 leading-tight mb-2">
+                        <h1 className="font-serif text-xl lg:text-3xl xl:text-4xl font-black text-white mb-2 uppercase tracking-wider leading-[1.1]">
                             {product.name}
                         </h1>
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="flex items-center text-yellow-400">
-                                <Icons.Star className="w-4 h-4 fill-current" />
-                                <span className="ml-1 text-sm font-bold text-gray-700">{product.rating || '4.8'}</span>
-                            </div>
-                            <span className="text-gray-400 text-sm">•</span>
-                            <span className="text-gray-500 text-sm">{product.reviewCount || 128} reviews</span>
-                        </div>
+                        <div className="h-1 w-20 bg-[#E60000] rounded-full mt-4"></div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-8 lg:gap-12">
-                        {/* Image Gallery - Left Side */}
+                    <div className="flex flex-col lg:grid lg:grid-cols-2 gap-0 lg:gap-16">
+                        {/* Image Section - Left Side */}
                         <motion.div
-                            initial={{ opacity: 0, x: -30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="relative"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="relative group lg:sticky lg:top-24 h-[60vh] sm:h-[70vh] lg:h-[80vh]"
                         >
-                            {/* Stacked Image Gallery */}
-                            <div
-                                className="relative aspect-square w-[calc(100%+1.5rem)] -mx-3 sm:w-auto sm:mx-0 sm:aspect-auto sm:h-[450px] lg:h-[600px] flex items-center justify-center pt-0 sm:pt-8"
-                                onTouchStart={(e) => setTouchStart(e.targetTouches[0].clientX)}
-                                onTouchMove={(e) => setTouchEnd(e.targetTouches[0].clientX)}
-                                onTouchEnd={() => {
-                                    if (touchStart - touchEnd > 75) {
-                                        // Swiped left - next image
-                                        const currentIndex = images.indexOf(selectedImage);
-                                        const nextIndex = (currentIndex + 1) % images.length;
-                                        setSelectedImage(images[nextIndex]);
-                                    }
-                                    if (touchStart - touchEnd < -75) {
-                                        // Swiped right - previous image
-                                        const currentIndex = images.indexOf(selectedImage);
-                                        const prevIndex = (currentIndex - 1 + images.length) % images.length;
-                                        setSelectedImage(images[prevIndex]);
-                                    }
-                                }}
-                            >
-                                {/* Decorative gradient blob */}
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-200/30 to-purple-200/30 rounded-full blur-3xl -z-0"></div>
-
+                            {/* Main Display Image */}
+                            <div className="w-full h-full relative overflow-hidden bg-white/5 backdrop-blur-sm lg:rounded-3xl border-b lg:border border-white/10">
                                 {images.length > 1 ? (
-                                    <div className="relative w-full h-full group">
-                                        {/* Stacked Cards */}
-                                        {images.map((img, index) => {
-                                            const isSelected = selectedImage === img;
-                                            const totalImages = images.length;
-                                            const reverseIndex = totalImages - 1 - index;
+                                    <div
+                                        className="relative w-full h-full"
+                                        onTouchStart={(e) => setTouchStart(e.targetTouches[0].clientX)}
+                                        onTouchMove={(e) => setTouchEnd(e.targetTouches[0].clientX)}
+                                        onTouchEnd={() => {
+                                            if (touchStart - touchEnd > 75) {
+                                                const currentIndex = images.indexOf(selectedImage);
+                                                const nextIndex = (currentIndex + 1) % images.length;
+                                                setSelectedImage(images[nextIndex]);
+                                            }
+                                            if (touchStart - touchEnd < -75) {
+                                                const currentIndex = images.indexOf(selectedImage);
+                                                const prevIndex = (currentIndex - 1 + images.length) % images.length;
+                                                setSelectedImage(images[prevIndex]);
+                                            }
+                                        }}
+                                    >
+                                        <AnimatePresence mode="wait">
+                                            <motion.img
+                                                key={selectedImage}
+                                                src={selectedImage}
+                                                alt={product.name}
+                                                initial={{ opacity: 0, scale: 1.1 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.95 }}
+                                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                                className="w-full h-full object-contain p-4 lg:p-8 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] cursor-pointer"
+                                                onClick={() => setShowFullScreen(true)}
+                                            />
+                                        </AnimatePresence>
 
-                                            const handleCardClick = () => {
-                                                if (isSelected) {
-                                                    setShowFullScreen(true);
-                                                } else {
-                                                    // Find current index and go to next
-                                                    const currentIndex = images.indexOf(selectedImage);
-                                                    const nextIndex = (currentIndex + 1) % images.length;
-                                                    setSelectedImage(images[nextIndex]);
-                                                }
-                                            };
-
-                                            return (
-                                                <motion.div
-                                                    key={index}
-                                                    initial={{ opacity: 0, scale: 0.8 }}
-                                                    animate={{
-                                                        opacity: 1,
-                                                        scale: isSelected ? 1 : 0.95 - (reverseIndex * 0.05),
-                                                        y: isSelected ? 0 : reverseIndex * -15,
-                                                        x: isSelected ? 0 : reverseIndex * 10,
-                                                        zIndex: isSelected ? 50 : totalImages - index,
-                                                        rotateZ: isSelected ? 0 : reverseIndex * -2,
-                                                    }}
-                                                    transition={{
-                                                        type: "spring",
-                                                        stiffness: 300,
-                                                        damping: 30,
-                                                    }}
-                                                    onClick={handleCardClick}
-                                                    className={`absolute inset-0 cursor-pointer ${isSelected ? '' : 'hover:scale-[0.98] transition-transform'
-                                                        }`}
-                                                    style={{
-                                                        transformOrigin: 'center center',
-                                                    }}
-                                                >
-                                                    <div className={`relative w-full h-full bg-white rounded-none sm:rounded-3xl shadow-none sm:shadow-xl overflow-hidden ${isSelected ? 'ring-0 sm:ring-4 ring-rose-400' : ''
-                                                        }`}>
-                                                        <img
-                                                            src={img}
-                                                            alt={`${product.name} ${index + 1}`}
-                                                            className="w-full h-full object-contain p-0 sm:p-4 hover:scale-105 transition-transform duration-500"
-                                                        />
-
-                                                        {/* Discount Badge - Only on first image */}
-                                                        {index === 0 && discountPercentage > 0 && (
-                                                            <motion.div
-                                                                initial={{ scale: 0, rotate: -180 }}
-                                                                animate={{ scale: 1, rotate: 0 }}
-                                                                transition={{ delay: 0.4, type: "spring" }}
-                                                                className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-gradient-to-br from-rose-500 to-rose-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold shadow-xl flex items-center gap-1 z-10"
-                                                            >
-                                                                <Icons.TrendingUp className="w-3 h-3" />
-                                                                {discountPercentage}% OFF
-                                                            </motion.div>
-                                                        )}
-
-                                                        {/* Image indicator */}
-                                                        {!isSelected && (
-                                                            <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm">
-                                                                {index + 1}/{totalImages}
-                                                            </div>
-                                                        )}
-
-                                                        {/* Swipe hint for mobile, click hint for desktop */}
-                                                        {isSelected && (
-                                                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold backdrop-blur-sm flex items-center gap-1.5 sm:gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <Icons.ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                                                <span className="hidden sm:inline">Click to see next</span>
-                                                                <span className="sm:hidden">Swipe</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </motion.div>
-                                            );
-                                        })}
+                                        {discountPercentage > 0 && (
+                                            <motion.div
+                                                initial={{ x: -100 }}
+                                                animate={{ x: 0 }}
+                                                className="absolute top-6 left-6 bg-[#E60000] text-white px-4 py-2 rounded-full text-xs font-black shadow-[0_0_15px_rgba(230,0,0,0.5)] flex items-center gap-2 z-10 active-blood-sparkle"
+                                            >
+                                                <Icons.Zap className="w-3 h-3" />
+                                                {discountPercentage}% SPECIAL OFF
+                                            </motion.div>
+                                        )}
                                     </div>
                                 ) : (
                                     // Single image fallback
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: 0.2 }}
-                                        className="relative w-full h-full"
-                                    >
-                                        <div
-                                            className="relative w-full h-full bg-white rounded-none sm:rounded-3xl shadow-none sm:shadow-xl overflow-hidden p-0 sm:p-4 cursor-pointer"
+                                    <div className="relative w-full h-full">
+                                        <img
+                                            src={selectedImage}
+                                            alt={product.name}
+                                            className="w-full h-full object-contain p-4 lg:p-8 drop-shadow-2xl"
                                             onClick={() => setShowFullScreen(true)}
-                                        >
-                                            <img
-                                                src={selectedImage}
-                                                alt={product.name}
-                                                className="w-full h-full object-contain p-0 sm:p-4 drop-shadow-2xl hover:scale-105 transition-transform duration-500"
-                                            />
-
-                                            {discountPercentage > 0 && (
-                                                <motion.div
-                                                    initial={{ scale: 0, rotate: -180 }}
-                                                    animate={{ scale: 1, rotate: 0 }}
-                                                    transition={{ delay: 0.4, type: "spring" }}
-                                                    className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-gradient-to-br from-rose-500 to-rose-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold shadow-xl flex items-center gap-1 z-10"
-                                                >
-                                                    <Icons.TrendingUp className="w-3 h-3" />
-                                                    {discountPercentage}% OFF
-                                                </motion.div>
-                                            )}
-                                        </div>
-                                    </motion.div>
-                                )}
-
-                                {/* Navigation Dots */}
-                                {images.length > 1 && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.6 }}
-                                        className="absolute -bottom-6 sm:-bottom-8 left-1/2 transform -translate-x-1/2 flex gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-3 rounded-full shadow-lg"
-                                    >
-                                        {images.map((img, index) => (
-                                            <button
-                                                key={index}
-                                                onClick={() => setSelectedImage(img)}
-                                                className={`transition-all duration-300 rounded-full ${selectedImage === img
-                                                    ? 'w-6 sm:w-8 h-2 sm:h-3 bg-gradient-to-r from-rose-500 to-purple-500'
-                                                    : 'w-2 sm:w-3 h-2 sm:h-3 bg-gray-300 hover:bg-gray-400'
-                                                    }`}
-                                                aria-label={`View image ${index + 1}`}
-                                            />
-                                        ))}
-                                    </motion.div>
+                                        />
+                                    </div>
                                 )}
                             </div>
                         </motion.div>
 
                         {/* Product Info - Right Side */}
-                        <motion.div
-                            initial={{ opacity: 0, x: 30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="flex flex-col"
-                        >
-                            {/* Desktop Category Badge - Hidden on Mobile */}
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
-                                className="hidden lg:block mb-1.5 sm:mb-4"
-                            >
-                                <span className="inline-flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-rose-100 to-purple-100 text-rose-700 px-2.5 py-1 sm:px-4 sm:py-2 rounded-full text-[10px] sm:text-sm font-bold uppercase tracking-wide sm:tracking-wider shadow-sm">
-                                    <Icons.Gift className="w-3 h-3 sm:w-4 sm:h-4" />
-                                    {product.category.replace('-', ' ')}
-                                </span>
-                            </motion.div>
-
-                            {/* Desktop Product Name - Hidden on Mobile */}
-                            <motion.h1
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 }}
-                                className="hidden lg:block font-serif text-lg sm:text-3xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-2 sm:mb-6 leading-tight bg-gradient-to-r from-gray-900 via-rose-900 to-purple-900 bg-clip-text text-transparent"
-                            >
-                                {product.name}
-                            </motion.h1>
+                        <div className="flex flex-col p-6 lg:p-0">
 
                             {/* Price Section */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5 }}
-                                className="bg-gradient-to-br from-white to-rose-50 rounded-xl sm:rounded-2xl p-2.5 sm:p-6 mb-2.5 sm:mb-6 shadow-lg border border-rose-100"
-                            >
-                                <div className="flex items-baseline gap-2 sm:gap-4 flex-wrap">
-                                    <span className="text-2xl sm:text-4xl lg:text-5xl font-bold text-rose-600" style={{ fontFamily: 'Arial, sans-serif' }}>
+                            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 mb-8 border border-white/10 shadow-2xl">
+                                <div className="flex items-baseline gap-4">
+                                    <span className="text-2xl lg:text-4xl font-black text-green-500 active-blood-sparkle" style={{ fontFamily: 'Arial, sans-serif' }}>
                                         &#8377;{product.price.toLocaleString()}
                                     </span>
                                     {product.marketPrice && product.marketPrice > product.price && (
@@ -609,7 +403,7 @@ export const ProductDetail = () => {
                                         </>
                                     )}
                                 </div>
-                            </motion.div>
+                            </div>
 
                             {/* Rewards Badge */}
                             <motion.div
@@ -632,11 +426,11 @@ export const ProductDetail = () => {
                                 transition={{ delay: 0.6 }}
                                 className="mb-3 sm:mb-8"
                             >
-                                <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-1.5 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
-                                    <Icons.Package className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" />
-                                    Product Description
+                                <h3 className="text-sm sm:text-lg font-black text-white mb-3 flex items-center gap-2 uppercase tracking-widest">
+                                    <Icons.Package className="w-5 h-5 text-[#E60000]" />
+                                    Product Information
                                 </h3>
-                                <div className="text-gray-600 leading-relaxed text-sm sm:text-base lg:text-lg space-y-2 sm:space-y-4">
+                                <div className="text-gray-400 leading-relaxed text-sm lg:text-base space-y-4">
                                     {product.description.split('\n').filter(para => para.trim()).map((paragraph, index) => (
                                         <p key={index}>{paragraph}</p>
                                     ))}
@@ -650,36 +444,36 @@ export const ProductDetail = () => {
                                 transition={{ delay: 0.7 }}
                                 className="grid grid-cols-2 gap-1.5 sm:gap-3 mb-3 sm:mb-8"
                             >
-                                <div className="flex items-center gap-1.5 sm:gap-3 p-2 sm:p-4 bg-gradient-to-br from-white to-gray-50 rounded-lg sm:rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className={`p-2 sm:p-3 rounded-full shadow-sm ${isOutOfStock ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                                <div className="flex items-center gap-1.5 sm:gap-3 p-2 sm:p-4 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className={`p-2 sm:p-3 rounded-full shadow-sm ${isOutOfStock ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
                                         {isOutOfStock ? <Icons.X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Icons.Check className="w-4 h-4 sm:w-5 sm:h-5" />}
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-bold text-xs sm:text-sm text-gray-900">
+                                        <span className="font-bold text-xs sm:text-sm text-white">
                                             {isOutOfStock ? 'Out of Stock' : 'In Stock'}
                                         </span>
                                         {currentStock > 0 && currentStock < 10 && (
-                                            <span className="text-[10px] sm:text-xs text-orange-600 font-bold animate-pulse">Only {currentStock} left!</span>
+                                            <span className="text-[10px] sm:text-xs text-[#E60000] font-black animate-pulse">Only {currentStock} Left</span>
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg sm:rounded-xl border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="p-2 sm:p-3 bg-blue-100 rounded-full text-blue-600 shadow-sm">
+                                <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="p-2 sm:p-3 bg-blue-500/10 rounded-full text-blue-400 shadow-sm">
                                         <Icons.Truck className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
-                                    <span className="font-bold text-xs sm:text-sm text-gray-900">Free Delivery</span>
+                                    <span className="font-bold text-xs sm:text-sm text-white">Free Delivery</span>
                                 </div>
-                                <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-gradient-to-br from-purple-50 to-white rounded-lg sm:rounded-xl border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="p-2 sm:p-3 bg-purple-100 rounded-full text-purple-600 shadow-sm">
+                                <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="p-2 sm:p-3 bg-purple-500/10 rounded-full text-purple-400 shadow-sm">
                                         <Icons.Shield className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
-                                    <span className="font-bold text-xs sm:text-sm text-gray-900">Secure Payment</span>
+                                    <span className="font-bold text-xs sm:text-sm text-white">Secure Payment</span>
                                 </div>
-                                <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-gradient-to-br from-orange-50 to-white rounded-lg sm:rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="p-2 sm:p-3 bg-orange-100 rounded-full text-orange-600 shadow-sm">
+                                <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="p-2 sm:p-3 bg-[#E60000]/10 rounded-full text-[#E60000] shadow-sm">
                                         <Icons.Gift className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
-                                    <span className="font-bold text-xs sm:text-sm text-gray-900">Free Gift Wrapping</span>
+                                    <span className="font-bold text-xs sm:text-sm text-white">Gift Wrapping</span>
                                 </div>
                             </motion.div>
 
@@ -695,8 +489,8 @@ export const ProductDetail = () => {
                                     {(linkedVariants.length > 0 || uniqueColors.length > 0) && (
                                         <div>
                                             <div className="flex justify-between items-center mb-2 sm:mb-3">
-                                                <h3 className="text-xs sm:text-sm font-semibold text-gray-900">Select Color</h3>
-                                                <span className="text-xs sm:text-sm text-rose-600 font-medium">{selectedColor || product.color}</span>
+                                                <h3 className="text-xs sm:text-sm font-black text-gray-400 uppercase tracking-widest">Select Color</h3>
+                                                <span className="text-xs sm:text-sm text-[#E60000] font-black uppercase tracking-tighter">{selectedColor || product.color}</span>
                                             </div>
                                             <div className="flex flex-wrap gap-2">
                                                 {/* Current Product Swatch (if it has a color) */}
@@ -748,10 +542,10 @@ export const ProductDetail = () => {
                                                             onClick={() => hasStock && handleColorSelect(color)}
                                                             disabled={!hasStock}
                                                             className={`relative w-16 h-20 rounded-xl border-2 transition-all overflow-hidden ${!hasStock
-                                                                ? 'border-gray-200 opacity-40 cursor-not-allowed grayscale'
+                                                                ? 'border-white/5 opacity-40 cursor-not-allowed grayscale'
                                                                 : selectedColor === color
-                                                                    ? 'border-gray-900 shadow-md'
-                                                                    : 'border-gray-200 hover:border-gray-300 cursor-pointer'
+                                                                    ? 'border-[#E60000] shadow-[0_0_15px_rgba(230,0,0,0.5)] scale-105'
+                                                                    : 'border-white/10 hover:border-white/30 cursor-pointer'
                                                                 }`}
                                                             title={!hasStock ? `${color} - Out of Stock` : color}
                                                         >
@@ -776,9 +570,9 @@ export const ProductDetail = () => {
                                     {availableSizes.length > 0 && (
                                         <div>
                                             <div className="flex justify-between items-center mb-2 sm:mb-3">
-                                                <h3 className="text-xs sm:text-sm font-semibold text-gray-900">Select Size</h3>
-                                                <button className="text-[10px] sm:text-xs text-blue-600 font-semibold hover:underline">
-                                                    Size Chart
+                                                <h3 className="text-xs sm:text-sm font-black text-gray-400 uppercase tracking-widest">Select Size</h3>
+                                                <button className="text-[10px] sm:text-xs text-blue-400 font-black uppercase tracking-widest hover:text-blue-300">
+                                                    Size Guide
                                                 </button>
                                             </div>
                                             <div className="flex flex-wrap gap-2">
@@ -798,11 +592,11 @@ export const ProductDetail = () => {
                                                             key={size}
                                                             onClick={() => hasStock && setSelectedSize(size)}
                                                             disabled={!hasStock}
-                                                            className={`min-w-[2.5rem] sm:min-w-[3rem] px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border transition-all font-medium text-xs sm:text-sm ${!hasStock
-                                                                ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+                                                            className={`min-w-[3rem] px-5 py-3 rounded-xl border transition-all font-black text-xs uppercase tracking-widest ${!hasStock
+                                                                ? 'bg-black/20 border-white/5 text-gray-600 cursor-not-allowed'
                                                                 : selectedSize === size
-                                                                    ? 'bg-gray-900 text-white border-gray-900'
-                                                                    : 'bg-white border-gray-200 text-gray-700 hover:border-gray-400 cursor-pointer'
+                                                                    ? 'bg-[#E60000] text-white border-[#E60000] shadow-[0_0_20px_rgba(230,0,0,0.4)] active-blood-sparkle'
+                                                                    : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'
                                                                 }`}
                                                         >
                                                             {size}
@@ -816,12 +610,7 @@ export const ProductDetail = () => {
                             )}
 
                             {/* Action Buttons */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.8 }}
-                                className="flex flex-col sm:flex-row gap-3 mt-auto"
-                            >
+                            <div className="flex flex-col sm:flex-row gap-4 mt-8">
                                 {/* Add to Cart Button - White */}
                                 <button
                                     onClick={handleAddToCart}
@@ -892,36 +681,38 @@ export const ProductDetail = () => {
                                         </>
                                     )}
                                 </button>
-                            </motion.div>
-                        </motion.div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Reviews Section */}
-            <div className="bg-gray-50 py-16 px-4 sm:px-6 lg:px-8 mt-12">
-                <div className="max-w-7xl mx-auto">
-                    <h2 className="text-3xl font-serif font-bold text-gray-900 mb-8 text-center">Customer Reviews</h2>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Review Form */}
-                        <div className="lg:col-span-1">
-                            <ReviewForm productId={product.id} onReviewAdded={() => window.location.reload()} />
-                        </div>
-
-                        {/* Reviews List */}
-                        <div className="lg:col-span-2">
-                            <ReviewsList productId={product.id} />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            {/* Auth Required Modal */}
-            <AuthRequiredModal
-                isOpen={isAuthModalOpen}
-                onClose={() => setIsAuthModalOpen(false)}
-                message="Please login to add items to your cart or make a purchase."
-            />
-        </>
+
+            {/* Labels & Reviews */}
+            <div className="relative z-10">
+                {/* Reviews Section */}
+                <div className="bg-black/40 backdrop-blur-md py-16 px-4 sm:px-6 lg:px-8 mt-12 border-t border-white/10">
+                    <div className="max-w-7xl mx-auto">
+                        <h2 className="text-3xl font-serif font-black text-white mb-8 text-center uppercase tracking-widest">Customer Reviews</h2>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Review Form */}
+                            <div className="lg:col-span-1">
+                                <ReviewForm productId={product.id} onReviewAdded={() => window.location.reload()} />
+                            </div>
+
+                            {/* Reviews List */}
+                            <div className="lg:col-span-2">
+                                <ReviewsList productId={product.id} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <AuthRequiredModal
+                    isOpen={isAuthModalOpen}
+                    onClose={() => setIsAuthModalOpen(false)}
+                    message="Please login to add items to your cart or make a purchase."
+                />
+            </div>
+        </div>
     );
 };
 
@@ -1001,30 +792,39 @@ const ReviewForm = ({ productId, onReviewAdded }: { productId: string, onReviewA
 
     return (
         <>
-            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 className="text-xl font-bold mb-4">Write a Review</h3>
-                {message && <div className={`p-3 rounded mb-4 text-sm ${message.includes('Success') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{message}</div>}
-                <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-2xl">
+                <h3 className="text-xl font-black text-white mb-6 uppercase tracking-widest flex items-center gap-2">
+                    <Icons.Edit className="w-5 h-5 text-[#E60000]" />
+                    Review This Product
+                </h3>
+                {message && (
+                    <div className={`p-4 rounded-xl mb-6 text-sm font-bold border ${message.includes('Success')
+                        ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                        : 'bg-[#E60000]/10 text-red-400 border-[#E60000]/20'}`}>
+                        {message}
+                    </div>
+                )}
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-bold mb-1">Your Name</label>
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Your Name</label>
                         <input
                             type="text"
                             value={userName}
                             onChange={(e) => setUserName(e.target.value)}
-                            className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-600"
                             placeholder={user ? (user.email?.split('@')[0] || "Your Name") : "Login to review"}
                             required
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-bold mb-1">Rating</label>
-                        <div className="flex gap-1">
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Rating</label>
+                        <div className="flex gap-2 bg-white/5 p-3 rounded-xl border border-white/10">
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <button
                                     key={star}
                                     type="button"
                                     onClick={() => setRating(star)}
-                                    className={`text-2xl transition-colors ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                                    className={`text-2xl transition-all hover:scale-125 ${star <= rating ? 'text-[#E60000] drop-shadow-[0_0_10px_rgba(230,0,0,0.5)]' : 'text-gray-700'}`}
                                 >
                                     ★
                                 </button>
@@ -1032,33 +832,36 @@ const ReviewForm = ({ productId, onReviewAdded }: { productId: string, onReviewA
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-bold mb-1">Review</label>
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Review Content</label>
                         <textarea
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
-                            className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
-                            rows={4}
-                            placeholder="Share your experience..."
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-600 min-h-[120px]"
+                            placeholder="Share your experience with the cosmos..."
                             required
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-bold mb-1">Add Photos/Video (Optional)</label>
-                        <input
-                            id="review-file-input"
-                            type="file"
-                            accept="image/*,video/*"
-                            multiple
-                            onChange={(e) => setMediaFiles(e.target.files)}
-                            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100"
-                        />
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Photos / Videos (Optional)</label>
+                        <div className="relative group">
+                            <input
+                                id="review-file-input"
+                                type="file"
+                                accept="image/*,video/*"
+                                multiple
+                                onChange={(e) => setMediaFiles(e.target.files)}
+                                className="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-[#E60000] file:text-white hover:file:opacity-90 file:cursor-pointer p-2 bg-white/5 rounded-xl border border-white/10"
+                            />
+                        </div>
                     </div>
                     <button
                         type="submit"
                         disabled={submitting}
-                        className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                        className="w-full bg-[#E60000] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(230,0,0,0.4)] disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
-                        {submitting ? 'Submitting...' : 'Submit Review'}
+                        {submitting ? (
+                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                        ) : 'Submit Review'}
                     </button>
                 </form>
             </div>
@@ -1161,8 +964,8 @@ const ReviewsList = ({ productId }: { productId: string }) => {
         setEditRating(5);
     };
 
-    const [likes, setLikes] = useState<Record<string, number>>({});
-    const [userLikes, setUserLikes] = useState<Record<string, boolean>>({});
+    const [likes, setLikes] = useState<{ [key: string]: number }>({});
+    const [userLikes, setUserLikes] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         if (reviews.length > 0) {
@@ -1221,40 +1024,40 @@ const ReviewsList = ({ productId }: { productId: string }) => {
                     const likeCount = likes[review.id] || 0;
 
                     return (
-                        <div key={review.id} className={`bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative group ${isOwner ? 'pt-14' : ''}`}>
+                        <div key={review.id} className={`bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 relative group shadow-xl ${isOwner ? 'pt-14' : ''}`}>
                             {/* Your Review Badge and Menu */}
                             <div className="absolute top-4 left-4 flex items-center gap-2">
                                 {isOwner && (
                                     <>
-                                        <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                                        <span className="text-[10px] font-black bg-[#E60000] text-white px-3 py-1 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(230,0,0,0.3)]">
                                             Your Review
                                         </span>
                                         <div className="relative">
                                             <button
                                                 onClick={() => setOpenMenuId(openMenuId === review.id ? null : review.id)}
-                                                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                                className="p-1.5 hover:bg-white/10 rounded-full transition-all text-white/70"
                                                 title="Review options"
                                             >
-                                                <Icons.MoreVertical className="w-5 h-5 text-gray-600" />
+                                                <Icons.MoreVertical className="w-5 h-5" />
                                             </button>
                                             {openMenuId === review.id && (
-                                                <div className="absolute left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                                                <div className="absolute left-0 mt-2 w-48 bg-black/90 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 py-2 z-20">
                                                     <button
                                                         onClick={() => handleEdit(review)}
-                                                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                                                        className="w-full px-4 py-2 text-left text-xs font-black uppercase tracking-widest hover:bg-white/10 text-white flex items-center gap-2"
                                                     >
-                                                        <Icons.Edit className="w-4 h-4" />
-                                                        Edit Review
+                                                        <Icons.Edit className="w-4 h-4 text-[#E60000]" />
+                                                        Edit
                                                     </button>
                                                     <button
                                                         onClick={() => {
                                                             setOpenMenuId(null);
                                                             handleDelete(review.id);
                                                         }}
-                                                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-red-600 flex items-center gap-2"
+                                                        className="w-full px-4 py-2 text-left text-xs font-black uppercase tracking-widest hover:bg-white/10 text-[#E60000] flex items-center gap-2"
                                                     >
                                                         <Icons.Trash2 className="w-4 h-4" />
-                                                        Delete Review
+                                                        Delete
                                                     </button>
                                                 </div>
                                             )}
@@ -1267,14 +1070,14 @@ const ReviewsList = ({ productId }: { productId: string }) => {
                                 /* Edit Mode */
                                 <div className="space-y-4 mt-8">
                                     <div>
-                                        <label className="block text-sm font-bold mb-2">Rating</label>
-                                        <div className="flex gap-1">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Update Rating</label>
+                                        <div className="flex gap-2 bg-white/5 p-2 rounded-lg border border-white/10">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <button
                                                     key={star}
                                                     type="button"
                                                     onClick={() => setEditRating(star)}
-                                                    className={`text-2xl ${star <= editRating ? 'text-yellow-400' : 'text-gray-300'}`}
+                                                    className={`text-xl transition-all ${star <= editRating ? 'text-[#E60000]' : 'text-gray-700'}`}
                                                 >
                                                     ★
                                                 </button>
@@ -1282,24 +1085,24 @@ const ReviewsList = ({ productId }: { productId: string }) => {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold mb-2">Comment</label>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Edit Review</label>
                                         <textarea
                                             value={editComment}
                                             onChange={(e) => setEditComment(e.target.value)}
-                                            className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-600"
                                             rows={4}
                                         />
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-3">
                                         <button
                                             onClick={() => handleSaveEdit(review.id)}
-                                            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                                            className="px-6 py-2 bg-[#E60000] text-white rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-[0_0_15px_rgba(230,0,0,0.3)] transition-all"
                                         >
-                                            Save Changes
+                                            Update
                                         </button>
                                         <button
                                             onClick={handleCancelEdit}
-                                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                                            className="px-6 py-2 bg-white/10 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/20 transition-all"
                                         >
                                             Cancel
                                         </button>
@@ -1308,31 +1111,34 @@ const ReviewsList = ({ productId }: { productId: string }) => {
                             ) : (
                                 /* View Mode */
                                 <>
-                                    <div className="flex justify-between items-start mb-2">
+                                    <div className="flex justify-between items-start mb-4">
                                         <div>
-                                            <h4 className="font-bold text-gray-900">{review.user_name}</h4>
-                                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                <span>{new Date(review.created_at).toLocaleDateString()}</span>
+                                            <h4 className="font-black text-white uppercase tracking-widest text-sm">{review.user_name}</h4>
+                                            <div className="flex items-center gap-3 mt-1">
+                                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter opacity-70">
+                                                    {new Date(review.created_at).toLocaleDateString()}
+                                                </span>
                                                 {review.verified_purchase && (
-                                                    <span className="text-green-600 font-bold flex items-center gap-1">
+                                                    <span className="text-[#E60000] text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
                                                         <Icons.CheckCircle className="w-3 h-3" /> Verified Purchase
                                                     </span>
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex text-yellow-400 text-sm">
+                                        <div className="flex text-[#E60000] text-sm drop-shadow-[0_0_5px_rgba(230,0,0,0.3)]">
                                             {Array.from({ length: 5 }).map((_, i) => (
-                                                <span key={i}>{i < review.rating ? '★' : '☆'}</span>
+                                                <span key={i} className="transition-all hover:scale-125 cursor-default">{i < review.rating ? '★' : '☆'}</span>
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-gray-700 mb-4">{review.comment}</p>
+                                    <p className="text-gray-300 leading-relaxed text-sm mb-6 font-medium italic">"{review.comment}"</p>
+
                                     {review.media_urls && review.media_urls.length > 0 && (
-                                        <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
+                                        <div className="flex gap-3 overflow-x-auto pb-4 mb-4 custom-scrollbar">
                                             {review.media_urls.map((url: string, i: number) => (
                                                 <div
                                                     key={i}
-                                                    className="w-20 h-20 rounded-lg overflow-hidden border border-gray-100 shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                                                    className="w-24 h-24 rounded-xl overflow-hidden border border-white/10 shrink-0 cursor-pointer hover:border-[#E60000]/50 transition-all hover:scale-105 shadow-lg shadow-black/40"
                                                     onClick={() => setPreviewImage(url)}
                                                 >
                                                     {url.match(/\.(mp4|webm)$/i) ? (
@@ -1346,15 +1152,15 @@ const ReviewsList = ({ productId }: { productId: string }) => {
                                     )}
 
                                     {/* Like Button */}
-                                    <div className="flex items-center gap-4 pt-4 border-t border-gray-50">
+                                    <div className="flex items-center gap-6 pt-4 border-t border-white/5">
                                         <button
                                             onClick={() => handleLike(review.id)}
-                                            className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${isLiked ? 'text-rose-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                            className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${isLiked ? 'text-[#E60000] drop-shadow-[0_0_8px_rgba(230,0,0,0.4)]' : 'text-gray-500 hover:text-white'}`}
                                         >
                                             <Icons.Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-                                            <span>{likeCount > 0 ? likeCount : 'Helpful'}</span>
+                                            <span>{likeCount > 0 ? `${likeCount} Helpful` : 'Helpful'}</span>
                                         </button>
-                                        <button className="text-gray-500 hover:text-gray-700 text-sm font-medium">
+                                        <button className="text-gray-500 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all">
                                             Reply
                                         </button>
                                     </div>
