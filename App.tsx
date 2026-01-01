@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -11,25 +11,27 @@ import './styles/space-theme.css';
 import { SpaceBackground } from './components/SpaceBackground';
 
 import { Navbar } from './components/Navbar';
-import { Home } from './pages/Home';
-import { Shop } from './pages/Shop';
-import { Login } from './pages/Login';
-import { Account } from './pages/Account';
-import { Admin } from './pages/Admin';
-import { Checkout } from './pages/Checkout';
-import { Search } from './pages/Search';
-import { AdminLogin } from './pages/AdminLogin';
-import { ProductDetail } from './pages/ProductDetail';
-import { AdminProductForm } from './pages/AdminProductForm';
-import { GiftGuide } from './pages/GiftGuide';
-import { SalesAnalytics } from './pages/SalesAnalytics';
 import MobileNavbar from './components/MobileNavbar';
 import MobileSearchBar from './components/MobileSearchBar';
-import MobileCategories from './pages/MobileCategories';
-import Play from './pages/Play';
-import { Cart } from './pages/Cart';
 import { SnowEffect } from './components/SnowEffect';
 import { SantaCartAnimation } from './components/SantaCartAnimation';
+
+// Lazy Load Pages
+const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
+const Shop = lazy(() => import('./pages/Shop').then(module => ({ default: module.Shop })));
+const Login = lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
+const Account = lazy(() => import('./pages/Account').then(module => ({ default: module.Account })));
+const Admin = lazy(() => import('./pages/Admin').then(module => ({ default: module.Admin })));
+const Checkout = lazy(() => import('./pages/Checkout').then(module => ({ default: module.Checkout })));
+const Search = lazy(() => import('./pages/Search').then(module => ({ default: module.Search })));
+const AdminLogin = lazy(() => import('./pages/AdminLogin').then(module => ({ default: module.AdminLogin })));
+const ProductDetail = lazy(() => import('./pages/ProductDetail').then(module => ({ default: module.ProductDetail })));
+const AdminProductForm = lazy(() => import('./pages/AdminProductForm').then(module => ({ default: module.AdminProductForm })));
+const GiftGuide = lazy(() => import('./pages/GiftGuide').then(module => ({ default: module.GiftGuide })));
+const SalesAnalytics = lazy(() => import('./pages/SalesAnalytics').then(module => ({ default: module.SalesAnalytics })));
+const MobileCategories = lazy(() => import('./pages/MobileCategories'));
+const Play = lazy(() => import('./pages/Play'));
+const Cart = lazy(() => import('./pages/Cart').then(module => ({ default: module.Cart })));
 
 // Scroll to top component
 const ScrollToTop = () => {
@@ -41,6 +43,13 @@ const ScrollToTop = () => {
 
   return null;
 };
+
+const PageLoader = () => (
+  <div className="min-h-screen flex flex-col items-center justify-center bg-transparent gap-4">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E60000]"></div>
+    <p className="text-white font-black tracking-widest uppercase text-xs animate-pulse">Loading...</p>
+  </div>
+);
 
 const AppContent = () => {
   const location = useLocation();
@@ -117,25 +126,27 @@ const AppContent = () => {
       />
 
       <main className={`flex-grow ${isPlayPage ? 'h-screen overflow-hidden' : ''}`}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/gift-guide" element={<GiftGuide />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/admin/products/new" element={<AdminProductForm />} />
-          <Route path="/admin/products/edit/:id" element={<AdminProductForm />} />
-          <Route path="/admin/sales" element={<SalesAnalytics />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/product/:slug" element={<ProductDetail />} />
-          <Route path="/categories" element={<MobileCategories />} />
-          <Route path="/play" element={<Play />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/gift-guide" element={<GiftGuide />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/products/new" element={<AdminProductForm />} />
+            <Route path="/admin/products/edit/:id" element={<AdminProductForm />} />
+            <Route path="/admin/sales" element={<SalesAnalytics />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/product/:slug" element={<ProductDetail />} />
+            <Route path="/categories" element={<MobileCategories />} />
+            <Route path="/play" element={<Play />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </main>
       {
         !isPlayPage && (

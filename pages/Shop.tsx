@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { store } from '../services/store';
 import { Product, Category } from '../types';
@@ -13,61 +14,72 @@ export const Shop = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const categoryFilter = searchParams.get('category');
-    const searchParam = searchParams.get('search'); // Get search parameter from URL
+    const searchParam = searchParams.get('search');
 
-    const [products, setProducts] = useState<Product[]>([]);
+    // Data State (Master List)
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [datasetLoaded, setDatasetLoaded] = useState(false);
+
+    // UI/Filter State
     const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState(searchParam || ''); // Initialize with URL search param
+    const [searchQuery, setSearchQuery] = useState(searchParam || '');
     const [priceRange, setPriceRange] = useState(5000);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
-    const [viewMode, setViewMode] = useState<'grid' | 'infinite'>('grid'); // Toggle between grid and infinite menu
+    const [viewMode, setViewMode] = useState<'grid' | 'infinite'>('grid');
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
 
     const { addToCart } = useCart();
 
-    const [categories, setCategories] = useState<Category[]>([]);
-
+    // Initial Data Fetch (Runs interactions only once)
     useEffect(() => {
-        const load = async () => {
+        const loadData = async () => {
             try {
                 setLoading(true);
-                const [allProducts, allCategories] = await Promise.all([
+                const [productsData, categoriesData] = await Promise.all([
                     store.getProducts(),
                     store.getCategories()
                 ]);
-
-                setCategories(allCategories);
-                console.log('All Products:', allProducts);
-
-                let filtered = allProducts;
-
-                if (categoryFilter && categoryFilter !== 'all') {
-                    if (categoryFilter === 'trending') {
-                        filtered = filtered.filter(p => p.trending === true);
-                    } else {
-                        filtered = filtered.filter(p => p.category === categoryFilter);
-                    }
-                }
-
-                // Handle search from URL parameter or local state
-                const activeSearch = searchParam || searchQuery;
-                if (activeSearch) {
-                    filtered = filtered.filter(p => p.name.toLowerCase().includes(activeSearch.toLowerCase()));
-                }
-
-                filtered = filtered.filter(p => p.price <= priceRange);
-
-                setProducts(filtered);
+                setAllProducts(productsData);
+                setCategories(categoriesData);
+                setDatasetLoaded(true);
             } catch (error) {
                 console.error('Failed to load shop data:', error);
-                // Optionally set an error state here
             } finally {
                 setLoading(false);
             }
         };
-        load();
-    }, [categoryFilter, searchQuery, searchParam, priceRange]);
+        loadData();
+    }, []);
+
+    // Filter Logic (Runs whenever filters or master data changes)
+    const filteredProducts = useMemo(() => {
+        if (!datasetLoaded) return [];
+
+        let filtered = allProducts;
+
+        // 1. Category Filter
+        if (categoryFilter && categoryFilter !== 'all') {
+            if (categoryFilter === 'trending') {
+                filtered = filtered.filter(p => p.trending === true);
+            } else {
+                filtered = filtered.filter(p => p.category === categoryFilter);
+            }
+        }
+
+        // 2. Search Filter (URL or Input)
+        const activeSearch = searchParam || searchQuery;
+        if (activeSearch) {
+            const term = activeSearch.toLowerCase();
+            filtered = filtered.filter(p => p.name.toLowerCase().includes(term));
+        }
+
+        // 3. Price Filter
+        filtered = filtered.filter(p => p.price <= priceRange);
+
+        return filtered;
+    }, [allProducts, datasetLoaded, categoryFilter, searchParam, searchQuery, priceRange]);
 
     const handleCategoryClick = (slug: string) => {
         if (slug === 'all') {
@@ -196,17 +208,17 @@ export const Shop = () => {
 
                     {/* Product Display - Grid or Infinite Menu */}
                     <div className="flex-1">
-                        {loading ? (
+                        {loading && !datasetLoaded ? (
                             <div className="flex justify-center py-20">
                                 <LoadingSpinner size="lg" />
                             </div>
                         ) : viewMode === 'infinite' ? (
                             <div className="w-full h-[65vh] rounded-2xl overflow-hidden shadow-2xl bg-transparent mb-8">
-                                <ProductInfiniteMenu products={products} />
+                                <ProductInfiniteMenu products={filteredProducts} />
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-                                {products.map((product) => (
+                                {filteredProducts.map((product) => (
                                     <motion.div
                                         key={product.id}
                                         initial={{ opacity: 0, y: 20 }}
@@ -219,6 +231,8 @@ export const Shop = () => {
                                             <img
                                                 src={product.imageUrl}
                                                 alt={product.name}
+                                                loading="lazy"
+                                                decoding="async"
                                                 className="w-full h-full object-contain smooth-transition-slow md:group-hover:scale-110 p-2"
                                             />
                                             {product.marketPrice && product.marketPrice > product.price && (
@@ -277,6 +291,14 @@ export const Shop = () => {
                                         </div>
                                     </motion.div>
                                 ))}
+                            </div>
+                        )}
+                        {/* Fallback for no results */}
+                        {filteredProducts.length === 0 && !loading && datasetLoaded && (
+                            <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/10">
+                                <Icons.Search className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                                <h3 className="text-xl font-black text-white uppercase tracking-widest mb-2">No Products Found</h3>
+                                <p className="text-gray-400 text-sm">Try adjusting your filters or search query.</p>
                             </div>
                         )}
                     </div>
