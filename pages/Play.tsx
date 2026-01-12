@@ -278,7 +278,7 @@ const Play = () => {
                             </AnimatePresence>
 
                             {/* Overlay UI */}
-                            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-black via-black/70 to-transparent pt-40 pb-16 md:pb-20">
+                            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent pt-48 pb-20 md:pb-24">
                                 <div className="flex items-end justify-between max-w-4xl mx-auto w-full gap-4">
                                     {/* Info */}
                                     <div className="flex-1 max-w-[calc(100%-80px)] md:max-w-[calc(100%-100px)]">
@@ -290,13 +290,13 @@ const Play = () => {
                                                 href="https://www.instagram.com/giftology.in_"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="font-bold text-base md:text-lg hover:text-gray-300 transition-colors cursor-pointer drop-shadow-lg"
+                                                className="font-black text-base md:text-lg hover:text-gray-300 transition-colors cursor-pointer drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                                             >
                                                 Giftology Official
                                             </a>
                                         </div>
                                         <p
-                                            className="text-sm md:text-base mb-3 cursor-pointer hover:text-gray-200 transition-colors drop-shadow-lg leading-relaxed"
+                                            className="text-sm md:text-base font-bold mb-3 cursor-pointer hover:text-gray-200 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-relaxed"
                                             onClick={() => {
                                                 setExpandedCaptions(prev => {
                                                     const newSet = new Set(prev);
@@ -312,11 +312,11 @@ const Play = () => {
                                             {expandedCaptions.has(video.id)
                                                 ? video.caption
                                                 : (video.caption.length > 60
-                                                    ? <>{video.caption.substring(0, 60)}... <span className="text-blue-400 font-medium">See more</span></>
+                                                    ? <>{video.caption.substring(0, 60)}... <span className="text-blue-400 font-bold">See more</span></>
                                                     : video.caption)
                                             }
                                         </p>
-                                        <div className="flex items-center gap-2 text-xs md:text-sm text-gray-300 drop-shadow-lg">
+                                        <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-gray-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                                             <Icons.Music2 className="w-4 h-4" />
                                             <span>Original Audio</span>
                                         </div>

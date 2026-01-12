@@ -69,7 +69,7 @@ export interface Order {
   deliverySpeed?: 'standard' | 'fast';
   giftWrapping?: string;
   paymentMethod?: 'upi' | 'cod';
-  screenshot?: string; // Base64 string for UPI
+  screenshot?: string; // URL to storage for UPI screenshot
   shippingAddress?: any;
   guestInfo?: {
     firstName: string;

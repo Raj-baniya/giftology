@@ -1,4 +1,4 @@
-# 🎁 Giftology - Premium Gift E-commerce Platform
+# 🎁 GiftGalaxy - Premium Gift E-commerce Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-18.0+-61DAFB?logo=react)](https://reactjs.org/)

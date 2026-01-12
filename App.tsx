@@ -8,11 +8,12 @@ import { MobileNumberModal } from './components/MobileNumberModal';
 import { CustomAlert, useCustomAlert } from './components/CustomAlert';
 import './styles/christmas-theme.css';
 import './styles/space-theme.css';
-import { SpaceBackground } from './components/SpaceBackground';
+// SpaceBackground removed for Modern Luxe theme
 
 import { Navbar } from './components/Navbar';
 import MobileNavbar from './components/MobileNavbar';
 import MobileSearchBar from './components/MobileSearchBar';
+import { CartDrawer } from './components/CartDrawer';
 import { SnowEffect } from './components/SnowEffect';
 import { SantaCartAnimation } from './components/SantaCartAnimation';
 
@@ -38,6 +39,9 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
     window.scrollTo(0, 0);
   }, [pathname]);
 
@@ -88,77 +92,82 @@ const AppContent = () => {
   }, [showAlert]);
 
   return (
-    <div className={`flex flex-col min-h-screen bg-transparent font-sans text-white pb-16 md:pb-0 theme-${currentTheme}`}>
-      {/* Christmas effects - only if theme is christmas */}
-      {
-        currentTheme === 'christmas' && (
-          <>
-            <SnowEffect />
-            <SantaCartAnimation />
-          </>
-        )
-      }
+    <>
+      <div className="galaxy-background" />
+      <div className={`flex flex-col min-h-screen font-sans text-textMain pb-20 md:pb-0`}>
+        {/* Christmas effects - only if theme is christmas */}
+        {
+          currentTheme === 'christmas' && (
+            <>
+              <SnowEffect />
+              <SantaCartAnimation />
+            </>
+          )
+        }
 
-      {/* Global Space Theme Background (Shared with Home's Aurora) */}
-      {!isAdminPage && <SpaceBackground />}
+        {/* Global Background (Light/Cream) */}
 
-      {
-        !isPlayPage && (
-          <>
-            <div className="hidden md:block">
-              <Navbar />
-            </div>
-            <MobileSearchBar />
-            <MobileNavbar />
-          </>
-        )
-      }
-      <MobileNumberModal />
-      <CustomAlert
-        isOpen={alertState.isOpen}
-        title={alertState.title}
-        message={alertState.message}
-        type={alertState.type}
-        onClose={closeAlert}
-        onConfirm={alertState.onConfirm}
-        confirmText={alertState.confirmText}
-        cancelText={alertState.cancelText}
-      />
+        {
+          !isPlayPage && (
+            <>
+              <div className="hidden md:block">
+                <Navbar />
+              </div>
+              <MobileSearchBar />
+              {/* MobileNavbar moved to root level for fixed positioning safety */}
+            </>
+          )
+        }
+        <MobileNumberModal />
+        <CartDrawer />
+        <CustomAlert
+          isOpen={alertState.isOpen}
+          title={alertState.title}
+          message={alertState.message}
+          type={alertState.type}
+          onClose={closeAlert}
+          onConfirm={alertState.onConfirm}
+          confirmText={alertState.confirmText}
+          cancelText={alertState.cancelText}
+        />
 
-      <main className={`flex-grow ${isPlayPage ? 'h-screen overflow-hidden' : ''}`}>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/gift-guide" element={<GiftGuide />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/admin-login" element={<AdminLogin />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/products/new" element={<AdminProductForm />} />
-            <Route path="/admin/products/edit/:id" element={<AdminProductForm />} />
-            <Route path="/admin/sales" element={<SalesAnalytics />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/product/:slug" element={<ProductDetail />} />
-            <Route path="/categories" element={<MobileCategories />} />
-            <Route path="/play" element={<Play />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </main>
-      {
-        !isPlayPage && (
-          <footer className="py-12 border-t border-white/5 relative z-10 bg-transparent">
-            <div className="max-w-7xl mx-auto px-3 text-center text-white/40 text-[10px] font-black uppercase tracking-widest flex flex-col items-center gap-6">
-              <img src="/logo.png" alt="Giftology" className="h-8 w-auto invert hover:opacity-100 transition-all duration-500" />
-              <p className="">&copy; 2025 Giftology. All rights reserved.</p>
-            </div>
-          </footer>
-        )
-      }
-    </div >
+        <main className={`flex-grow ${isPlayPage ? 'h-screen overflow-hidden' : ''}`}>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/gift-guide" element={<GiftGuide />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/products/new" element={<AdminProductForm />} />
+              <Route path="/admin/products/edit/:id" element={<AdminProductForm />} />
+              <Route path="/admin/sales" element={<SalesAnalytics />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/product/:slug" element={<ProductDetail />} />
+              <Route path="/categories" element={<MobileCategories />} />
+              <Route path="/play" element={<Play />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </main>
+        {
+          !isPlayPage && (
+            <footer className="py-8 border-t border-black/5 relative z-10 bg-background">
+              <div className="max-w-7xl mx-auto px-4 text-center text-textMuted text-xs font-semibold tracking-wide flex flex-col items-center gap-6">
+                <img src="/logo.png" alt="Giftology" className="h-10 w-auto hover:scale-110 transition-all duration-500" />
+                <p className="">&copy; 2025 Giftology. Handcrafted with Care.</p>
+              </div>
+            </footer>
+          )
+        }
+      </div>
+      {/* Mobile Navbar - Root Level for Z-Index Safety */}
+      {!isPlayPage && <MobileNavbar />}
+    </>
   );
 };
 

@@ -338,7 +338,8 @@ class StoreService {
       },
       points_redeemed: details.pointsRedeemed || 0,
       coupon_code: details.couponCode || null,
-      guest_info: !userId ? details.guestInfo : null
+      guest_info: !userId ? details.guestInfo : null,
+      screenshot: details.screenshot || null
     };
 
     if (userId) {
@@ -436,7 +437,8 @@ class StoreService {
         deliveryDate: o.delivery_date,
         deliveryType: o.delivery_speed === 'fast' ? 'Fast Delivery' : 'Standard Delivery',
         giftWrapping: o.gift_wrapping,
-        pointsRedeemed: o.points_redeemed || 0
+        pointsRedeemed: o.points_redeemed || 0,
+        screenshot: o.screenshot
       };
     });
   }
@@ -540,6 +542,10 @@ class StoreService {
 
   async uploadVideo(file: File, caption: string, userId: string): Promise<void> {
     return await supabaseService.uploadVideo(file, caption, userId);
+  }
+
+  async uploadOrderScreenshot(file: File): Promise<string> {
+    return await supabaseService.uploadOrderScreenshot(file);
   }
 
   // --- Categories ---

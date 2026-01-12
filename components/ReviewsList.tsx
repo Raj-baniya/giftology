@@ -8,9 +8,10 @@ import { useCustomAlert } from '../components/CustomAlert';
 
 interface ReviewsListProps {
     productId: string;
+    refreshTrigger?: number;
 }
 
-export const ReviewsList: React.FC<ReviewsListProps> = ({ productId }) => {
+export const ReviewsList: React.FC<ReviewsListProps> = ({ productId, refreshTrigger = 0 }) => {
     const { user } = useAuth();
     const { alertState, showAlert, closeAlert } = useCustomAlert();
     const [reviews, setReviews] = useState<any[]>([]);
@@ -38,7 +39,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ productId }) => {
 
     useEffect(() => {
         fetchReviews();
-    }, [productId]);
+    }, [productId, refreshTrigger]);
 
     const handleDelete = async (reviewId: string) => {
         showAlert(
@@ -96,17 +97,33 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ productId }) => {
     };
 
     useEffect(() => {
-        if (reviews.length > 0) {
-            reviews.forEach(async (review) => {
-                const count = await store.getReviewLikeCount(review.id);
-                setLikes(prev => ({ ...prev, [review.id]: count }));
+        const fetchLikes = async () => {
+            if (reviews.length === 0) return;
 
-                if (user) {
-                    const hasLiked = await store.hasUserLikedReview(review.id, user.id);
-                    setUserLikes(prev => ({ ...prev, [review.id]: hasLiked }));
+            const likeCounts: { [key: string]: number } = {};
+            const userLikedStatus: { [key: string]: boolean } = {};
+
+            await Promise.all(reviews.map(async (review) => {
+                try {
+                    const count = await store.getReviewLikeCount(review.id);
+                    likeCounts[review.id] = count;
+
+                    if (user) {
+                        const hasLiked = await store.hasUserLikedReview(review.id, user.id);
+                        userLikedStatus[review.id] = hasLiked;
+                    }
+                } catch (error) {
+                    console.error(`Error fetching likes for review ${review.id}:`, error);
                 }
-            });
-        }
+            }));
+
+            setLikes(prev => ({ ...prev, ...likeCounts }));
+            if (user) {
+                setUserLikes(prev => ({ ...prev, ...userLikedStatus }));
+            }
+        };
+
+        fetchLikes();
     }, [reviews, user]);
 
     const handleLike = async (reviewId: string) => {
@@ -117,16 +134,19 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ productId }) => {
 
         // Optimistic update
         const isLiked = userLikes[reviewId];
+        const currentCount = likes[reviewId] || 0;
+
         setUserLikes(prev => ({ ...prev, [reviewId]: !isLiked }));
-        setLikes(prev => ({ ...prev, [reviewId]: (prev[reviewId] || 0) + (isLiked ? -1 : 1) }));
+        setLikes(prev => ({ ...prev, [reviewId]: isLiked ? Math.max(0, currentCount - 1) : currentCount + 1 }));
 
         try {
             await store.toggleReviewLike(reviewId, user.id);
         } catch (error) {
             // Revert on error
             setUserLikes(prev => ({ ...prev, [reviewId]: isLiked }));
-            setLikes(prev => ({ ...prev, [reviewId]: (prev[reviewId] || 0) + (isLiked ? 1 : -1) }));
+            setLikes(prev => ({ ...prev, [reviewId]: currentCount }));
             console.error('Failed to toggle like:', error);
+            showAlert('Error', 'Failed to update like status', 'error');
         }
     };
 
@@ -259,7 +279,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ productId }) => {
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-gray-300 leading-relaxed text-sm mb-6 font-medium italic">"{review.comment}"</p>
+                                    <p className="text-white leading-relaxed text-sm mb-6 font-medium italic">"{review.comment}"</p>
 
                                     {review.media_urls && review.media_urls.length > 0 && (
                                         <div className="flex gap-3 overflow-x-auto pb-4 mb-4 custom-scrollbar">
@@ -294,7 +314,10 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ productId }) => {
                                             <Icons.Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
                                             <span>{likeCount > 0 ? `${likeCount} Helpful` : 'Helpful'}</span>
                                         </button>
-                                        <button className="text-gray-500 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all">
+                                        <button
+                                            onClick={() => showAlert('Coming Soon', 'Replies are currently disabled.', 'info')}
+                                            className="text-gray-500 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all"
+                                        >
                                             Reply
                                         </button>
                                     </div>

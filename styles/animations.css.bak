@@ -550,7 +550,3 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
- 
-/* === SNOWFALL ANIMATION === */ 
-@keyframes snowfall { 0%% { transform: translateY(-10vh) translateX(-10px) rotate(0deg); } 100%% { transform: translateY(110vh) translateX(10px) rotate(360deg); } } 
-.animate-snowfall { animation-name: snowfall; animation-timing-function: linear; animation-iteration-count: infinite; }

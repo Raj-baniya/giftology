@@ -51,14 +51,14 @@ export const CartDrawer = () => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full md:max-w-md bg-gray-50 z-[70] shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 h-full w-full md:max-w-md bg-background z-[70] shadow-2xl flex flex-col"
           >
             {/* Header */}
-            <div className="bg-white p-4 flex items-center gap-4 shadow-sm z-10">
+            <div className="bg-white/90 backdrop-blur-md p-4 flex items-center gap-4 shadow-sm z-10 border-b border-charcoal/5">
               <button onClick={() => setCartOpen(false)} className="p-1">
                 <Icons.ChevronLeft className="w-6 h-6" />
               </button>
-              <h2 className="font-bold text-lg">My Cart</h2>
+              <h2 className="font-serif font-black text-lg text-charcoal uppercase tracking-widest">My Cart</h2>
             </div>
 
             {/* Scrollable Content */}
@@ -82,7 +82,7 @@ export const CartDrawer = () => {
                         setCartOpen(false);
                         navigate('/account');
                       }}
-                      className="text-blue-600 text-sm font-bold border border-gray-200 px-3 py-1 rounded"
+                      className="text-primary text-sm font-bold border border-primary/20 px-3 py-1 rounded-full hover:bg-primary/5 transition-colors"
                     >
                       Change
                     </button>
@@ -96,8 +96,11 @@ export const CartDrawer = () => {
                   <Icons.ShoppingBag className="w-16 h-16 mb-4 text-accent animate-float" />
                   <p className="text-lg">Your cart is empty</p>
                   <button
-                    onClick={() => setCartOpen(false)}
-                    className="mt-4 text-primary font-semibold hover:underline"
+                    onClick={() => {
+                      setCartOpen(false);
+                      navigate('/shop');
+                    }}
+                    className="mt-4 text-primary font-black uppercase tracking-widest text-sm hover:underline"
                   >
                     Start Shopping
                   </button>
@@ -160,11 +163,11 @@ export const CartDrawer = () => {
 
                               {/* Price */}
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-lg">&#8377;{(item.price * item.quantity).toLocaleString()}</span>
+                                <span className="font-bold text-lg text-green-600">&#8377;{(item.price * item.quantity).toLocaleString()}</span>
                                 {item.marketPrice && item.marketPrice > item.price && (
                                   <>
                                     <span className="text-xs text-gray-500 line-through">&#8377;{(item.marketPrice * item.quantity).toLocaleString()}</span>
-                                    <span className="text-xs text-green-600 font-bold">{discount}% off</span>
+                                    <span className="text-xs text-primary font-bold">{discount}% LUXE DISCOUNT</span>
                                   </>
                                 )}
                               </div>
@@ -217,7 +220,7 @@ export const CartDrawer = () => {
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
                         <span>Price ({cart.reduce((acc, item) => acc + item.quantity, 0)} items)</span>
-                        <span>&#8377;{marketPriceTotal.toLocaleString()}</span>
+                        <span className="text-green-600">&#8377;{marketPriceTotal.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-green-600">
                         <span>Discount</span>
@@ -236,7 +239,7 @@ export const CartDrawer = () => {
                       <div className="border-t border-dashed border-gray-200 my-2"></div>
                       <div className="flex justify-between font-bold text-base">
                         <span>Total Amount</span>
-                        <span>&#8377;{finalAmount.toLocaleString()}</span>
+                        <span className="text-green-600">&#8377;{finalAmount.toLocaleString()}</span>
                       </div>
                     </div>
                     {totalSavings > 0 && (
@@ -253,9 +256,10 @@ export const CartDrawer = () => {
                         setCartOpen(false);
                         navigate('/checkout');
                       }}
-                      className="w-full bg-yellow-400 text-black py-3 rounded-lg font-bold hover:bg-yellow-500 transition-colors"
+                      className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
-                      Continue to Checkout
+                      <Icons.ShieldCheck className="w-5 h-5" />
+                      Secure Checkout
                     </button>
                   </div>
 
@@ -273,16 +277,16 @@ export const CartDrawer = () => {
               <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 flex items-center justify-between shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
                 <div>
                   <p className="text-xs text-gray-500 line-through">&#8377;{marketPriceTotal.toLocaleString()}</p>
-                  <p className="font-bold text-lg">&#8377;{finalAmount.toLocaleString()}</p>
+                  <p className="font-bold text-lg text-green-600">&#8377;{finalAmount.toLocaleString()}</p>
                 </div>
                 <button
                   onClick={() => {
                     setCartOpen(false);
                     navigate('/checkout');
                   }}
-                  className="bg-yellow-400 text-black px-8 py-3 rounded font-bold text-sm hover:bg-yellow-500 transition-colors"
+                  className="bg-primary text-white px-8 py-3 rounded-xl font-bold text-sm hover:shadow-lg transition-all active:scale-95"
                 >
-                  Place order
+                  Place Order
                 </button>
               </div>
             )}

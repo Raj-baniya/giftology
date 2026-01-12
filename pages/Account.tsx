@@ -11,10 +11,12 @@ import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
   <button
     onClick={onClick}
-    className={`flex items-center justify-center md:justify-start gap-2 px-4 py-3 rounded-lg transition-all flex-shrink-0 whitespace-nowrap text-sm md:text-base ${active ? 'bg-white/10 text-white font-black shadow-[0_0_15px_rgba(230,0,0,0.3)] border border-[#E60000]/30 active-blood-sparkle' : 'text-gray-400 hover:bg-white/5 border border-transparent'
+    className={`flex items-center justify-center md:justify-start gap-4 px-6 py-4 rounded-full transition-all flex-shrink-0 whitespace-nowrap text-xs md:text-sm font-black uppercase tracking-[0.2em] ${active
+      ? 'bg-white text-[#E60000] shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white relative z-10'
+      : 'text-gray-400 hover:text-white hover:bg-white/10 border border-transparent'
       } ${window.innerWidth < 768 ? 'w-auto' : 'w-full text-left'}`}
   >
-    <Icon className={`w-4 h-4 md:w-5 md:h-5 ${active ? 'text-[#E60000]' : ''}`} />
+    <Icon className={`w-4 h-4 md:w-5 md:h-5 ${active ? 'text-[#E60000]' : 'text-gray-400 group-hover:text-white'}`} />
     {label}
   </button>
 );
@@ -331,34 +333,47 @@ export const Account = () => {
   // --- Guest Prompt (If not logged in) ---
   if (!loading && !user) {
     return (
-      <div className="bg-transparent flex items-start justify-center p-4 pt-8 md:pt-16 pb-12">
-        <div className="bg-white/5 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 max-w-md w-full text-center space-y-8 border border-white/10 relative overflow-hidden group">
+      <div className="bg-transparent flex items-start justify-center p-4 pt-4 md:pt-12 pb-4">
+        <div className="bg-white/5 backdrop-blur-2xl rounded-3xl shadow-2xl p-5 max-w-md w-full text-center space-y-3 border border-white/10 relative overflow-hidden group">
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#E60000]/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-[#E60000]/20 transition-all duration-700"></div>
 
-          <div className="w-24 h-24 bg-[#E60000]/10 border border-[#E60000]/20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(230,0,0,0.1)]">
-            <Icons.User className="w-12 h-12 text-[#E60000]" />
+          <div className="w-16 h-16 bg-[#E60000]/10 border border-[#E60000]/20 rounded-full flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_rgba(230,0,0,0.1)]">
+            <Icons.User className="w-8 h-8 text-[#E60000]" />
           </div>
           <div>
-            <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">Member Access</h2>
-            <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] italic mb-6">
+            <h2 className="text-xl font-black text-white mb-0.5 uppercase tracking-widest">Member Access</h2>
+            <p className="text-gray-500 font-bold uppercase tracking-widest text-[9px] italic mb-2">
               Login to access your rewards and orders
             </p>
-            <div className="bg-[#E60000]/10 border border-[#E60000]/20 rounded-2xl p-6 text-white text-xs font-black uppercase tracking-[0.1em] shadow-[inset_0_0_20px_rgba(230,0,0,0.05)]">
-              🚀 <strong className="text-[#E60000]">SIGNUP BONUS:</strong><br />
-              Join the ranks today and receive <br /><span className="text-[#E60000] text-lg font-black">500 POINTS</span> instantly!
+            <div className="w-full bg-[#E60000]/5 border border-[#E60000]/20 rounded-[2rem] p-6 md:p-8 text-white shadow-[0_0_40px_rgba(230,0,0,0.1)] relative overflow-hidden group">
+              <div className="absolute inset-0 bg-[#E60000]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              <div className="relative z-10 flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2 text-[#E60000] font-black uppercase tracking-[0.2em] text-xs md:text-sm animate-pulse">
+                  🚀 Signup Bonus
+                </div>
+                <div className="text-center font-bold text-gray-400 text-[10px] md:text-xs uppercase tracking-widest leading-relaxed">
+                  Join the ranks today<br />and receive
+                </div>
+                <div className="text-[#E60000] text-2xl md:text-4xl font-black uppercase tracking-tighter drop-shadow-[0_0_25px_rgba(230,0,0,0.4)] my-0">
+                  500 Points
+                </div>
+                <div className="text-center font-black text-white text-[10px] md:text-xs uppercase tracking-[0.3em]">
+                  Instantly!
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 pt-2">
+          <div className="flex flex-col gap-2 pt-0">
             <button
               onClick={() => window.location.href = '/login'}
-              className="w-full bg-[#E60000] text-white py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:bg-[#ff0000] transition-all shadow-[0_0_30px_rgba(230,0,0,0.3)] hover:shadow-[0_0_40px_rgba(230,0,0,0.5)] active:scale-95"
+              className="w-full bg-[#E60000] text-white py-3.5 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:bg-[#ff0000] transition-all shadow-[0_0_30px_rgba(230,0,0,0.3)] hover:shadow-[0_0_40px_rgba(230,0,0,0.5)] active:scale-95"
             >
               Login Now
             </button>
             <button
               onClick={() => window.location.href = '/login?mode=signup'}
-              className="w-full bg-white/5 text-white border border-white/10 py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white/10 transition-all active:scale-95"
+              className="w-full bg-white/5 text-white border border-white/10 py-3.5 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white/10 transition-all active:scale-95"
             >
               Signup Now
             </button>
@@ -457,15 +472,15 @@ export const Account = () => {
 
   return (
     <div className="min-h-screen bg-transparent relative">
-      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 md:py-12">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12">
-          <div className="flex items-center gap-4 md:gap-6">
-            <div className="w-16 h-16 md:w-24 md:h-24 bg-white/10 backdrop-blur-md rounded-full border-2 border-[#E60000]/30 flex items-center justify-center text-2xl md:text-4xl font-serif font-black text-white shadow-[0_0_20px_rgba(230,0,0,0.2)]">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-2 pb-8 md:py-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 md:mb-8">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="w-10 h-10 md:w-16 md:h-16 bg-white/50 backdrop-blur-md rounded-full border-2 border-primary/20 flex items-center justify-center text-lg md:text-2xl font-black text-primary shadow-sm">
               {user.email?.[0].toUpperCase()}
             </div>
             <div>
-              <h1 className="font-serif text-2xl md:text-4xl font-black text-white mb-1 uppercase tracking-wider">{user.user_metadata?.first_name || 'My'} Account</h1>
-              <p className="text-gray-400 text-sm md:text-base font-medium">{user.email}</p>
+              <h1 className="text-lg md:text-3xl font-black text-white mb-0 uppercase tracking-wider">{user.user_metadata?.first_name || 'My'} Account</h1>
+              <p className="text-gray-400 text-[10px] md:text-sm font-medium">{user.email}</p>
             </div>
           </div>
           <button
@@ -492,37 +507,37 @@ export const Account = () => {
         </div>
 
         {/* Header Card */}
-        <div className="bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 p-6 md:p-10 mb-8 flex flex-col md:flex-row items-center md:items-start gap-8 shadow-2xl relative overflow-hidden group">
-          <div className="absolute -top-24 -right-24 w-60 h-60 bg-[#E60000]/10 blur-[100px] rounded-full group-hover:bg-[#E60000]/15 transition-all duration-1000"></div>
+        <div className="bg-[#030014]/60 backdrop-blur-2xl rounded-[1.5rem] border border-white/10 p-4 md:p-6 mb-4 flex flex-col md:flex-row items-center md:items-start gap-4 shadow-2xl relative overflow-hidden group">
+          <div className="absolute -top-16 -right-16 w-40 h-40 bg-primary/20 blur-[60px] rounded-full group-hover:bg-primary/30 transition-all duration-1000"></div>
 
-          <div className="w-24 h-24 md:w-32 md:h-32 bg-[#E60000]/20 rounded-full flex items-center justify-center text-3xl md:text-5xl font-black text-white flex-shrink-0 border-2 border-[#E60000]/30 shadow-[0_0_30px_rgba(230,0,0,0.3)] relative z-10">
+          <div className="w-14 h-14 md:w-20 md:h-20 bg-white/5 rounded-full flex items-center justify-center text-lg md:text-3xl font-black text-white flex-shrink-0 border-2 border-white/10 shadow-lg relative z-10">
             {(profile?.full_name || user?.displayName || 'U').charAt(0)}
           </div>
           <div className="flex-1 text-center md:text-left w-full relative z-10">
-            <div className="flex items-center justify-center md:justify-start gap-4 mb-3">
+            <div className="flex items-center justify-center md:justify-start gap-4 mb-1">
               {isEditing ? (
                 <div className="flex gap-2 items-center justify-center md:justify-start">
                   <input
                     value={newName}
                     onChange={e => setNewName(e.target.value)}
-                    className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-[#E60000] outline-none font-bold placeholder:text-gray-600"
+                    className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-white focus:ring-2 focus:ring-primary outline-none font-bold placeholder:text-gray-500 text-sm"
                     placeholder={profile?.full_name || user?.displayName}
                   />
-                  <button onClick={handleUpdateName} className="text-green-400 hover:text-green-300 transition-colors"><Icons.CheckCircle className="w-6 h-6" /></button>
-                  <button onClick={() => setIsEditing(false)} className="text-red-400 hover:text-red-300 transition-colors"><Icons.X className="w-6 h-6" /></button>
+                  <button onClick={handleUpdateName} className="text-green-500 hover:text-green-400 transition-colors"><Icons.CheckCircle className="w-5 h-5" /></button>
+                  <button onClick={() => setIsEditing(false)} className="text-red-500 hover:text-red-400 transition-colors"><Icons.X className="w-5 h-5" /></button>
                 </div>
               ) : (
                 <>
-                  <h1 className="text-3xl md:text-4xl font-black text-white uppercase tracking-wider">{profile?.full_name || user?.displayName || 'User'}</h1>
-                  <button onClick={() => { setNewName(profile?.full_name || user?.displayName); setIsEditing(true); }} className="text-gray-500 hover:text-[#E60000] transition-colors">
-                    <Icons.Edit2 className="w-5 h-5" />
+                  <h1 className="text-lg md:text-2xl font-black text-white uppercase tracking-wider">{profile?.full_name || user?.displayName || 'User'}</h1>
+                  <button onClick={() => { setNewName(profile?.full_name || user?.displayName); setIsEditing(true); }} className="text-gray-400 hover:text-primary transition-colors">
+                    <Icons.Edit2 className="w-4 h-4" />
                   </button>
                 </>
               )}
             </div>
-            <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-4 bg-white/5 py-1 px-3 rounded-full inline-block border border-white/5">{user.email}</p>
-            <div className="flex justify-center md:justify-start items-center gap-2 text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">
-              <Icons.User className="w-3 h-3 text-[#E60000]" />
+            <p className="text-gray-400 font-bold uppercase tracking-widest text-[9px] mb-2 bg-white/5 py-0.5 px-2 rounded-full inline-block border border-white/5">{user.email}</p>
+            <div className="flex justify-center md:justify-start items-center gap-2 text-gray-500 text-[9px] font-black uppercase tracking-[0.2em]">
+              <Icons.User className="w-3 h-3 text-primary" />
               Member Since {new Date(user.joinDate || Date.now()).getFullYear()}
             </div>
           </div>
@@ -541,16 +556,16 @@ export const Account = () => {
                 }
               );
             }}
-            className="hidden md:flex items-center gap-2 px-6 py-3 bg-red-600/10 text-red-500 border border-red-500/20 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-red-500 hover:text-white transition-all self-start relative z-10"
+            className="hidden md:flex items-center gap-2 px-4 py-2 bg-red-600/10 text-red-500 border border-red-500/20 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-red-500 hover:text-white transition-all self-start relative z-10"
           >
             <Icons.LogOut className="w-4 h-4" />
             Sign Out
           </button>
         </div>
 
-        <div className="flex flex-col md:grid md:grid-cols-4 gap-6">
+        <div className="flex flex-col md:grid md:grid-cols-4 gap-4">
           {/* Scrollable Tabs for Mobile */}
-          <div className="bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 p-2 md:p-4 flex md:flex-col overflow-x-auto gap-2 md:gap-1 scrollbar-hide sticky top-20 z-20 md:static md:h-fit shadow-2xl">
+          <div className="bg-white/5 backdrop-blur-2xl rounded-full border border-white/10 p-2 md:p-3 flex md:flex-col overflow-x-auto gap-2 md:gap-2 scrollbar-hide z-20 md:static md:h-fit shadow-2xl">
             <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={Icons.Package} label="Overview" />
             <TabButton active={activeTab === 'rewards'} onClick={() => setActiveTab('rewards')} icon={Icons.Star} label="My Rewards" />
             <TabButton active={activeTab === 'addresses'} onClick={() => setActiveTab('addresses')} icon={Icons.MapPin} label="Addresses" />
@@ -584,10 +599,10 @@ export const Account = () => {
           <div className="md:col-span-3 space-y-6">
             {activeTab === 'overview' ? (
               <>
-                <div className="bg-white/5 backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#E60000]/5 blur-3xl rounded-full"></div>
-                  <h3 className="font-black text-xs text-white mb-8 uppercase tracking-[0.2em] flex items-center gap-3">
-                    <span className="w-2 h-2 bg-[#E60000] rounded-full animate-pulse"></span>
+                <div className="bg-white/40 backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] border border-charcoal/5 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full"></div>
+                  <h3 className="font-black text-xs text-textMain mb-8 uppercase tracking-[0.2em] flex items-center gap-3">
+                    <span className="w-2 h-2 bg-primary rounded-full animate-bounce"></span>
                     Recent Orders
                   </h3>
                   {ordersLoading ? (
@@ -621,8 +636,8 @@ export const Account = () => {
                             </div>
 
                             <div className="flex-1 hidden sm:block">
-                              <h4 className="font-black text-white uppercase tracking-wider">Order #{order.readableId || order.id.slice(0, 8)}</h4>
-                              <p className="text-sm text-gray-400 font-medium">Placed on {new Date(order.date).toLocaleDateString()}</p>
+                              <h4 className="font-black text-textMain uppercase tracking-wider">Order #{order.readableId || order.id.slice(0, 8)}</h4>
+                              <p className="text-sm text-textMuted font-medium">Placed on {new Date(order.date).toLocaleDateString()}</p>
                             </div>
                             <div className="flex justify-between items-center w-full sm:w-auto gap-3">
                               <span className={`px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-tighter rounded-full ${order.status === 'delivered' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :

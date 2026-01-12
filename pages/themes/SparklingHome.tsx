@@ -17,6 +17,7 @@ import {
     ShimmerBorder
 } from '../../components/christmas/ChristmasAnimations';
 import { AIProductAssistant } from '../../components/AIProductAssistant';
+import { ProductInfiniteMenu } from '../../components/ProductInfiniteMenu';
 
 export const SparklingHome = () => {
     const [categories, setCategories] = useState<any[]>([]);
@@ -73,45 +74,41 @@ export const SparklingHome = () => {
     const displayedCategories = categories.slice(0, visibleCategories);
 
     return (
-        <div className="min-h-screen overflow-x-hidden font-serif bg-transparent text-[#F4E6D0] selection:bg-purple-500 selection:text-white">
+        <div className="min-h-screen overflow-x-hidden font-sans bg-background text-textMain selection:bg-primary/10 selection:text-primary">
 
 
             {/* --- Hero Section --- */}
-            <ParallaxSection className="h-auto md:h-[50vh] pt-12 pb-16 flex items-center justify-center relative overflow-hidden">
+            <ParallaxSection className="h-auto md:h-[50vh] pt-6 pb-6 flex items-center justify-center relative overflow-hidden">
                 <div className="relative z-10 text-center px-3 max-w-5xl mx-auto">
                     <FadeInUp delay={0.2}>
-                        <div className="flex flex-wrap justify-center gap-x-4 md:gap-x-8 mb-2">
-                            <h1 className="text-4xl md:text-7xl font-bold drop-shadow-[0_0_15px_rgba(232,201,207,0.5)]" style={{
+                        <div className="flex flex-wrap justify-center gap-x-4 md:gap-x-8 mb-4">
+                            <h1 className="text-5xl md:text-8xl font-bold tracking-tight" style={{
                                 fontFamily: '"Playfair Display", serif',
-                                color: '#F4E6D0',
+                                color: '#9B1B30',
                             }}>
-                                <TextReveal text="Giftology" />
+                                GiftGalaxy
                             </h1>
                         </div>
                     </FadeInUp>
 
                     <FadeInUp delay={0.8}>
-                        <div className="flex items-center justify-center gap-4 mb-2">
-                            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#F4E6D0]/60"></div>
-                            <p className="text-base md:text-xl font-light tracking-[0.3em] text-[#F4E6D0] uppercase drop-shadow-md leading-relaxed">
+                        <div className="flex items-center justify-center gap-6 mb-4">
+                            <div className="h-[1px] w-16 bg-gradient-to-r from-transparent to-primary"></div>
+                            <p className="text-sm md:text-lg font-bold tracking-[0.4em] text-textMuted uppercase leading-relaxed">
                                 Unwrap Happiness
                             </p>
-                            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#F4E6D0]/60"></div>
+                            <div className="h-[1px] w-16 bg-gradient-to-l from-transparent to-primary"></div>
                         </div>
                     </FadeInUp>
 
-                    <FadeInUp delay={1.2} className="flex justify-center mt-6 md:mt-8">
+                    <FadeInUp delay={1.2} className="flex justify-center mt-3">
                         <MagneticButton>
                             <Link
                                 to="/shop"
-                                className="group relative inline-flex items-center gap-2 px-6 py-2.5 md:px-8 md:py-3 rounded-full font-bold text-xs md:text-base transition-all border-2 animate-space-glow bg-black/40 backdrop-blur-md overflow-hidden"
+                                className="group relative inline-flex items-center gap-3 px-8 py-3.5 md:px-10 md:py-4 rounded-full font-bold text-sm md:text-base transition-all bg-primary text-white hover:bg-[#7A1526] shadow-xl hover:shadow-primary/20 overflow-hidden"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                <span className="relative z-10 text-[#F4E6D0] tracking-[0.1em] uppercase drop-shadow-lg">Explore Collection</span>
-                                <Icons.Compass className="w-4 h-4 md:w-5 md:h-5 relative z-10 text-[#F4E6D0] group-hover:rotate-180 transition-transform duration-1000" />
-
-                                {/* Inner glow for that "space" feel */}
-                                <div className="absolute inset-0 rounded-full opacity-50 group-hover:opacity-80 transition-opacity blur-md bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full duration-1000"></div>
+                                <span className="relative z-10 tracking-[0.1em] uppercase">Explore Collection</span>
+                                <Icons.ArrowRight className="w-4 h-4 md:w-5 md:h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
                             </Link>
                         </MagneticButton>
                     </FadeInUp>
@@ -122,41 +119,34 @@ export const SparklingHome = () => {
             {bestSellers.length > 0 && (
                 <section className="pt-[0.4cm] pb-4 md:py-12 relative z-10">
                     <div className="max-w-7xl mx-auto px-4">
-                        <FadeInUp className="flex items-center justify-center gap-6 mb-8">
-                            <h2 className="text-4xl md:text-6xl font-bold animate-gradient-text drop-shadow-md" style={{
+                        <FadeInUp className="flex items-center justify-center gap-6 mb-3">
+                            <h2 className="text-3xl md:text-5xl font-bold text-primary" style={{
                                 fontFamily: '"Playfair Display", serif',
-                                background: 'linear-gradient(to right, #F4E6D0, #FFD700, #E94560, #F4E6D0)',
-                                backgroundSize: '300% auto',
-                                WebkitBackgroundClip: 'text',
-                                backgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                color: 'transparent', // Fallback
                             }}>
                                 Best Sellers
                             </h2>
                         </FadeInUp>
 
-                        <StaggerChildren key={`${visibleTrending}-${displayedTrending.length}`} className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-16">
+                        <StaggerChildren key={`${visibleTrending}-${displayedTrending.length}`} className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-6">
                             {displayedTrending.map((product) => (
                                 <StaggerItem key={product.id}>
                                     <Link to={`/product/${product.slug}`}>
-                                        <div className="group relative rounded-xl overflow-hidden bg-[#1A1A2E]/50 border border-[#FFD700]/30 hover:border-[#FFD700] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_20px_rgba(255,215,0,0.3)]">
-                                            {/* Gift Tag Badge */}
-                                            <div className="absolute top-3 right-3 z-10 bg-[#FFD700] text-black text-xs font-bold px-3 py-1 rounded shadow-lg shadow-black/50 tracking-wider">
+                                        <div className="group relative rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
+                                            {/* Luxury Badge */}
+                                            <div className="absolute top-4 right-4 z-10 bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg tracking-[0.2em] uppercase">
                                                 BEST SELLER
                                             </div>
 
-                                            <div className="aspect-square overflow-hidden relative">
+                                            <div className="aspect-[4/5] overflow-hidden relative">
                                                 <img
                                                     src={product.imageUrl}
                                                     alt={product.name}
-                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A2E] via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500"></div>
                                             </div>
-                                            <div className="p-5 text-center relative bg-[#1A1A2E]">
-                                                <h3 className="font-bold text-[#F4E6D0] text-base mb-2 line-clamp-1 group-hover:text-white transition-colors drop-shadow-sm">{product.name}</h3>
-                                                <p className="text-[#FFD700] font-bold text-xl drop-shadow-md">₹{product.sale_price || product.price}</p>
+                                            <div className="p-6 text-center bg-white">
+                                                <h3 className="font-bold text-textMain text-sm mb-2 line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h3>
+                                                <p className="text-primary font-bold text-lg">₹{product.sale_price || product.price}</p>
                                             </div>
                                         </div>
                                     </Link>
@@ -175,11 +165,19 @@ export const SparklingHome = () => {
                                             handleShowMoreTrending(); // Show More
                                         }
                                     }}
-                                    className="relative z-50 inline-block px-10 py-3 rounded-full border border-[#F4E6D0]/30 text-[#F4E6D0] hover:bg-[#F4E6D0] hover:text-black transition-all duration-300 font-medium text-sm tracking-widest uppercase cursor-pointer backdrop-blur-sm bg-black/30"
+                                    className="relative z-50 inline-block px-12 py-3.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-500 font-bold text-xs tracking-[0.2em] uppercase cursor-pointer bg-transparent"
                                 >
-                                    {visibleTrending >= bestSellers.length ? 'Show Less' : 'Show More Trending'}
+                                    {visibleTrending >= bestSellers.length ? 'Show Less' : 'Show More Collection'}
                                 </button>
                             )}
+                        </div>
+
+                        {/* Interactive Space View */}
+                        <div className="mt-12 w-full h-[60vh] rounded-[2rem] overflow-hidden shadow-2xl relative z-40 border border-white/10 bg-[#030014]/50 backdrop-blur-sm">
+                            <div className="absolute top-4 left-4 z-10 bg-primary/20 backdrop-blur-md text-primary border border-primary/20 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
+                                Interactive Space View
+                            </div>
+                            <ProductInfiniteMenu products={products} />
                         </div>
                     </div>
                 </section>
@@ -188,32 +186,31 @@ export const SparklingHome = () => {
             {/* --- Curated/Featured Section (Replaces Santa) --- */}
             <section className="py-2 relative z-10">
                 <div className="max-w-6xl mx-auto px-4">
-                    <div className="relative rounded-3xl overflow-hidden bg-[#F4E6D0]/5 backdrop-blur-xl border border-[#F4E6D0]/10 p-1 shadow-2xl">
-                        <div className="grid md:grid-cols-2 gap-0 md:gap-10 items-center bg-black/40 rounded-[1.3rem] overflow-hidden">
-                            <FadeInUp className="relative h-[400px] md:h-[500px] overflow-hidden group">
+                    <div className="relative rounded-[2rem] overflow-hidden bg-white shadow-2xl border border-gray-100">
+                        <div className="grid md:grid-cols-2 gap-0 md:gap-0 items-center bg-white rounded-[2rem] overflow-hidden">
+                            <FadeInUp className="relative h-[400px] md:h-[600px] overflow-hidden group">
                                 <img
                                     src="https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=800&q=80"
                                     alt="Personalized Gifts"
-                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
                             </FadeInUp>
 
                             <FadeInUp delay={0.3} className="px-6 pb-6 pt-3 md:p-8 text-center md:text-left">
-                                <div className="inline-block px-4 py-1 rounded-full border border-[#F4E6D0]/30 text-[#F4E6D0]/80 text-xs font-bold tracking-[0.2em] mb-3">
-                                    HANDPICKED FOR YOU
+                                <div className="inline-block px-5 py-1.5 rounded-full bg-primary/5 text-primary text-[10px] font-black tracking-[0.3em] mb-6 uppercase">
+                                    Bespoke Selection
                                 </div>
-                                <h2 className="text-3xl md:text-5xl font-bold mb-3 text-[#F4E6D0] leading-tight" style={{ fontFamily: '"Playfair Display", serif' }}>
-                                    Memorable Moments
+                                <h2 className="text-3xl md:text-6xl font-bold mb-6 text-textMain leading-tight" style={{ fontFamily: '"Playfair Display", serif' }}>
+                                    Crafting <br /> Memorable <br /> Moments
                                 </h2>
-                                <p className="text-[#F4E6D0]/80 text-base md:text-lg mb-5 leading-relaxed font-light">
-                                    Every gift tells a story. Discover our curated collection designed to make every occasion unforgettable.
+                                <p className="text-textMuted text-base md:text-lg mb-8 leading-relaxed font-medium">
+                                    Every gift tells a unique story. Discover our artisan-curated collection designed to make every occasion deeply personal.
                                 </p>
                                 <Link
                                     to="/shop"
-                                    className="inline-block border-b border-[#F4E6D0] pb-1 text-[#F4E6D0] text-lg hover:text-white hover:border-white transition-all font-light tracking-wide"
+                                    className="inline-flex items-center gap-2 text-primary font-bold text-lg hover:gap-4 transition-all"
                                 >
-                                    Explore the Collection
+                                    Explore Our Story <Icons.ArrowRight className="w-5 h-5" />
                                 </Link>
                             </FadeInUp>
                         </div>
@@ -222,31 +219,31 @@ export const SparklingHome = () => {
             </section>
 
             {/* --- Curated Collections --- */}
-            <section className="py-20 pb-10 relative z-10">
+            <section className="py-6 pb-4 relative z-10">
                 <div className="max-w-7xl mx-auto px-4">
-                    <FadeInUp className="text-center mb-16">
-                        <h2 className="text-4xl md:text-5xl font-bold text-[#F4E6D0] mb-4" style={{ fontFamily: '"Playfair Display", serif' }}>
-                            Our Collections
+                    <FadeInUp className="text-center mb-4">
+                        <h2 className="text-3xl md:text-5xl font-bold text-primary mb-4" style={{ fontFamily: '"Playfair Display", serif' }}>
+                            Curated Categories
                         </h2>
-                        <p className="text-[#F4E6D0]/70 text-lg font-light tracking-wide">Find the perfect category for everyone on your list</p>
+                        <p className="text-textMuted text-lg font-medium">Find the perfect expression for everyone in your life</p>
                     </FadeInUp>
 
                     <StaggerChildren key={`${visibleCategories}-${displayedCategories.length}`} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 mb-12">
                         {displayedCategories.map((cat) => (
                             <StaggerItem key={cat.id}>
                                 <Link to={`/shop?category=${cat.slug}`}>
-                                    <HoverCard className="h-[200px] rounded-xl overflow-hidden shadow-lg border border-[#F4E6D0]/10 group hover:border-[#F4E6D0]/40">
+                                    <HoverCard className="h-[250px] rounded-[1.5rem] overflow-hidden shadow-md border border-gray-100 group hover:border-primary/20">
                                         <img
                                             src={cat.imageUrl}
                                             alt={cat.name}
-                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-                                        <div className="absolute bottom-0 left-0 right-0 p-5 text-center">
-                                            <div className="inline-block px-3 py-1 border border-[#F4E6D0]/50 rounded-full bg-black/40 backdrop-blur-md mb-3 opacity-0 group-hover:opacity-100 transition-all transform translate-y-4 group-hover:translate-y-0 duration-500">
-                                                <span className="text-[#F4E6D0] text-[10px] font-bold tracking-widest">EXPLORE</span>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                                        <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
+                                            <div className="inline-block px-5 py-1.5 border border-white/30 rounded-full bg-white/10 backdrop-blur-md mb-3 opacity-0 group-hover:opacity-100 transition-all transform translate-y-4 group-hover:translate-y-0 duration-500">
+                                                <span className="text-white text-[10px] font-black tracking-[0.2em]">VIEW ALL</span>
                                             </div>
-                                            <h3 className="text-lg font-medium text-[#F4E6D0]/90 group-hover:text-white transition-colors">{cat.name}</h3>
+                                            <h3 className="text-xl font-bold text-white transition-colors">{cat.name}</h3>
                                         </div>
                                     </HoverCard>
                                 </Link>
@@ -264,12 +261,27 @@ export const SparklingHome = () => {
                                         handleShowMoreCategories(); // Show More
                                     }
                                 }}
-                                className="relative z-50 inline-block px-10 py-3 rounded-full border border-[#F4E6D0]/30 text-[#F4E6D0] hover:bg-[#F4E6D0] hover:text-black transition-all duration-300 font-medium text-sm tracking-widest uppercase cursor-pointer backdrop-blur-sm bg-black/30"
+                                className="relative z-50 inline-block px-12 py-3.5 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-500 font-bold text-xs tracking-[0.2em] uppercase cursor-pointer bg-transparent"
                             >
-                                {visibleCategories >= categories.length ? 'Show Less' : 'Show More Collections'}
+                                {visibleCategories >= categories.length ? 'Show Less' : 'Explore All Collections'}
                             </button>
                         )}
                     </div>
+                </div>
+            </section>
+
+            {/* --- AI Product Assistant Header --- */}
+            <section className="pt-12 pb-2 relative z-10">
+                <div className="max-w-4xl mx-auto px-4">
+                    <FadeInUp className="text-center">
+                        <div className="inline-block px-5 py-2 rounded-full bg-primary/5 text-primary text-[10px] font-black tracking-[0.3em] mb-4 uppercase">
+                            Bespoke Concierge
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-bold text-textMain mb-4" style={{ fontFamily: '"Playfair Display", serif' }}>
+                            Personalized Assistance
+                        </h2>
+                        <p className="text-textMuted text-lg font-medium">Allow us to curate the perfect gift experience for you</p>
+                    </FadeInUp>
                 </div>
             </section>
 
@@ -277,24 +289,16 @@ export const SparklingHome = () => {
             <AIProductAssistant products={products} />
 
             {/* --- Contact Us Section --- */}
-            <section className="py-24 relative z-10">
+            <section className="py-8 relative z-10">
                 <div className="max-w-4xl mx-auto px-4">
-                    <FadeInUp className="text-center mb-12">
-                        <div className="inline-block px-4 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-xs font-bold tracking-[0.2em] mb-4">
-                            GET IN TOUCH
-                        </div>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: '"Playfair Display", serif' }}>
-                            Questions? We're Here
-                        </h2>
-                        <p className="text-gray-400 text-lg font-light">Let us help you find the perfect gift</p>
-                    </FadeInUp>
 
-                    <FadeInUp delay={0.3} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl">
+
+                    <FadeInUp delay={0.3} className="bg-white rounded-[2.5rem] p-8 md:p-16 shadow-2xl border border-gray-100">
                         <form
                             onSubmit={async (e) => {
                                 e.preventDefault();
                                 if (!contactForm.name || !contactForm.phone) {
-                                    showAlert('Error', 'Please enter your name and phone number.', 'error');
+                                    showAlert('Error', 'Please provide your name and contact details.', 'error');
                                     return;
                                 }
                                 setSubmitting(true);
@@ -303,74 +307,76 @@ export const SparklingHome = () => {
                                         name: contactForm.name,
                                         phone: contactForm.phone,
                                         message: contactForm.message,
-                                        source: 'homepage_sparkling'
+                                        source: 'homepage_luxe'
                                     });
                                     if (success) {
-                                        showAlert('Message Sent', 'We will get back to you shortly!', 'success');
+                                        showAlert('Registration Successful', 'Our specialist will contact you shortly.', 'success');
                                         setContactForm({ name: '', phone: '', message: '' });
                                     } else {
-                                        throw new Error('Failed to send message');
+                                        throw new Error('Submission Failed');
                                     }
                                 } catch (error) {
-                                    showAlert('Error', 'Failed to send message. Please call us directly.', 'error');
+                                    showAlert('Submission Failed', 'Please contact our concierge directly at +91 9137645161.', 'error');
                                 } finally {
                                     setSubmitting(false);
                                 }
                             }}
-                            className="grid md:grid-cols-2 gap-6"
+                            className="grid md:grid-cols-2 gap-8"
                         >
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-300 ml-1">Your Name</label>
+                            <div className="space-y-3">
+                                <label className="text-xs font-black text-textMain uppercase tracking-widest ml-1">Full Name</label>
                                 <input
                                     type="text"
-                                    placeholder="Enter your name"
+                                    placeholder="Ex: Alexander Pierce"
                                     value={contactForm.name}
                                     onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600 border-opacity-20"
+                                    className="w-full bg-[#FAF9F6] border border-gray-200 rounded-2xl px-6 py-4 text-textMain focus:outline-none focus:border-primary transition-all placeholder:text-gray-400 font-medium"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-300 ml-1">Phone Number</label>
+                            <div className="space-y-3">
+                                <label className="text-xs font-black text-textMain uppercase tracking-widest ml-1">Private Contact</label>
                                 <input
                                     type="tel"
-                                    placeholder="your phone"
+                                    placeholder="+91 XXX XXX XXXX"
                                     value={contactForm.phone}
                                     onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600 border-opacity-20"
+                                    className="w-full bg-[#FAF9F6] border border-gray-200 rounded-2xl px-6 py-4 text-textMain focus:outline-none focus:border-primary transition-all placeholder:text-gray-400 font-medium"
                                 />
                             </div>
-                            <div className="md:col-span-2 space-y-2">
-                                <label className="text-sm font-medium text-gray-300 ml-1">Message (Optional)</label>
+                            <div className="md:col-span-2 space-y-3">
+                                <label className="text-xs font-black text-textMain uppercase tracking-widest ml-1">Inquiry Details (Optional)</label>
                                 <textarea
-                                    placeholder="How can we help?"
+                                    placeholder="Describe your requirement..."
                                     rows={4}
                                     value={contactForm.message}
                                     onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-purple-500/50 transition-all placeholder:text-gray-600 resize-none border-opacity-20"
+                                    className="w-full bg-[#FAF9F6] border border-gray-200 rounded-2xl px-6 py-4 text-textMain focus:outline-none focus:border-primary transition-all placeholder:text-gray-400 font-medium resize-none"
                                 />
                             </div>
-                            <div className="md:col-span-2 mt-4 text-center">
+                            <div className="md:col-span-2 mt-6 text-center">
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="inline-flex items-center gap-2 px-10 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-full transition-all active:scale-95 disabled:opacity-50"
+                                    className="inline-flex items-center gap-3 px-14 py-5 bg-primary hover:bg-[#7A1526] text-white font-black rounded-full transition-all active:scale-95 disabled:opacity-50 shadow-2xl hover:shadow-primary/30 uppercase tracking-[0.2em] text-xs"
                                 >
-                                    {submitting ? <Icons.Loader2 className="w-5 h-5 animate-spin" /> : 'Send Message'}
+                                    {submitting ? <Icons.Loader2 className="w-5 h-5 animate-spin" /> : 'Request Assistance'}
                                     {!submitting && <Icons.ArrowRight className="w-5 h-5" />}
                                 </button>
-                                <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-6 pt-8 border-t border-white/5">
-                                    <div className="text-center">
-                                        <div className="text-purple-400 mb-2 flex justify-center"><Icons.Phone className="w-5 h-5" /></div>
-                                        <p className="text-sm text-gray-400">+91 9137645161</p>
-                                        <p className="text-sm text-gray-400">+91 8108303255</p>
+                                <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-8 pt-12 border-t border-gray-100">
+                                    <div className="text-center group cursor-pointer">
+                                        <div className="text-primary mb-3 flex justify-center group-hover:scale-110 transition-transform"><Icons.Phone className="w-6 h-6" /></div>
+                                        <p className="text-xs font-bold text-textMain tracking-wide">+91 9137645161</p>
+                                        <p className="text-xs text-textMuted">Private Line</p>
                                     </div>
-                                    <div className="text-center">
-                                        <div className="text-purple-400 mb-2 flex justify-center"><Icons.Mail className="w-5 h-5" /></div>
-                                        <p className="text-sm text-gray-400 break-all">giftology.in14@gmail.com</p>
+                                    <div className="text-center group cursor-pointer">
+                                        <div className="text-primary mb-3 flex justify-center group-hover:scale-110 transition-transform"><Icons.Mail className="w-6 h-6" /></div>
+                                        <p className="text-xs font-bold text-textMain tracking-wide">concierge@giftology.in</p>
+                                        <p className="text-xs text-textMuted">Priority Intake</p>
                                     </div>
-                                    <div className="text-center col-span-2 md:col-span-1">
-                                        <div className="text-purple-400 mb-2 flex justify-center"><Icons.MapPin className="w-5 h-5" /></div>
-                                        <p className="text-sm text-gray-400">Mumbai, India</p>
+                                    <div className="text-center col-span-2 md:col-span-1 group cursor-pointer">
+                                        <div className="text-primary mb-3 flex justify-center group-hover:scale-110 transition-transform"><Icons.MapPin className="w-6 h-6" /></div>
+                                        <p className="text-xs font-bold text-textMain tracking-wide">Mumbai Headquarters</p>
+                                        <p className="text-xs text-textMuted">By Appointment Only</p>
                                     </div>
                                 </div>
                             </div>

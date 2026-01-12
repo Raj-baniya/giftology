@@ -3,8 +3,9 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Giftology - Personalized Gifts</title>
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>GiftGalaxy - Personalized Gifts</title>
 
   <link rel="icon" type="image/png" href="/logo.png" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -24,6 +25,11 @@
       /* Firefox */
       -ms-overflow-style: none;
       /* IE and Edge */
+      overscroll-behavior-y: none;
+      /* Prevent bounce effect */
+      min-height: 100vh;
+      width: 100%;
+      position: relative;
     }
 
     /* Chrome, Safari and Opera */
@@ -67,12 +73,15 @@
     tailwind.config = {
       theme: {
         extend: {
+          spacing: {
+            'safe': 'env(safe-area-inset-bottom)',
+          },
           colors: {
-            primary: '#E60000', // Blood Red
+            primary: '#9B1B30', // Deep Burgundy
             background: '#FAF9F6', // Cream
-            accent: '#E5CAA9', // Pale Gold
-            textMain: '#2D2D2D',
-            textMuted: '#78716c',
+            accent: '#D4AF37', // Metallic Gold
+            textMain: '#1A1A1A', // Dark Charcoal for visibility
+            textMuted: '#57534E',
           },
           fontFamily: {
             serif: ['RupeeFallback', '"Playfair Display"', 'serif'],
@@ -83,7 +92,7 @@
     }
   </script>
 
-<body class="bg-background text-textMain font-sans antialiased">
+<body class="bg-background text-textMain font-sans antialiased selection:bg-primary/10 selection:text-primary">
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

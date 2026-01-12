@@ -1,54 +1,36 @@
 import React, { useEffect, useState } from 'react';
 
 export const SnowEffect = () => {
-  const [snowflakes, setSnowflakes] = useState<any[]>([]);
+  // Mobile check (simple user agent check for initial render, or just default to low count)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const flakeCount = isMobile ? 15 : 30; // Reduced from 50
 
-  useEffect(() => {
-    // Generate snowflakes with more variation
-    const flakes = Array.from({ length: 50 }).map((_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      animationDuration: Math.random() * 10 + 10,
-      animationDelay: Math.random() * 5,
-      opacity: Math.random() * 0.6 + 0.3,
-      size: Math.random() * 8 + 3,
-      drift: Math.random() * 100 - 50
-    }));
-    setSnowflakes(flakes);
-  }, []);
+  const snowflakes = Array.from({ length: flakeCount }).map((_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    animationDuration: Math.random() * 5 + 5 + 's', // Slower, 5-10s
+    animationDelay: Math.random() * 5 + 's',
+    opacity: Math.random() * 0.5 + 0.3,
+    size: Math.random() * 4 + 2 + 'px' // Smaller flakes
+  }));
 
   return (
-    <>
-      <style>
-        {snowflakes.map((flake) => `
-          @keyframes snowfall-${flake.id} {
-            0% {
-              transform: translateY(-10vh) translateX(0) rotate(0deg);
-            }
-            100% {
-              transform: translateY(110vh) translateX(${flake.drift}px) rotate(360deg);
-            }
-          }
-        `).join('\n')}
-      </style>
-      <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
-        {snowflakes.map((flake) => (
-          <div
-            key={flake.id}
-            className="absolute bg-white rounded-full"
-            style={{
-              left: `${flake.left}%`,
-              top: '-20px',
-              width: `${flake.size}px`,
-              height: `${flake.size}px`,
-              opacity: flake.opacity,
-              animation: `snowfall-${flake.id} ${flake.animationDuration}s linear infinite`,
-              animationDelay: `${flake.animationDelay}s`,
-              boxShadow: '0 0 3px rgba(255, 255, 255, 0.8)',
-            }}
-          />
-        ))}
-      </div>
-    </>
+    <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+      {snowflakes.map((flake) => (
+        <div
+          key={flake.id}
+          className="absolute bg-white rounded-full animate-snowfall"
+          style={{
+            left: `${flake.left}%`,
+            top: '-10px',
+            width: flake.size,
+            height: flake.size,
+            opacity: flake.opacity,
+            animationDuration: flake.animationDuration,
+            animationDelay: flake.animationDelay,
+          }}
+        />
+      ))}
+    </div>
   );
 };

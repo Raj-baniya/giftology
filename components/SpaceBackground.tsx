@@ -6,7 +6,7 @@ export const SpaceBackground = () => {
             <div className="space-aurora animate-aurora"></div>
             <div className="space-noise"></div>
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-                {[...Array(30)].map((_, i) => (
+                {[...Array(12)].map((_, i) => (
                     <div
                         key={i}
                         className="star animate-sparkle"

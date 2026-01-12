@@ -89,12 +89,12 @@ const MobileSearchBar = () => {
 
     return (
         <>
-            <div ref={searchRef} className="relative z-50 md:hidden sticky top-0 bg-white px-4 py-3 shadow-sm">
+            <div ref={searchRef} className="relative z-50 md:hidden sticky top-0 bg-black/80 backdrop-blur-md px-4 py-3 shadow-lg border-b border-white/10">
                 <div className="flex items-center gap-3">
                     {showBackButton && (
                         <button
                             onClick={() => navigate(-1)}
-                            className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                            className="p-2 -ml-2 text-white hover:bg-white/10 rounded-full transition-colors"
                         >
                             <Icons.ChevronLeft className="w-6 h-6" />
                         </button>
@@ -103,7 +103,7 @@ const MobileSearchBar = () => {
                         <input
                             type="text"
                             placeholder="Search for gifts..."
-                            className="w-full py-2.5 pl-10 pr-20 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                            className="w-full py-2.5 pl-10 pr-20 bg-white/10 border border-white/5 rounded-xl text-sm text-white placeholder:text-gray-500 focus:ring-2 focus:ring-[#E60000]/50 transition-all outline-none"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             onFocus={() => setShowRecent(true)}
@@ -114,14 +114,14 @@ const MobileSearchBar = () => {
                             <button
                                 type="button"
                                 onClick={handleVoiceSearch}
-                                className={`p-1.5 rounded-full hover:bg-gray-200 transition-colors ${isListening ? 'text-red-500 animate-pulse' : 'text-gray-500'}`}
+                                className={`p-1.5 rounded-full hover:bg-white/10 transition-colors ${isListening ? 'text-[#E60000] animate-pulse' : 'text-gray-400'}`}
                             >
                                 <Icons.Mic className="w-4 h-4" />
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setShowCamera(true)}
-                                className="p-1.5 rounded-full hover:bg-gray-200 transition-colors text-gray-500"
+                                className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-gray-400"
                             >
                                 <Icons.Camera className="w-4 h-4" />
                             </button>
@@ -131,17 +131,17 @@ const MobileSearchBar = () => {
 
                 {/* Recent Searches Dropdown */}
                 {showRecent && recentSearches.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 mx-4 z-50">
-                        <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider bg-gray-50">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a1a] rounded-xl shadow-2xl border border-white/10 overflow-hidden animate-in fade-in slide-in-from-top-2 mx-4 z-50">
+                        <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-white/5">
                             Recent Searches
                         </div>
                         {recentSearches.map((term, index) => (
                             <button
                                 key={index}
                                 onClick={() => handleRecentClick(term)}
-                                className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors"
+                                className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/5 flex items-center gap-3 border-b border-white/5 last:border-0 transition-colors"
                             >
-                                <Icons.Clock className="w-3.5 h-3.5 text-gray-400" />
+                                <Icons.Clock className="w-3.5 h-3.5 text-gray-600" />
                                 {term}
                             </button>
                         ))}

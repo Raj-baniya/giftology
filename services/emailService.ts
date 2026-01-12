@@ -30,6 +30,10 @@ export interface OrderEmailParams {
   orderItems?: string;
   view_order_url?: string;
   // Additional fields for complete order information
+  order_id?: string;
+  order_date?: string;
+  subtotal?: string;
+  discount?: string;
   delivery_date?: string;
   expected_delivery?: string;
   delivery_speed?: string;
@@ -65,16 +69,36 @@ export const sendOrderConfirmationToUser = async (params: OrderEmailParams): Pro
 
       // Add MISSING fields that caused "Half Filled" email
       customer_phone: params.customerPhone,
+      customerPhone: params.customerPhone, // camelCase copy
+
       payment_method: params.paymentMethod,
+      paymentMethod: params.paymentMethod, // camelCase copy
+
       delivery_details: params.deliveryDetails,
+      deliveryDetails: params.deliveryDetails, // camelCase copy
+
+      order_id: params.order_id || 'Pending',
+      orderId: params.order_id || 'Pending', // camelCase copy
 
       order_total: params.orderTotal,
+      orderTotal: params.orderTotal, // camelCase copy
+
+      subtotal: params.subtotal || params.orderTotal,
+      discount: params.discount || '₹0',
+
+      order_date: params.order_date || new Date().toLocaleDateString(),
+      orderDate: params.order_date || new Date().toLocaleDateString(), // camelCase copy
+
       delivery_date: params.delivery_date || params.deliveryDetails.split('|')[0]?.trim() || 'TBD',
       expected_delivery: params.expected_delivery || '',
       delivery_speed: params.delivery_speed || 'Standard Delivery',
       gift_wrapping: params.gift_wrapping || 'No Wrapping',
       shipping_address: params.shipping_address || '',
+      shippingAddress: params.shipping_address || '', // camelCase copy
+
       order_items: params.orderItems || '',
+      orderItems: params.orderItems || '', // camelCase copy
+
       invoice_html: params.invoice_html || '',
       message: `Thank you for your order! We will deliver it as per the scheduled date.`,
       view_order_url: 'https://giftology-in.web.app/account' // Production link to Account page

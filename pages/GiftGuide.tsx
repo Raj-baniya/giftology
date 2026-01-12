@@ -98,10 +98,10 @@ export const GiftGuide = () => {
     const isComplete = currentStep === questions.length - 1 && answers[currentQuestion.id];
 
     return (
-        <div className="min-h-screen bg-transparent py-12 px-4 relative overflow-hidden">
+        <div className="min-h-screen bg-background py-12 px-4 relative overflow-hidden text-charcoal">
             {/* Background decorative elements */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#E60000]/5 blur-[120px] rounded-full pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gold/5 blur-[120px] rounded-full pointer-events-none"></div>
 
             <div className="max-w-4xl mx-auto relative z-10">
 
@@ -111,30 +111,30 @@ export const GiftGuide = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-16"
                 >
-                    <div className="inline-flex items-center justify-center w-24 h-24 bg-white/5 backdrop-blur-xl rounded-full mb-8 border border-white/10 shadow-[0_0_30px_rgba(230,0,0,0.2)]">
-                        <Icons.Sparkles className="w-12 h-12 text-[#E60000] drop-shadow-[0_0_10px_rgba(230,0,0,0.5)]" />
+                    <div className="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full mb-8 border border-charcoal/5 shadow-xl">
+                        <Icons.Sparkles className="w-12 h-12 text-primary" />
                     </div>
-                    <h1 className="font-black text-4xl md:text-6xl text-white mb-4 uppercase tracking-[0.2em]">
+                    <h1 className="font-serif font-black text-4xl md:text-6xl text-charcoal mb-4 uppercase tracking-[0.2em]">
                         AI Gift Guide
                     </h1>
-                    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs italic">
-                        Answer a few questions and let our AI find the perfect gift
+                    <p className="text-gray-400 font-bold uppercase tracking-widest text-xs italic">
+                        The art of selection, simplified by intelligence
                     </p>
                 </motion.div>
 
                 {/* Progress Bar */}
                 <div className="mb-12">
                     <div className="flex justify-between items-center mb-3 ml-1">
-                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                            Question {currentStep + 1} of {questions.length}
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                            Step {currentStep + 1} of {questions.length}
                         </span>
-                        <span className="text-[10px] font-black text-[#E60000] uppercase tracking-widest animate-pulse">
-                            {Math.round(progress)}% Complete
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">
+                            {Math.round(progress)}% Experience
                         </span>
                     </div>
-                    <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                    <div className="h-1 bg-charcoal/5 rounded-full overflow-hidden">
                         <motion.div
-                            className="h-full bg-gradient-to-r from-[#E60000] to-red-900 shadow-[0_0_10px_rgba(230,0,0,0.5)]"
+                            className="h-full bg-primary"
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
                             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -148,15 +148,13 @@ export const GiftGuide = () => {
                     initial={{ opacity: 0, x: 50 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -50 }}
-                    className="bg-white/5 backdrop-blur-2xl rounded-[3rem] border border-white/10 p-8 md:p-14 mb-10 shadow-2xl relative overflow-hidden group"
+                    className="bg-white rounded-[3rem] border border-charcoal/5 p-8 md:p-14 mb-10 shadow-2xl relative overflow-hidden group"
                 >
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#E60000]/5 blur-3xl rounded-full pointer-events-none group-hover:bg-[#E60000]/10 transition-all duration-700"></div>
-
                     <div className="flex items-center gap-6 mb-12 relative z-10">
-                        <div className="w-16 h-16 bg-[#E60000]/10 border border-[#E60000]/20 rounded-2xl flex items-center justify-center shadow-[0_0_15px_rgba(230,0,0,0.1)]">
-                            <currentQuestion.icon className="w-8 h-8 text-[#E60000]" />
+                        <div className="w-16 h-16 bg-primary/5 border border-primary/10 rounded-2xl flex items-center justify-center">
+                            <currentQuestion.icon className="w-8 h-8 text-primary" />
                         </div>
-                        <h2 className="font-black text-2xl md:text-4xl text-white uppercase tracking-wider">
+                        <h2 className="font-serif font-black text-2xl md:text-4xl text-charcoal uppercase tracking-wider">
                             {currentQuestion.question}
                         </h2>
                     </div>
@@ -168,27 +166,33 @@ export const GiftGuide = () => {
                                 onClick={() => handleAnswer(currentQuestion.id, option.value)}
                                 whileHover={{ scale: 1.02, y: -2 }}
                                 whileTap={{ scale: 0.98 }}
-                                className={`p-8 rounded-[2rem] border-2 transition-all text-left flex items-center gap-6 group/btn ${answers[currentQuestion.id] === option.value
-                                    ? 'border-[#E60000] bg-[#E60000]/10 shadow-[0_0_20px_rgba(230,0,0,0.2)]'
-                                    : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                                className={`p-8 rounded-[2rem] border transition-all text-left flex items-center gap-6 group/btn ${answers[currentQuestion.id] === option.value
+                                    ? 'border-primary bg-primary/5 shadow-md'
+                                    : 'border-charcoal/5 bg-gray-50 hover:border-primary/30 hover:bg-white'
                                     }`}
                             >
-                                <span className="text-4xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">{option.icon}</span>
-                                <span className={`font-black uppercase tracking-[0.15em] text-xs ${answers[currentQuestion.id] === option.value ? 'text-white' : 'text-gray-400 group-hover/btn:text-white'}`}>{option.label}</span>
+                                <span className="text-4xl">{option.icon}</span>
+                                <span className={`font-black uppercase tracking-[0.15em] text-xs ${answers[currentQuestion.id] === option.value
+                                    ? 'text-charcoal'
+                                    : currentQuestion.id === 'budget'
+                                        ? 'text-green-600'
+                                        : 'text-gray-400 group-hover/btn:text-charcoal'}`}>
+                                    {option.label}
+                                </span>
                             </motion.button>
                         ))}
                     </div>
                 </motion.div>
 
                 {/* Navigation Buttons */}
-                <div className="flex justify-between items-center mb-16">
+                <div className="flex justify-between items-center mb-16 px-4">
                     <button
                         onClick={handleBack}
                         disabled={currentStep === 0}
-                        className="flex items-center gap-2 px-8 py-3 text-gray-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black uppercase tracking-widest text-[10px]"
+                        className="flex items-center gap-2 text-gray-400 hover:text-charcoal disabled:opacity-0 transition-all font-black uppercase tracking-widest text-[10px]"
                     >
                         <Icons.ChevronLeft className="w-4 h-4" />
-                        Back
+                        Previous
                     </button>
 
                     {isComplete && (
@@ -197,12 +201,12 @@ export const GiftGuide = () => {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             onClick={handleGetRecommendations}
                             disabled={isLoading}
-                            className="flex items-center gap-3 px-10 py-5 bg-[#E60000] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-[#ff0000] transition-all shadow-[0_0_30px_rgba(230,0,0,0.3)] hover:shadow-[0_0_40px_rgba(230,0,0,0.5)] active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-3 px-10 py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-lg hover:shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
                         >
                             {isLoading ? (
                                 <>
                                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                                    <span>Finding Perfect Gifts...</span>
+                                    <span>Curating Gifts...</span>
                                 </>
                             ) : (
                                 <>
@@ -219,11 +223,11 @@ export const GiftGuide = () => {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-12 bg-white/5 backdrop-blur-xl rounded-[2.5rem] p-8 border border-white/10 shadow-2xl"
+                        className="mt-12 bg-white/50 backdrop-blur-xl rounded-[2.5rem] p-8 border border-charcoal/5 shadow-xl"
                     >
-                        <h3 className="font-black text-[10px] text-white mb-8 uppercase tracking-[0.2em] flex items-center gap-3">
-                            <Icons.CheckCircle className="w-4 h-4 text-[#E60000]" />
-                            Selected Preferences
+                        <h3 className="font-black text-[10px] text-gray-400 mb-8 uppercase tracking-[0.2em] flex items-center gap-3">
+                            <Icons.CheckCircle className="w-4 h-4 text-primary" />
+                            Curated Preferences
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                             {questions.map((q) => {
@@ -231,10 +235,10 @@ export const GiftGuide = () => {
                                 if (!answer) return null;
                                 const option = q.options.find(o => o.value === answer);
                                 return (
-                                    <div key={q.id} className="text-center p-4 bg-white/5 rounded-2xl border border-white/5">
-                                        <div className="text-3xl mb-3 filter drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]">{option?.icon}</div>
-                                        <div className="text-[10px] text-gray-500 mb-1 font-black uppercase tracking-widest">{q.question.replace('?', '').toUpperCase()}</div>
-                                        <div className="text-[10px] font-black text-white uppercase tracking-widest">{option?.label}</div>
+                                    <div key={q.id} className="text-center p-4 bg-white rounded-2xl border border-charcoal/5 shadow-sm">
+                                        <div className="text-3xl mb-3">{option?.icon}</div>
+                                        <div className="text-[10px] text-gray-400 mb-1 font-black uppercase tracking-widest">{q.question.replace('?', '').toUpperCase()}</div>
+                                        <div className="text-[10px] font-black text-charcoal uppercase tracking-widest">{option?.label}</div>
                                     </div>
                                 );
                             })}

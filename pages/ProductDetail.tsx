@@ -28,6 +28,8 @@ export const ProductDetail = () => {
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState<string>('');
+    const [reviewsRefreshKey, setReviewsRefreshKey] = useState(0);
+    const [direction, setDirection] = useState(0);
     const [isAdding, setIsAdding] = useState(false);
     const [hasBeenAdded, setHasBeenAdded] = useState(false);
     const [showFullScreen, setShowFullScreen] = useState(false);
@@ -227,10 +229,10 @@ export const ProductDetail = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-transparent relative">
+            <div className="min-h-screen flex items-center justify-center bg-background relative">
                 <div className="relative z-10 flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E60000]"></div>
-                    <p className="text-white font-black tracking-widest uppercase text-xs animate-pulse">Loading Product...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                    <p className="text-charcoal font-black tracking-widest uppercase text-xs animate-pulse">Loading Product...</p>
                 </div>
             </div>
         );
@@ -274,42 +276,42 @@ export const ProductDetail = () => {
 
     return (
         <>
-            <div className="min-h-screen bg-transparent text-white relative overflow-x-hidden font-sans">
-                <div className="max-w-7xl mx-auto px-1.5 py-8 md:py-16 relative z-10">
+            <div className="min-h-screen bg-background text-charcoal relative overflow-x-hidden font-sans">
+                <div className="max-w-7xl mx-auto px-3 py-4 md:py-8 relative z-10">
                     {/* Mobile Back Button - Redesigned for Space */}
-                    <div className="lg:hidden fixed top-4 left-4 z-50">
+                    <div className="lg:hidden fixed top-3 left-3 z-50">
                         <button
                             onClick={() => navigate(-1)}
-                            className="p-3 bg-black/40 backdrop-blur-md rounded-full text-white border border-white/10 shadow-xl active:scale-90 transition-all"
+                            className="p-2.5 bg-white/80 backdrop-blur-md rounded-full text-charcoal border border-charcoal/10 shadow-xl active:scale-90 transition-all hover:bg-white"
                         >
-                            <Icons.ChevronLeft className="w-5 h-5" />
+                            <Icons.ChevronLeft className="w-4 h-4" />
                         </button>
                     </div>
 
-                    <div className="max-w-[1440px] mx-auto pt-0 lg:pt-12 px-1.5 lg:px-8">
+                    <div className="max-w-[1440px] mx-auto pt-0 lg:pt-6 px-1.5 lg:px-8">
                         {/* Product Header - Above Image & Info */}
-                        <div className="px-6 lg:px-0 mb-8">
-                            <div className="mb-4">
-                                <span className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-[#E60000] px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-lg">
-                                    <Icons.Sparkles className="w-4 h-4" />
+                        <div className="px-3 lg:px-0 mb-4">
+                            <div className="mb-2">
+                                <span className="inline-flex items-center gap-1.5 bg-primary/5 border border-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
+                                    <Icons.Sparkles className="w-3 h-3" />
                                     {product.category.replace('-', ' ')}
                                 </span>
                             </div>
-                            <h1 className="font-serif text-xl lg:text-3xl xl:text-4xl font-black text-white mb-2 uppercase tracking-wider leading-[1.1]">
+                            <h1 className="font-serif text-lg lg:text-3xl font-black text-charcoal mb-1 uppercase tracking-wider leading-[1.1]">
                                 {product.name}
                             </h1>
-                            <div className="h-1 w-20 bg-[#E60000] rounded-full mt-4"></div>
+                            <div className="h-1 w-16 bg-primary rounded-full mt-2"></div>
                         </div>
 
-                        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-0 lg:gap-16">
+                        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-0 lg:gap-12">
                             {/* Image Section - Left Side */}
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="relative group lg:sticky lg:top-24 h-[60vh] sm:h-[70vh] lg:h-[80vh]"
+                                className="relative group lg:sticky lg:top-24 h-[50vh] sm:h-[60vh] lg:h-[70vh]"
                             >
                                 {/* Main Display Image */}
-                                <div className="w-full h-full relative overflow-hidden bg-white/5 backdrop-blur-sm lg:rounded-3xl border-b lg:border border-white/10">
+                                <div className="w-full h-full relative overflow-hidden bg-white/40 backdrop-blur-sm lg:rounded-2xl border-b lg:border border-charcoal/5 shadow-sm">
                                     {images.length > 1 ? (
                                         <div
                                             className="relative w-full h-full"
@@ -319,25 +321,47 @@ export const ProductDetail = () => {
                                                 if (touchStart - touchEnd > 75) {
                                                     const currentIndex = images.indexOf(selectedImage);
                                                     const nextIndex = (currentIndex + 1) % images.length;
+                                                    setDirection(1);
                                                     setSelectedImage(images[nextIndex]);
                                                 }
                                                 if (touchStart - touchEnd < -75) {
                                                     const currentIndex = images.indexOf(selectedImage);
                                                     const prevIndex = (currentIndex - 1 + images.length) % images.length;
+                                                    setDirection(-1);
                                                     setSelectedImage(images[prevIndex]);
                                                 }
                                             }}
                                         >
-                                            <AnimatePresence mode="wait">
+                                            <AnimatePresence mode="wait" initial={false} custom={direction}>
                                                 <motion.img
-                                                    key={selectedImage}
-                                                    src={selectedImage}
+                                                    key={selectedImage || images[0]}
+                                                    src={selectedImage || (images.length > 0 ? images[0] : '')}
+                                                    custom={direction}
+                                                    variants={{
+                                                        enter: (direction: number) => ({
+                                                            x: direction > 0 ? 300 : -300,
+                                                            opacity: 0
+                                                        }),
+                                                        center: {
+                                                            zIndex: 1,
+                                                            x: 0,
+                                                            opacity: 1
+                                                        },
+                                                        exit: (direction: number) => ({
+                                                            zIndex: 0,
+                                                            x: direction < 0 ? 300 : -300,
+                                                            opacity: 0
+                                                        })
+                                                    }}
+                                                    initial="enter"
+                                                    animate="center"
+                                                    exit="exit"
+                                                    transition={{
+                                                        x: { type: "spring", stiffness: 300, damping: 30 },
+                                                        opacity: { duration: 0.2 }
+                                                    }}
                                                     alt={product.name}
-                                                    initial={{ opacity: 0, scale: 1.1 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    exit={{ opacity: 0, scale: 0.95 }}
-                                                    transition={{ duration: 0.5, ease: "easeOut" }}
-                                                    className="w-full h-full object-contain p-4 lg:p-8 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] cursor-pointer"
+                                                    className="w-full h-full object-contain p-2 lg:p-4 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] cursor-pointer"
                                                     onClick={() => setShowFullScreen(true)}
                                                 />
                                             </AnimatePresence>
@@ -346,10 +370,10 @@ export const ProductDetail = () => {
                                                 <motion.div
                                                     initial={{ x: -100 }}
                                                     animate={{ x: 0 }}
-                                                    className="absolute top-6 left-6 bg-[#E60000] text-white px-4 py-2 rounded-full text-xs font-black shadow-[0_0_15px_rgba(230,0,0,0.5)] flex items-center gap-2 z-10 active-blood-sparkle"
+                                                    className="absolute top-4 left-4 bg-primary text-white px-3 py-1.5 rounded-full text-[10px] font-black shadow-lg flex items-center gap-1.5 z-10"
                                                 >
                                                     <Icons.Zap className="w-3 h-3" />
-                                                    {discountPercentage}% SPECIAL OFF
+                                                    {discountPercentage}% LUXE OFFER
                                                 </motion.div>
                                             )}
                                         </div>
@@ -357,9 +381,9 @@ export const ProductDetail = () => {
                                         // Single image fallback
                                         <div className="relative w-full h-full">
                                             <img
-                                                src={selectedImage}
+                                                src={selectedImage || (images.length > 0 ? images[0] : '')}
                                                 alt={product.name}
-                                                className="w-full h-full object-contain p-4 lg:p-8 drop-shadow-2xl cursor-pointer"
+                                                className="w-full h-full object-contain p-2 lg:p-4 drop-shadow-2xl cursor-pointer"
                                                 onClick={() => setShowFullScreen(true)}
                                             />
                                         </div>
@@ -368,20 +392,20 @@ export const ProductDetail = () => {
                             </motion.div>
 
                             {/* Product Info - Right Side */}
-                            <div className="flex flex-col p-6 lg:p-0">
+                            <div className="flex flex-col p-4 lg:p-0">
 
                                 {/* Price Section */}
-                                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 mb-8 border border-white/10 shadow-2xl">
-                                    <div className="flex items-baseline gap-4">
-                                        <span className="text-2xl lg:text-4xl font-black text-green-500 active-blood-sparkle" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                <div className="bg-white/80 backdrop-blur-md rounded-xl p-5 mb-4 border border-charcoal/5 shadow-xl">
+                                    <div className="flex items-baseline gap-3">
+                                        <span className="text-2xl lg:text-4xl font-black text-green-600" style={{ fontFamily: 'Arial, sans-serif' }}>
                                             &#8377;{product.price.toLocaleString()}
                                         </span>
                                         {product.marketPrice && product.marketPrice > product.price && (
                                             <>
-                                                <span className="text-lg sm:text-2xl text-gray-400 line-through" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                                <span className="text-sm sm:text-lg text-gray-400 line-through" style={{ fontFamily: 'Arial, sans-serif' }}>
                                                     &#8377;{product.marketPrice.toLocaleString()}
                                                 </span>
-                                                <span className="bg-green-100 text-green-700 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                                <span className="bg-green-50 text-green-600 border border-green-100 px-2 py-0.5 rounded-full text-xs font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
                                                     Save &#8377;{(product.marketPrice - product.price).toLocaleString()}
                                                 </span>
                                             </>
@@ -394,7 +418,7 @@ export const ProductDetail = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.55 }}
-                                    className="mb-6 flex items-center gap-2"
+                                    className="mb-4 flex items-center gap-2"
                                 >
                                     <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-200 to-yellow-400 text-yellow-900 font-bold text-sm flex items-center gap-1.5 shadow-sm">
                                         <Icons.Star className="w-4 h-4 fill-current" />
@@ -408,13 +432,13 @@ export const ProductDetail = () => {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.6 }}
-                                    className="mb-3 sm:mb-8"
+                                    className="mb-3 sm:mb-6"
                                 >
-                                    <h3 className="text-sm sm:text-lg font-black text-white mb-3 flex items-center gap-2 uppercase tracking-widest">
-                                        <Icons.Package className="w-5 h-5 text-[#E60000]" />
+                                    <h3 className="text-sm sm:text-base font-black text-charcoal mb-2 flex items-center gap-2 uppercase tracking-widest">
+                                        <Icons.Package className="w-4 h-4 text-primary" />
                                         Product Information
                                     </h3>
-                                    <div className="text-gray-400 leading-relaxed text-sm lg:text-base space-y-4">
+                                    <div className="text-gray-600 leading-relaxed text-xs sm:text-sm space-y-3">
                                         {product.description.split('\n').filter(para => para.trim()).map((paragraph, index) => (
                                             <p key={index}>{paragraph}</p>
                                         ))}
@@ -426,38 +450,38 @@ export const ProductDetail = () => {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.7 }}
-                                    className="grid grid-cols-2 gap-1.5 sm:gap-3 mb-3 sm:mb-8"
+                                    className="grid grid-cols-2 gap-1.5 sm:gap-3 mb-3 sm:mb-6"
                                 >
-                                    <div className="flex items-center gap-1.5 sm:gap-3 p-2 sm:p-4 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className={`p-2 sm:p-3 rounded-full shadow-sm ${isOutOfStock ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
-                                            {isOutOfStock ? <Icons.X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Icons.Check className="w-4 h-4 sm:w-5 sm:h-5" />}
+                                    <div className="flex items-center gap-1.5 sm:gap-3 p-2 sm:p-3 bg-white rounded-lg border border-charcoal/5 shadow-sm transition-shadow">
+                                        <div className={`p-2 rounded-full shadow-sm ${isOutOfStock ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>
+                                            {isOutOfStock ? <Icons.X className="w-3 h-3 sm:w-4 sm:h-4" /> : <Icons.Check className="w-3 h-3 sm:w-4 sm:h-4" />}
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-xs sm:text-sm text-white">
+                                            <span className="font-bold text-xs sm:text-sm text-charcoal">
                                                 {isOutOfStock ? 'Out of Stock' : 'In Stock'}
                                             </span>
                                             {currentStock > 0 && currentStock < 10 && (
-                                                <span className="text-[10px] sm:text-xs text-[#E60000] font-black animate-pulse">Only {currentStock} Left</span>
+                                                <span className="text-[10px] sm:text-xs text-primary font-black">Only {currentStock} Left</span>
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="p-2 sm:p-3 bg-blue-500/10 rounded-full text-blue-400 shadow-sm">
-                                            <Icons.Truck className="w-4 h-4 sm:w-5 sm:h-5" />
+                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-charcoal/5 shadow-sm transition-shadow">
+                                        <div className="p-2 bg-blue-50 rounded-full text-blue-500 shadow-sm">
+                                            <Icons.Truck className="w-3 h-3 sm:w-4 sm:h-4" />
                                         </div>
-                                        <span className="font-bold text-xs sm:text-sm text-white">Free Delivery</span>
+                                        <span className="font-bold text-xs sm:text-sm text-charcoal">Free Delivery</span>
                                     </div>
-                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="p-2 sm:p-3 bg-purple-500/10 rounded-full text-purple-400 shadow-sm">
-                                            <Icons.Shield className="w-4 h-4 sm:w-5 sm:h-5" />
+                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-charcoal/5 shadow-sm transition-shadow">
+                                        <div className="p-2 bg-purple-50 rounded-full text-purple-500 shadow-sm">
+                                            <Icons.Shield className="w-3 h-3 sm:w-4 sm:h-4" />
                                         </div>
-                                        <span className="font-bold text-xs sm:text-sm text-white">Secure Payment</span>
+                                        <span className="font-bold text-xs sm:text-sm text-charcoal">Secure Payment</span>
                                     </div>
-                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="p-2 sm:p-3 bg-[#E60000]/10 rounded-full text-[#E60000] shadow-sm">
-                                            <Icons.Gift className="w-4 h-4 sm:w-5 sm:h-5" />
+                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-charcoal/5 shadow-sm transition-shadow">
+                                        <div className="p-2 bg-primary/10 rounded-full text-primary shadow-sm">
+                                            <Icons.Gift className="w-3 h-3 sm:w-4 sm:h-4" />
                                         </div>
-                                        <span className="font-bold text-xs sm:text-sm text-white">Gift Wrapping</span>
+                                        <span className="font-bold text-xs sm:text-sm text-charcoal">Gift Wrapping</span>
                                     </div>
                                 </motion.div>
 
@@ -467,14 +491,14 @@ export const ProductDetail = () => {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.75 }}
-                                        className="mb-3 sm:mb-8 space-y-3 sm:space-y-6"
+                                        className="mb-3 sm:mb-6 space-y-3 sm:space-y-4"
                                     >
                                         {/* Colors (Linked Products + Internal Variants) */}
                                         {(linkedVariants.length > 0 || uniqueColors.length > 0) && (
                                             <div>
                                                 <div className="flex justify-between items-center mb-2 sm:mb-3">
                                                     <h3 className="text-xs sm:text-sm font-black text-gray-400 uppercase tracking-widest">Select Color</h3>
-                                                    <span className="text-xs sm:text-sm text-[#E60000] font-black uppercase tracking-tighter">{selectedColor || product.color}</span>
+                                                    <span className="text-xs sm:text-sm text-primary font-black uppercase tracking-tighter">{selectedColor || product.color}</span>
                                                 </div>
                                                 <div className="flex flex-wrap gap-2">
                                                     {/* Current Product Swatch (if it has a color) */}
@@ -530,10 +554,10 @@ export const ProductDetail = () => {
                                                                 onClick={() => hasStock && handleColorSelect(color)}
                                                                 disabled={!hasStock}
                                                                 className={`relative w-16 h-20 rounded-xl border-2 transition-all overflow-hidden ${!hasStock
-                                                                    ? 'border-white/5 opacity-40 cursor-not-allowed grayscale'
+                                                                    ? 'border-charcoal/5 opacity-40 cursor-not-allowed grayscale'
                                                                     : selectedColor === color
-                                                                        ? 'border-[#E60000] shadow-[0_0_15px_rgba(230,0,0,0.5)] scale-105'
-                                                                        : 'border-white/10 hover:border-white/30 cursor-pointer'
+                                                                        ? 'border-primary shadow-lg scale-105'
+                                                                        : 'border-charcoal/10 hover:border-charcoal/30 cursor-pointer'
                                                                     }`}
                                                                 title={!hasStock ? `${color} - Out of Stock` : color}
                                                             >
@@ -582,14 +606,16 @@ export const ProductDetail = () => {
                                                                 key={size}
                                                                 onClick={() => hasStock && setSelectedSize(size)}
                                                                 disabled={!hasStock}
-                                                                className={`min-w-[3rem] px-5 py-3 rounded-xl border transition-all font-black text-xs uppercase tracking-widest ${!hasStock
-                                                                    ? 'bg-black/20 border-white/5 text-gray-600 cursor-not-allowed'
+                                                                className={`min-w-[3.5rem] h-12 px-4 rounded-xl border transition-all duration-300 font-bold text-sm flex items-center justify-center ${!hasStock
+                                                                    ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
                                                                     : selectedSize === size
-                                                                        ? 'bg-[#E60000] text-white border-[#E60000] shadow-[0_0_20px_rgba(230,0,0,0.4)] active-blood-sparkle'
-                                                                        : 'bg-white/5 border-white/10 text-gray-300 hover:border-white/30'
+                                                                        ? 'bg-primary text-white border-primary shadow-lg scale-105 z-10'
+                                                                        : 'bg-white border-charcoal/10 text-charcoal hover:border-primary hover:text-primary'
                                                                     }`}
                                                             >
-                                                                {size}
+                                                                <span>
+                                                                    {size}
+                                                                </span>
                                                             </button>
                                                         );
                                                     })}
@@ -609,7 +635,7 @@ export const ProductDetail = () => {
                                             ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                                             : hasBeenAdded
                                                 ? 'bg-green-500 text-white border-green-500 shadow-lg'
-                                                : 'bg-white text-gray-900 border-gray-300 hover:border-gray-900 hover:shadow-lg active:scale-95'
+                                                : 'bg-primary text-white border-primary hover:bg-primary/90 hover:shadow-xl active:scale-95'
                                             }`}
                                     >
                                         <AnimatePresence mode="wait">
@@ -667,7 +693,9 @@ export const ProductDetail = () => {
                                             </>
                                         ) : (
                                             <>
-                                                Buy at &#8377;{product.price.toLocaleString()}
+                                                <span style={{ fontFamily: 'Arial, sans-serif' }} className="font-bold">
+                                                    Buy at <span className="text-green-700">&#8377;{product.price.toLocaleString()}</span>
+                                                </span>
                                             </>
                                         )}
                                     </button>
@@ -680,18 +708,18 @@ export const ProductDetail = () => {
                 {/* Labels & Reviews */}
                 <div className="relative z-10">
                     {/* Reviews Section */}
-                    <div className="bg-black/40 backdrop-blur-md py-16 px-4 sm:px-6 lg:px-8 mt-12 border-t border-white/10">
+                    <div className="bg-white/80 backdrop-blur-md py-16 px-4 sm:px-6 lg:px-8 mt-12 border-t border-charcoal/5 shadow-2xl">
                         <div className="max-w-7xl mx-auto">
-                            <h2 className="text-3xl font-serif font-black text-white mb-8 text-center uppercase tracking-widest">Customer Reviews</h2>
+                            <h2 className="text-3xl font-serif font-black text-charcoal mb-8 text-center uppercase tracking-widest">Customer Reviews</h2>
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 {/* Review Form */}
                                 <div className="lg:col-span-1">
-                                    <ReviewForm productId={product.id} onReviewAdded={() => window.location.reload()} />
+                                    <ReviewForm productId={product.id} onReviewAdded={() => setReviewsRefreshKey(prev => prev + 1)} />
                                 </div>
 
                                 {/* Reviews List */}
                                 <div className="lg:col-span-2">
-                                    <ReviewsList productId={product.id} />
+                                    <ReviewsList productId={product.id} refreshTrigger={reviewsRefreshKey} />
                                 </div>
                             </div>
                         </div>

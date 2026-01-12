@@ -9,48 +9,72 @@ const MobileNavbar = () => {
 
     const isActive = (path: string) => location.pathname === path;
 
-    const handleCartClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        setCartOpen(true);
-    };
-
-    const handleNavClick = () => {
-        setCartOpen(false);
-    };
-
     const navItems = [
-        { name: 'Home', icon: Icons.Home, path: '/', onClick: handleNavClick },
-        { name: 'Play', icon: Icons.PlayCircle, path: '/play', onClick: handleNavClick },
-        { name: 'Categories', icon: Icons.LayoutGrid, path: '/categories', onClick: handleNavClick },
-        { name: 'Account', icon: Icons.User, path: '/account', onClick: handleNavClick },
-        { name: 'Cart', icon: Icons.ShoppingCart, path: '/cart', badge: cartCount, onClick: handleNavClick },
+        { name: 'Home', path: '/', icon: Icons.Compass },
+        { name: 'Play', path: '/play', icon: Icons.PlayCircle },
+        { name: 'Categories', path: '/categories', icon: Icons.LayoutGrid },
+        { name: 'Cart', path: '/cart', icon: Icons.ShoppingBag, badge: cartCount, isCart: true },
+        { name: 'Account', path: '/account', icon: Icons.User },
     ];
 
+    if (location.pathname.startsWith('/admin')) return null;
+
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-[100] pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <div className="flex justify-around items-center h-16">
-                {navItems.map((item) => (
-                    <Link
-                        key={item.name}
-                        to={item.path}
-                        onClick={item.onClick}
-                        className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200 ${isActive(item.path) ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'
-                            }`}
-                    >
-                        <div className="relative">
-                            <item.icon
-                                className={`w-6 h-6 ${isActive(item.path) ? 'fill-current' : 'stroke-current'}`}
-                                strokeWidth={isActive(item.path) ? 0 : 2}
-                            />
-                            {item.badge ? (
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">
-                                    {item.badge}
-                                </span>
-                            ) : null}
+        <div className="mobile-navbar fixed bottom-0 left-0 right-0 w-full z-[9999] shadow-[0_-5px_20px_rgba(0,0,0,0.1)] block lg:hidden"
+            style={{
+                backgroundColor: 'rgba(15, 23, 42, 0.98)', /* More opaque for "stuck" feel */
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                paddingBottom: 'env(safe-area-inset-bottom)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                transform: 'translateZ(0)', /* Force hardware acceleration */
+                height: '70px' /* Fixed height for stability */
+            }}>
+            <div className="flex justify-around items-center h-full w-full px-2">
+                {navItems.map((item) => {
+                    const Content = (
+                        <div
+                            className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-all relative cursor-pointer py-2 ${isActive(item.path) ? 'text-primary' : 'text-gray-400'
+                                }`}
+                        >
+                            <div className="relative p-1">
+                                <item.icon
+                                    className="w-6 h-6"
+                                    strokeWidth={isActive(item.path) ? 2.5 : 2}
+                                />
+                                {item.badge ? (
+                                    <span className="absolute -top-1 -right-1 bg-primary text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-[#FAF9F6]">
+                                        {item.badge}
+                                    </span>
+                                ) : null}
+                            </div>
+                            <span className={`text-[10px] font-bold uppercase tracking-tight`}>{item.name}</span>
                         </div>
-                        <span className={`text-[10px] font-medium ${isActive(item.path) ? 'font-bold' : ''}`}>{item.name}</span>
-                    </Link>
-                ))}
+                    );
+
+                    if (item.isCart) {
+                        return (
+                            <button
+                                key={item.name}
+                                onClick={() => setCartOpen(true)}
+                                className="w-full h-full flex items-center justify-center"
+                            >
+                                {Content}
+                            </button>
+                        );
+                    }
+
+                    return (
+                        <Link
+                            key={item.name}
+                            to={item.path}
+                            onClick={() => setCartOpen(false)}
+                            className="w-full h-full flex items-center justify-center"
+                        >
+                            {Content}
+                        </Link>
+                    );
+                })}
             </div>
         </div>
     );

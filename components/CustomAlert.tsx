@@ -23,6 +23,25 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
     onConfirm,
     cancelText
 }) => {
+    // Scroll Lock Effect
+    React.useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            // Prevent mobile touch scrolling on body
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        };
+    }, [isOpen]);
+
     const handleConfirm = () => {
         if (onConfirm) {
             onConfirm();
@@ -66,27 +85,28 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, height: '100vh', width: '100vw' }}
                     >
                         {/* Alert Modal */}
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            initial={{ scale: 0.9, opacity: 0, y: 0 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 0 }}
                             transition={{ type: "spring", duration: 0.5 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden"
+                            className="bg-[#0f172a] border border-white/10 rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden relative"
                         >
                             {/* Gradient Header */}
-                            <div className={`h-2 bg-gradient-to-r ${getColor()}`} />
+                            <div className={`h-1 bg-gradient-to-r ${getColor()}`} />
 
-                            <div className="p-8 text-center">
+                            <div className="p-8 text-center flex flex-col items-center justify-center">
                                 {/* Icon */}
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                                    className="flex justify-center mb-6"
+                                    className="flex justify-center mb-6 bg-white/5 p-4 rounded-full border border-white/5"
                                 >
                                     {getIcon()}
                                 </motion.div>
@@ -96,7 +116,7 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.3 }}
-                                    className="font-serif text-2xl font-bold text-gray-900 mb-3"
+                                    className="font-black text-xl text-white uppercase tracking-wider mb-3"
                                 >
                                     {title}
                                 </motion.h2>
@@ -106,7 +126,7 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.4 }}
-                                    className="text-gray-600 text-base leading-relaxed mb-8"
+                                    className="text-gray-400 text-sm font-medium leading-relaxed mb-8"
                                     dangerouslySetInnerHTML={{ __html: message }}
                                 />
 
@@ -115,19 +135,19 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.5 }}
-                                    className="flex gap-3"
+                                    className="flex gap-3 w-full"
                                 >
                                     {cancelText && (
                                         <button
                                             onClick={onClose}
-                                            className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-bold hover:bg-gray-200 transition-colors"
+                                            className="flex-1 px-4 py-3 bg-white/5 text-gray-400 border border-white/10 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-colors"
                                         >
                                             {cancelText}
                                         </button>
                                     )}
                                     <button
                                         onClick={handleConfirm}
-                                        className={`flex-1 px-6 py-3 bg-gradient-to-r ${getColor()} text-white rounded-full font-bold hover:shadow-lg transition-all`}
+                                        className={`flex-1 px-4 py-3 bg-gradient-to-r ${getColor()} text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all`}
                                     >
                                         {confirmText}
                                     </button>

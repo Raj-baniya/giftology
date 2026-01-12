@@ -403,7 +403,7 @@ export const AdminProductForm = () => {
                                             });
                                             setValue('colorVariantGroup', uuid);
                                         }}
-                                        className="bg-gray-100 px-3 py-2 rounded border hover:bg-gray-200 text-sm font-bold shrink-0"
+                                        className="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 hover:bg-gray-700 text-sm font-bold shrink-0 transition-colors"
                                         title="Generate new Group ID"
                                     >
                                         Generate ID

@@ -542,6 +542,8 @@ class InfiniteGridMenu {
     smoothRotationVelocity = 0;
     scaleFactor = 1.0;
     movementActive = false;
+    isPaused = false;
+    observer: IntersectionObserver | null = null;
 
     canvas: HTMLCanvasElement;
     items: Product[];
@@ -595,6 +597,11 @@ class InfiniteGridMenu {
     }
 
     run(time = 0) {
+        if (this.isPaused) {
+            this.animationId = null;
+            return;
+        }
+
         this.deltaTime = Math.min(32, time - this.time);
         this.time = time;
         this.deltaFrames = this.deltaTime / this.TARGET_FRAME_DURATION;
@@ -610,6 +617,10 @@ class InfiniteGridMenu {
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
+        }
+        if (this.observer) {
+            this.observer.disconnect();
+            this.observer = null;
         }
     }
 
@@ -683,6 +694,19 @@ class InfiniteGridMenu {
         this.updateProjectionMatrix(gl);
         this.resize();
 
+        this.resize();
+
+        // Setup Intersection Observer
+        this.observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                this.isPaused = !entry.isIntersecting;
+                if (entry.isIntersecting && !this.animationId) {
+                    this.run(performance.now());
+                }
+            });
+        }, { threshold: 0.1 }); // Pause when 90% out of view
+        this.observer.observe(this.canvas);
+
         if (onInit) onInit(this);
     }
 
@@ -732,15 +756,15 @@ class InfiniteGridMenu {
                 let offsetY = 0;
 
                 if (imgAspect > cellAspect) {
-                    // Image is wider - fit to height (cover)
-                    drawHeight = cellSize;
-                    drawWidth = cellSize * imgAspect;
-                    offsetX = (cellSize - drawWidth) / 2; // Center horizontally
-                } else {
-                    // Image is taller - fit to width (cover)
+                    // Image is wider - fit to width (contain)
                     drawWidth = cellSize;
                     drawHeight = cellSize / imgAspect;
                     offsetY = (cellSize - drawHeight) / 2; // Center vertically
+                } else {
+                    // Image is taller - fit to height (contain)
+                    drawHeight = cellSize;
+                    drawWidth = cellSize * imgAspect;
+                    offsetX = (cellSize - drawWidth) / 2; // Center horizontally
                 }
 
                 // Draw image centered with correct aspect ratio

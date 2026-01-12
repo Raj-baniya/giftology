@@ -258,14 +258,28 @@ export const submitContactMessage = async (messageData: ContactMessage) => {
 // --- Orders ---
 
 export const createOrder = async (orderData: any, orderItems: any[]) => {
-    // 1. Add giftWrapping and deliverySpeed to orderData if present
-    const enrichedOrderData = {
-        ...orderData,
+    // 1. Build the order payload dynamically to avoid errors if columns are missing
+    const enrichedOrderData: any = {
+        total_amount: orderData.total_amount,
+        status: orderData.status || 'processing',
+        payment_method: orderData.payment_method,
+        delivery_date: orderData.delivery_date,
+        customer_name: orderData.customer_name,
+        customer_phone: orderData.customer_phone,
+        customer_email: orderData.customer_email,
+        shipping_address: orderData.shipping_address,
         gift_wrapping: orderData.gift_wrapping || orderData.giftWrapping || 'none',
-        delivery_speed: orderData.delivery_speed || orderData.deliverySpeed || 'standard'
+        delivery_speed: orderData.delivery_speed || orderData.deliverySpeed || 'standard',
     };
 
-    // 1. Create the order
+    // Add optional/new columns only if they have values to be safe
+    if (orderData.user_id) enrichedOrderData.user_id = orderData.user_id;
+    if (orderData.points_redeemed) enrichedOrderData.points_redeemed = orderData.points_redeemed;
+    if (orderData.coupon_code) enrichedOrderData.coupon_code = orderData.coupon_code;
+    if (orderData.guest_info) enrichedOrderData.guest_info = orderData.guest_info;
+    if (orderData.screenshot) enrichedOrderData.screenshot = orderData.screenshot;
+
+    // 2. Create the order
     const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert([enrichedOrderData])
@@ -384,7 +398,8 @@ export const addProduct = async (product: any) => {
         category_id: product.category_id,
         // subcategory: product.subcategory, // Column missing
         is_featured: product.trending || false,
-        is_active: true
+        is_active: true,
+        id: crypto.randomUUID()
         // variants are handled separately, do not add to dbProduct
     };
 
@@ -850,6 +865,45 @@ export const uploadReviewMedia = async (file: File) => {
     return data.publicUrl;
 };
 
+// NOTE: You must create a bucket named 'payment-proofs' in Supabase Storage
+// and set its policy to "Public" or add RLS policies for authenticated uploads.
+/*
+  SQL to create bucket and policies:
+  
+  -- 1. Create the bucket
+  insert into storage.buckets (id, name, public)
+  values ('payment-proofs', 'payment-proofs', true);
+
+  -- 2. Allow public to read
+  create policy "Public Access"
+  on storage.objects for select
+  using ( bucket_id = 'payment-proofs' );
+
+  -- 3. Allow anonymous/authenticated to upload
+  create policy "Anyone can upload"
+  on storage.objects for insert
+  with check ( bucket_id = 'payment-proofs' );
+*/
+export const uploadOrderScreenshot = async (file: File) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `screenshot_${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    console.log('Uploading order screenshot:', { fileName, fileSize: file.size });
+
+    const { error: uploadError } = await supabase.storage
+        .from('payment-proofs')
+        .upload(filePath, file);
+
+    if (uploadError) {
+        console.error('Error uploading order screenshot:', uploadError);
+        throw uploadError;
+    }
+
+    const { data } = supabase.storage.from('payment-proofs').getPublicUrl(filePath);
+    return data.publicUrl;
+};
+
 export const addReview = async (review: any) => {
     const { data, error } = await supabase
         .from('reviews')
@@ -1052,9 +1106,10 @@ export const toggleReviewLike = async (reviewId: string, userId: string) => {
         .select('id')
         .eq('review_id', reviewId)
         .eq('user_id', userId)
-        .single();
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+    if (fetchError) {
         console.error('Error checking review like:', fetchError);
         throw fetchError;
     }
@@ -1104,9 +1159,10 @@ export const hasUserLikedReview = async (reviewId: string, userId: string) => {
         .select('id')
         .eq('review_id', reviewId)
         .eq('user_id', userId)
-        .single();
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
         console.error('Error checking user like:', error);
         return false;
     }
@@ -1333,6 +1389,3 @@ export const uploadVideo = async (file: File, caption: string, userId: string) =
     console.log('Video record created:', dbData);
     return dbData;
 };
-
-
-

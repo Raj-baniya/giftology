@@ -42,11 +42,11 @@ export const Search = () => {
   }, [query]);
 
   return (
-    <div className="min-h-screen bg-transparent py-12 px-4 relative">
+    <div className="min-h-screen bg-background py-12 px-4 relative text-charcoal">
       <div className="max-w-7xl mx-auto relative z-10">
         <header className="mb-16 text-center">
-          <h1 className="text-4xl font-black text-white uppercase tracking-[0.2em] mb-4">
-            Search Results: <span className="text-[#E60000]">{query}</span>
+          <h1 className="text-4xl font-serif font-black text-charcoal uppercase tracking-[0.2em] mb-4">
+            Search Results: <span className="text-primary">{query}</span>
           </h1>
           <div className="inline-block px-6 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
@@ -57,13 +57,13 @@ export const Search = () => {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E60000]"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-32 bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10">
-            <Icons.Search className="w-20 h-20 text-gray-700 mx-auto mb-6" />
-            <h2 className="text-2xl font-black text-white mb-3 uppercase tracking-widest">No Matches Found</h2>
-            <p className="text-gray-500 font-bold uppercase tracking-tighter italic">Try different keywords or filters.</p>
+          <div className="text-center py-32 bg-white rounded-[2.5rem] border border-charcoal/10 shadow-xl">
+            <Icons.Search className="w-20 h-20 text-gray-200 mx-auto mb-6" />
+            <h2 className="text-2xl font-black text-charcoal mb-3 uppercase tracking-widest">No Matches Found</h2>
+            <p className="text-gray-400 font-bold uppercase tracking-tighter italic">Try different keywords or filters.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -72,7 +72,7 @@ export const Search = () => {
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/5 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-white/10 group hover:shadow-[0_0_50px_rgba(230,0,0,0.15)] transition-all duration-500"
+                className="bg-white rounded-[2rem] overflow-hidden border border-charcoal/5 group hover:shadow-xl transition-all duration-500"
               >
                 <div className="relative aspect-square overflow-hidden bg-white/5">
                   <img
@@ -84,12 +84,12 @@ export const Search = () => {
                 </div>
                 <div className="p-8 flex flex-col h-56">
                   <div className="flex-1">
-                    <h3 className="font-black text-xl text-white mb-2 uppercase tracking-tight leading-tight group-hover:text-[#E60000] transition-colors">{product.name}</h3>
-                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{product.category.replace('-', ' ')}</p>
+                    <h3 className="font-serif font-black text-xl text-charcoal mb-2 uppercase tracking-tight leading-tight group-hover:text-primary transition-colors">{product.name}</h3>
+                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{product.category.replace('-', ' ')}</p>
                   </div>
                   <div className="flex justify-between items-end mt-4">
                     <div className="flex flex-col">
-                      <span className="text-2xl font-black text-white">&#8377;{product.price.toLocaleString()}</span>
+                      <span className="text-2xl font-black text-charcoal">&#8377;{product.price.toLocaleString()}</span>
                       {product.marketPrice && product.marketPrice > product.price && (
                         <span className="text-[10px] text-gray-500 font-black line-through uppercase tracking-tighter">&#8377;{product.marketPrice.toLocaleString()}</span>
                       )}
@@ -113,7 +113,7 @@ export const Search = () => {
                         setToastMessage(`${product.name} Added to Cart`);
                         setShowToast(true);
                       }}
-                      className="bg-[#E60000] text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(230,0,0,0.3)]"
+                      className="bg-primary text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-lg active:scale-95 transition-all"
                     >
                       Add to Cart
                     </button>

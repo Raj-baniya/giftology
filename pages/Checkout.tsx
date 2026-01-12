@@ -27,6 +27,7 @@ export const Checkout = () => {
   const [upiOption, setUpiOption] = useState<'abhishek' | 'raj'>('abhishek');
   const [isFastDelivery, setIsFastDelivery] = useState(false);
   const [screenshot, setScreenshot] = useState<string | null>(null);
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [giftWrapping, setGiftWrapping] = useState<'none' | 'plastic' | 'paper' | 'box-plastic' | 'box-paper'>('none');
   const [boxWrappingType, setBoxWrappingType] = useState<'plastic' | 'paper'>('plastic');
 
@@ -164,6 +165,7 @@ export const Checkout = () => {
         return;
       }
 
+      setScreenshotFile(file);
       const reader = new FileReader();
       reader.onload = (ev) => {
         setScreenshot(ev.target?.result as string);
@@ -184,6 +186,18 @@ export const Checkout = () => {
     setProcessing(true);
 
     try {
+      let screenshotUrl = '';
+      if (paymentMethod === 'upi' && screenshotFile) {
+        try {
+          screenshotUrl = await store.uploadOrderScreenshot(screenshotFile);
+        } catch (uploadErr) {
+          console.error('Screenshot upload failed:', uploadErr);
+          showAlert('Upload Failed', 'Failed to upload payment screenshot. Please try again.', 'error');
+          setProcessing(false);
+          return;
+        }
+      }
+
       const isRealUser = user && !user.id.startsWith('otp_');
       const dbUserId = isRealUser ? user.id : null;
 
@@ -195,7 +209,7 @@ export const Checkout = () => {
         paymentMethod,
         deliveryDate: formData.deliveryDate,
         deliveryType: isFastDelivery ? 'Fast Delivery' : 'Standard Delivery',
-        screenshot: screenshot || undefined,
+        screenshot: screenshotUrl || undefined,
         giftWrapping: giftWrapping,
         deliverySpeed: isFastDelivery ? 'fast' : 'standard',
         pointsRedeemed: useRewards ? Math.floor(pointsDiscount * 10) : 0,
@@ -281,7 +295,7 @@ export const Checkout = () => {
                 <table style="width: 100%;">
                   <tr>
                     <td style="font-size: 14px; color: #999; font-weight: 600;">Qty: <span style="color: #000;">${item.quantity}</span></td>
-                    <td style="text-align: right; font-size: 16px; font-weight: 900; color: #E60000;">₹${(item.price * item.quantity).toLocaleString()}</td>
+                    <td style="text-align: right; font-size: 16px; font-weight: 900; color: #9B1B30;">₹${(item.price * item.quantity).toLocaleString()}</td>
                   </tr>
                 </table>
               </td>
@@ -313,19 +327,19 @@ export const Checkout = () => {
         const invoiceHtml = `
           <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 20px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;">
             <!-- Top Branding Line -->
-            <div style="height: 6px; background: linear-gradient(90deg, #E60000 0%, #ff4d4d 100%);"></div>
+            <div style="height: 6px; background: linear-gradient(90deg, #9B1B30 0%, #D4AF37 100%);"></div>
             
             <div style="padding: 40px;">
               <!-- Header -->
               <table style="width: 100%; margin-bottom: 40px;">
                 <tr>
                   <td>
-                    <h1 style="color: #000; margin: 0; font-size: 32px; letter-spacing: 3px; font-weight: 900;">GIFTOLOGY</h1>
-                    <p style="color: #E60000; margin: 5px 0 0 0; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Premium Gifting Experience</p>
+                    <h1 style="color: #000; margin: 0; font-size: 32px; letter-spacing: 3px; font-weight: 900;">GIFTGALAXY</h1>
+                    <p style="color: #9B1B30; margin: 5px 0 0 0; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Premium Gifting Experience</p>
                   </td>
                   <td style="text-align: right;">
-                    <div style="display: inline-block; background: #fff5f5; padding: 10px 20px; border-radius: 12px; border: 1px solid #ffebeb;">
-                      <p style="margin: 0; font-size: 12px; color: #E60000; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Invoice Status</p>
+                    <div style="display: inline-block; background: #fffafa; border: 1px solid #f9f0f0;">
+                      <p style="margin: 0; font-size: 12px; color: #9B1B30; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Invoice Status</p>
                       <p style="margin: 0; font-size: 16px; color: #000; font-weight: 900;">Processing</p>
                     </div>
                   </td>
@@ -346,7 +360,7 @@ export const Checkout = () => {
                   <td style="width: 50%; vertical-align: top; text-align: right;">
                     <h2 style="font-size: 14px; text-transform: uppercase; color: #999; letter-spacing: 1px; margin-bottom: 12px; font-weight: 800;">Order Details</h2>
                     <p style="margin: 0; font-size: 15px; color: #000; line-height: 1.6;">
-                      Order ID: <strong style="color: #E60000;">#${createdOrder?.readableId || createdOrder?.id || 'Pending'}</strong><br>
+                      Order ID: <strong style="color: #9B1B30;">#${createdOrder?.readableId || createdOrder?.id || 'Pending'}</strong><br>
                       Date: <strong>${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>
                     </p>
                   </td>
@@ -354,8 +368,8 @@ export const Checkout = () => {
               </table>
 
               <!-- Shipping Section -->
-              <div style="background: #fafafa; border-radius: 12px; padding: 20px; margin-bottom: 35px; border-left: 4px solid #E60000;">
-                <h2 style="font-size: 13px; text-transform: uppercase; color: #E60000; letter-spacing: 1px; margin: 0 0 8px 0; font-weight: 800;">Shipping Address</h2>
+              <div style="background: #fafafa; border-radius: 12px; padding: 20px; margin-bottom: 35px; border-left: 4px solid #9B1B30;">
+                <h2 style="font-size: 13px; text-transform: uppercase; color: #9B1B30; letter-spacing: 1px; margin: 0 0 8px 0; font-weight: 800;">Shipping Address</h2>
                 <p style="margin: 0; font-size: 14px; color: #444; line-height: 1.5; font-weight: 500;">${shippingAddressFormatted}</p>
               </div>
 
@@ -369,7 +383,7 @@ export const Checkout = () => {
 
               <!-- Price Breakdown -->
               <div style="background: #000; padding: 30px; border-radius: 16px; color: #fff;">
-                <h2 style="font-size: 16px; text-transform: uppercase; color: #E60000; letter-spacing: 1px; margin: 0 0 20px 0; font-weight: 800;">Payment Breakdown</h2>
+                <h2 style="font-size: 16px; text-transform: uppercase; color: #9B1B30; letter-spacing: 1px; margin: 0 0 20px 0; font-weight: 800;">Payment Breakdown</h2>
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                   <tr>
                     <td style="padding: 10px 0; color: #bbb;">Subtotal</td>
@@ -399,7 +413,7 @@ export const Checkout = () => {
                   ` : ''}
                   <tr style="border-top: 1px solid #333;">
                     <td style="padding: 25px 0 0 0; font-size: 20px; font-weight: 900; color: #fff;">Grand Total</td>
-                    <td style="padding: 25px 0 0 0; text-align: right; font-size: 28px; font-weight: 900; color: #E60000;">₹${finalTotal.toLocaleString()}</td>
+                    <td style="padding: 25px 0 0 0; text-align: right; font-size: 28px; font-weight: 900; color: #9B1B30;">₹${finalTotal.toLocaleString()}</td>
                   </tr>
                 </table>
               </div>
@@ -423,7 +437,7 @@ export const Checkout = () => {
               <!-- Brand Msg -->
               <div style="margin-top: 60px; text-align: center;">
                 <div style="background: #fff5f5; display: inline-block; padding: 15px 30px; border-radius: 50px; margin-bottom: 25px;">
-                  <p style="margin: 0; font-size: 14px; color: #E60000; font-weight: 800;">Thank you for trusting Giftology! ❤️</p>
+                  <p style="margin: 0; font-size: 14px; color: #9B1B30; font-weight: 800;">Thank you for trusting GiftGalaxy! ❤️</p>
                 </div>
                 <p style="margin: 0; color: #999; font-size: 12px; line-height: 1.8;">
                   We are carefully prepping your gift to make it special.<br>
@@ -453,7 +467,12 @@ export const Checkout = () => {
             gift_wrapping: giftWrappingText,
             delivery_speed: isFastDelivery ? 'Fast Delivery' : 'Standard Delivery',
             expected_delivery: expectedDeliveryStr,
-            invoice_html: invoiceHtml
+            invoice_html: invoiceHtml,
+            // Added crucial missing fields
+            order_id: createdOrder?.readableId || createdOrder?.id || 'Pending',
+            order_date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }),
+            subtotal: `₹${cartTotal.toLocaleString()}`,
+            discount: `₹${totalDiscount.toLocaleString()}`
           }),
           sendOrderNotificationToAdmin({
             customerName: `${formData.firstName} ${formData.lastName}`,
@@ -467,7 +486,12 @@ export const Checkout = () => {
             delivery_date: new Date(formData.deliveryDate).toLocaleDateString(),
             gift_wrapping: giftWrappingText,
             delivery_speed: isFastDelivery ? 'Fast Delivery' : 'Standard Delivery',
-            expected_delivery: expectedDeliveryStr
+            expected_delivery: expectedDeliveryStr,
+            // Added crucial missing fields
+            order_id: createdOrder?.readableId || createdOrder?.id || 'Pending',
+            order_date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }),
+            subtotal: `₹${cartTotal.toLocaleString()}`,
+            discount: `₹${totalDiscount.toLocaleString()}`
           })
         ]).then((results) => {
           console.log('Email sending results:', results);
@@ -604,31 +628,34 @@ export const Checkout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-transparent py-10 px-4 relative">
+    <div className="min-h-screen bg-transparent pt-3 pb-3 px-4 relative">
       <div className="max-w-5xl mx-auto relative z-10 px-1.5 md:px-6">
 
 
 
         {/* Stepper */}
-        <div className="flex justify-center mb-12">
-          <div className="flex items-center bg-white/5 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/10 shadow-2xl">
+        <div className="flex justify-center mb-2 font-sans">
+          <div className="flex items-center bg-amber-50 px-4 py-2 rounded-2xl border border-amber-200 shadow-xl shadow-amber-100/50">
             {steps.map((step, index) => (
               <React.Fragment key={step}>
-                <div className={`flex items-center gap-3 ${index <= currentStep ? 'text-[#E60000]' : 'text-gray-600'}`}>
-                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-black text-xs border-2 transition-all ${index <= currentStep ? 'border-[#E60000] bg-[#E60000] text-white shadow-[0_0_15px_rgba(230,0,0,0.5)]' : 'border-white/10 bg-white/5 text-gray-500'}`}>
-                    {index + 1}
+                <div className="flex flex-col items-center">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all duration-500 ${index < currentStep ? 'bg-green-500 text-white' :
+                    index === currentStep ? 'bg-primary text-white shadow-lg' :
+                      'bg-gray-100 text-gray-400 border border-gray-200'
+                    }`}>
+                    {index < currentStep ? <Icons.Check className="w-4 h-4" /> : index + 1}
                   </div>
-                  <span className="text-[10px] md:text-xs font-black uppercase tracking-widest hidden sm:block">{step}</span>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`w-6 md:w-16 h-px mx-3 ${index < currentStep ? 'bg-[#E60000]' : 'bg-white/10'}`} />
+                  <div className={`w-6 h-0.5 mx-2 rounded-full transition-all duration-500 ${index < currentStep ? 'bg-green-500' : 'bg-amber-200'
+                    }`} />
                 )}
               </React.Fragment>
             ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
           {/* Main Content Area */}
           <div className="lg:col-span-2">
@@ -641,25 +668,25 @@ export const Checkout = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="bg-white/5 backdrop-blur-xl p-6 md:p-12 rounded-[2rem] shadow-2xl border border-white/10"
+                  className="bg-amber-50 p-3 md:p-5 rounded-[2rem] shadow-xl shadow-amber-100/50 border border-amber-200"
                 >
-                  <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-[0.2em] flex items-center gap-3">
+                  <h2 className="text-sm font-black text-gray-800 mb-3 uppercase tracking-[0.2em] flex items-center gap-3">
                     <Icons.Truck className="text-[#E60000]" />
                     Shipping Details
                   </h2>
 
                   {savedAddresses.length > 0 && (
-                    <div className="mb-8">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Saved Addresses</label>
+                    <div className="mb-3">
+                      <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Saved Addresses</label>
                       <select
                         onChange={(e) => {
                           if (e.target.value) handleAddressSelect(savedAddresses[parseInt(e.target.value)]);
                         }}
-                        className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-white outline-none focus:ring-2 focus:ring-[#E60000] transition-all appearance-none cursor-pointer"
+                        className="w-full bg-white border border-amber-200 p-3 rounded-2xl text-gray-800 outline-none focus:ring-2 focus:ring-[#E60000] transition-all appearance-none cursor-pointer text-xs font-medium"
                       >
-                        <option value="" className="bg-black">Add new address...</option>
+                        <option value="" className="bg-white text-gray-800">Add new address...</option>
                         {savedAddresses.map((addr, idx) => (
-                          <option key={idx} value={idx} className="bg-black text-white">
+                          <option key={idx} value={idx} className="bg-white text-gray-800">
                             {addr.firstName} {addr.lastName} - {addr.address}, {addr.city}
                           </option>
                         ))}
@@ -667,27 +694,27 @@ export const Checkout = () => {
                     </div>
                   )}
 
-                  <form id="checkout-shipping-form" className="space-y-5" onSubmit={handleShippingSubmit}>
-                    <div className="grid grid-cols-2 gap-4">
+                  <form id="checkout-shipping-form" className="space-y-3" onSubmit={handleShippingSubmit}>
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">First Name <span className="text-red-500">*</span></label>
-                        <input required id="firstName" type="text" placeholder="First Name" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="bg-white/5 border border-white/10 rounded-2xl p-4 w-full text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-600 font-bold" />
+                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">First Name <span className="text-red-500">*</span></label>
+                        <input required id="firstName" type="text" placeholder="First Name" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className="bg-white border border-amber-200 rounded-2xl p-3 w-full text-gray-800 focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-400 text-xs font-medium" />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Last Name <span className="text-red-500">*</span></label>
-                        <input required id="lastName" type="text" placeholder="Last Name" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="bg-white/5 border border-white/10 rounded-2xl p-4 w-full text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-600 font-bold" />
+                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Last Name <span className="text-red-500">*</span></label>
+                        <input required id="lastName" type="text" placeholder="Last Name" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className="bg-white border border-amber-200 rounded-2xl p-3 w-full text-gray-800 focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-400 text-xs font-medium" />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email Address <span className="text-red-500">*</span></label>
-                      <input required id="email" type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="bg-white/5 border border-white/10 rounded-2xl p-4 w-full text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-600 font-bold" />
+                      <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Email Address <span className="text-red-500">*</span></label>
+                      <input required id="email" type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="bg-white border border-amber-200 rounded-2xl p-3 w-full text-gray-800 focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-400 text-xs font-medium" />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone Number <span className="text-red-500">*</span></label>
-                      <div className="flex-1 flex bg-white/5 border border-white/10 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-[#E60000] transition-all">
-                        <span className="bg-white/10 px-4 py-4 text-gray-400 border-r border-white/10 flex items-center font-bold">+91</span>
+                      <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Phone Number <span className="text-red-500">*</span></label>
+                      <div className="flex-1 flex bg-white border border-amber-200 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-primary transition-all">
+                        <span className="bg-amber-50 px-3 py-3 text-gray-500 border-r border-amber-100 flex items-center font-bold text-xs">+91</span>
                         <input
                           required
                           id="phone"
@@ -695,7 +722,7 @@ export const Checkout = () => {
                           placeholder="MOBILE NUMBER"
                           value={formData.phone}
                           onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
-                          className="flex-1 p-3 bg-transparent text-white outline-none placeholder:text-gray-600"
+                          className="flex-1 p-3 bg-transparent text-gray-800 outline-none placeholder:text-gray-400 text-xs font-medium"
                         />
                       </div>
                     </div>
@@ -723,9 +750,9 @@ export const Checkout = () => {
                             showAlert('Not Supported', 'Geolocation is not supported by your browser. Please select on the map.', 'warning');
                           }
                         }}
-                        className={`w-full p-4 rounded-2xl border-2 font-black uppercase tracking-widest text-xs transition-all mb-4 ${formData.latitude && formData.longitude
-                          ? 'bg-green-500/10 border-green-500 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.2)]'
-                          : 'bg-white/5 border-white/10 text-gray-400 hover:border-[#E60000] hover:text-[#E60000]'
+                        className={`w-full p-3 rounded-2xl border-2 font-bold uppercase tracking-widest text-[9px] transition-all mb-3 ${formData.latitude && formData.longitude
+                          ? 'bg-green-500/10 border-green-500 text-green-600 shadow-lg shadow-green-100'
+                          : 'bg-white border-charcoal/10 text-gray-400 hover:border-primary hover:text-primary'
                           }`}
                       >
                         {formData.latitude && formData.longitude ? (
@@ -769,8 +796,8 @@ export const Checkout = () => {
                                   <Icons.Star className="w-4 h-4 text-amber-600 fill-current" />
                                 </div>
                                 <div>
-                                  <p className="font-bold text-gray-800">Use Reward Points</p>
-                                  <p className="text-xs text-gray-600">You have {userPoints} points (Worth &#8377;{pointsValue})</p>
+                                  <p className="font-bold text-gray-800 text-xs">Use Reward Points</p>
+                                  <p className="text-[9px] text-gray-600">You have {userPoints} points (Worth &#8377;{pointsValue})</p>
                                 </div>
                               </div>
                               <label className="relative inline-flex items-center cursor-pointer">
@@ -793,9 +820,9 @@ export const Checkout = () => {
                         )}
 
                         {/* Coupons */}
-                        <div className="bg-gradient-to-br from-white to-rose-50/50 p-4 rounded-xl border border-rose-100/60 shadow-sm">
-                          <label className="block text-sm font-bold text-rose-950 mb-2 flex items-center gap-2">
-                            <Icons.Tag className="w-4 h-4 text-rose-600" />
+                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm">
+                          <label className="block text-xs font-bold text-gray-800 mb-2 flex items-center gap-2">
+                            <Icons.Tag className="w-3.5 h-3.5 text-[#E60000]" />
                             Have a Coupon?
                           </label>
                           <div className="flex gap-2">
@@ -804,14 +831,14 @@ export const Checkout = () => {
                               placeholder="Enter code"
                               value={couponCode}
                               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                              className="flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-[#E60000] uppercase font-medium tracking-wide placeholder:normal-case placeholder:font-normal"
+                              className="flex-1 min-w-0 px-3 py-2 border border-amber-200 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-[#E60000] uppercase font-medium tracking-wide placeholder:normal-case placeholder:font-normal placeholder:text-gray-400 font-medium"
                               maxLength={6}
                               disabled={!!appliedCoupon}
                             />
                             {appliedCoupon ? (
                               <button
                                 onClick={() => { setAppliedCoupon(null); setCouponCode(''); }}
-                                className="px-4 py-2 bg-rose-100 text-rose-600 text-xs font-bold rounded-lg hover:bg-rose-200 transition-colors"
+                                className="px-4 py-2 bg-amber-100 text-[#E60000] text-xs font-bold rounded-lg hover:bg-amber-200 transition-colors"
                               >
                                 Remove
                               </button>
@@ -863,8 +890,8 @@ export const Checkout = () => {
 
                           {/* Quick Select Coupons Wallet */}
                           {user && userCoupons.length > 0 && !appliedCoupon && (
-                            <div className="mt-4 pt-3 border-t border-rose-100/50">
-                              <p className="text-[10px] font-black uppercase text-rose-400 tracking-widest mb-2 flex items-center gap-1.5">
+                            <div className="mt-4 pt-3 border-t border-amber-200">
+                              <p className="text-[9px] font-bold uppercase text-amber-600 tracking-widest mb-2 flex items-center gap-1.5">
                                 <Icons.Wallet className="w-3 h-3" />
                                 Your Coupon Wallet
                               </p>
@@ -877,9 +904,9 @@ export const Checkout = () => {
                                       setCouponCode(uc.coupon.code);
                                       showAlert('Applied from Wallet!', `${uc.coupon.discount_percent}% Discount Applied`, 'success');
                                     }}
-                                    className="flex-shrink-0 bg-white border border-rose-200 rounded-lg p-2.5 hover:border-[#E60000] hover:shadow-md transition-all group flex flex-col items-center min-w-[100px]"
+                                    className="flex-shrink-0 bg-white border border-amber-200 rounded-lg p-2.5 hover:border-[#E60000] hover:shadow-md transition-all group flex flex-col items-center min-w-[100px]"
                                   >
-                                    <span className="text-sm font-black text-rose-600 group-hover:text-[#E60000]">
+                                    <span className="text-sm font-black text-amber-600 group-hover:text-[#E60000]">
                                       {uc.coupon.discount_percent}% OFF
                                     </span>
                                     <span className="text-[9px] font-bold text-gray-400 mt-0.5 uppercase tracking-tighter">
@@ -894,79 +921,79 @@ export const Checkout = () => {
                       </div>
                     )}
 
-                    <div className="space-y-4 pt-4 border-t border-white/5">
+                    <div className="space-y-4 pt-4 border-t border-amber-100/50">
                       <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Address <span className="text-red-500">*</span></label>
-                        <input required id="address" type="text" placeholder="HOUSE NO, STREET, AREA" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="bg-white/5 border border-white/10 rounded-2xl p-4 w-full text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-600 font-bold" />
+                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Address <span className="text-red-500">*</span></label>
+                        <input required id="address" type="text" placeholder="HOUSE NO, STREET, AREA" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="bg-white border border-amber-200 rounded-2xl p-3 w-full text-gray-800 focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-400 text-xs font-medium" />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">City <span className="text-red-500">*</span></label>
-                          <input required id="city" type="text" placeholder="CITY" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className="bg-white/5 border border-white/10 rounded-2xl p-4 w-full text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-600 font-bold" />
+                          <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">City <span className="text-red-500">*</span></label>
+                          <input required id="city" type="text" placeholder="CITY" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className="bg-white border border-amber-200 rounded-2xl p-3 w-full text-gray-800 focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-400 text-xs font-medium" />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">State <span className="text-red-500">*</span></label>
-                          <input required id="state" type="text" placeholder="STATE" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} className="bg-white/5 border border-white/10 rounded-2xl p-4 w-full text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-600 font-bold" />
+                          <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">State <span className="text-red-500">*</span></label>
+                          <input required id="state" type="text" placeholder="STATE" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} className="bg-white border border-amber-200 rounded-2xl p-3 w-full text-gray-800 focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-400 text-xs font-medium" />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Zip Code <span className="text-red-500">*</span></label>
-                        <input required id="zipCode" type="text" placeholder="ENTER 6 DIGIT ZIP CODE" value={formData.zipCode} onChange={e => setFormData({ ...formData, zipCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} className="bg-white/5 border border-white/10 rounded-2xl p-4 w-full text-white focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-600 font-bold" />
+                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Zip Code <span className="text-red-500">*</span></label>
+                        <input required id="zipCode" type="text" placeholder="ENTER 6 DIGIT ZIP CODE" value={formData.zipCode} onChange={e => setFormData({ ...formData, zipCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} className="bg-white border border-amber-200 rounded-2xl p-3 w-full text-gray-800 focus:ring-2 focus:ring-[#E60000] outline-none transition-all placeholder:text-gray-400 text-xs font-medium" />
                       </div>
                     </div>
 
-                    <div className="bg-white/5 p-6 rounded-[1.5rem] border border-white/10">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Delivery Speed</p>
+                    <div className="bg-white p-3 rounded-[1.5rem] border border-amber-200">
+                      <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2">Delivery Speed</p>
                       <div className="space-y-3">
-                        <label className="flex items-center justify-between p-4 border rounded-2xl bg-[#E60000]/5 border-[#E60000]/30 shadow-[0_0_15px_rgba(230,0,0,0.1)]">
+                        <label className="flex items-center justify-between p-3 border rounded-2xl bg-[#E60000]/5 border-[#E60000]/30 shadow-sm">
                           <div className="flex items-center gap-4">
                             <input type="radio" name="deliverySpeed" checked={true} readOnly className="accent-[#E60000] w-4 h-4" />
                             <div>
-                              <span className="font-black text-white text-xs uppercase tracking-widest block">Standard Delivery</span>
-                              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Estimated: 3-5 Days</span>
+                              <span className="font-bold text-gray-800 text-[11px] uppercase tracking-widest block">Standard Delivery</span>
+                              <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Estimated: 3-5 Days</span>
                             </div>
                           </div>
-                          <span className="text-green-500 font-black text-xs uppercase tracking-widest">FREE</span>
+                          <span className="text-green-600 font-bold text-[10px] uppercase tracking-widest">FREE</span>
                         </label>
                       </div>
                     </div>
 
                     {/* Gift Wrapping Section */}
-                    <div className="bg-white/5 p-6 rounded-[1.5rem] border border-white/10">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Free Gift Wrapping</p>
+                    <div className="bg-white p-3 rounded-[1.5rem] border border-amber-200">
+                      <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-4">Free Gift Wrapping</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <label className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${giftWrapping === 'none' ? 'bg-[#E60000]/5 border-[#E60000]/30 shadow-[0_0_15px_rgba(230,0,0,0.1)]' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
+                        <label className={`flex items-center justify-between p-3 border rounded-2xl cursor-pointer transition-all ${giftWrapping === 'none' ? 'bg-[#E60000]/5 border-[#E60000]/30 shadow-sm' : 'bg-gray-50 border-gray-100 hover:border-gray-300'}`}>
                           <div className="flex items-center gap-3">
                             <input type="radio" name="giftWrapping" checked={giftWrapping === 'none'} onChange={() => setGiftWrapping('none')} className="accent-[#E60000] w-4 h-4" />
                             <div>
-                              <span className="font-black text-white text-xs uppercase tracking-widest block">No Wrapping</span>
-                              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter italic">Default packaging</span>
+                              <span className="font-bold text-gray-800 text-[11px] uppercase tracking-widest block">No Wrapping</span>
+                              <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter italic">Default packaging</span>
                             </div>
                           </div>
                         </label>
 
-                        <label className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${giftWrapping === 'plastic' ? 'bg-[#E60000]/5 border-[#E60000]/30 shadow-[0_0_15px_rgba(230,0,0,0.1)]' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
+                        <label className={`flex items-center justify-between p-3 border rounded-2xl cursor-pointer transition-all ${giftWrapping === 'plastic' ? 'bg-[#E60000]/5 border-[#E60000]/30 shadow-sm' : 'bg-gray-50 border-gray-100 hover:border-gray-300'}`}>
                           <div className="flex items-center gap-3">
                             <input type="radio" name="giftWrapping" checked={giftWrapping === 'plastic'} onChange={() => setGiftWrapping('plastic')} className="accent-[#E60000] w-4 h-4" />
                             <div>
-                              <span className="font-black text-white text-xs uppercase tracking-widest block flex items-center gap-2">Designer Plastic <Icons.Gift className="w-3 h-3 text-[#E60000]" /></span>
-                              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Premium look</span>
+                              <span className="font-bold text-gray-800 text-[11px] uppercase tracking-widest block flex items-center gap-2">Designer Plastic <Icons.Gift className="w-2.5 h-2.5 text-[#E60000]" /></span>
+                              <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Premium look</span>
                             </div>
                           </div>
-                          <span className="text-green-500 font-black text-xs uppercase tracking-widest">FREE</span>
+                          <span className="text-green-600 font-bold text-[10px] uppercase tracking-widest">FREE</span>
                         </label>
 
-                        <label className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${giftWrapping === 'paper' ? 'bg-[#E60000]/5 border-[#E60000]/30 shadow-[0_0_15px_rgba(230,0,0,0.1)]' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
+                        <label className={`flex items-center justify-between p-3 border rounded-2xl cursor-pointer transition-all ${giftWrapping === 'paper' ? 'bg-[#E60000]/5 border-[#E60000]/30 shadow-sm' : 'bg-gray-50 border-gray-100 hover:border-gray-300'}`}>
                           <div className="flex items-center gap-3">
                             <input type="radio" name="giftWrapping" checked={giftWrapping === 'paper'} onChange={() => setGiftWrapping('paper')} className="accent-[#E60000] w-4 h-4" />
                             <div>
-                              <span className="font-black text-white text-xs uppercase tracking-widest block flex items-center gap-2">Eco Paper <Icons.Gift className="w-3 h-3 text-[#E60000]" /></span>
-                              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Eco friendly</span>
+                              <span className="font-black text-gray-800 text-xs uppercase tracking-widest block flex items-center gap-2">Eco Paper <Icons.Gift className="w-3 h-3 text-[#E60000]" /></span>
+                              <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Eco friendly</span>
                             </div>
                           </div>
-                          <span className="text-green-500 font-black text-xs uppercase tracking-widest">FREE</span>
+                          <span className="text-green-600 font-black text-[9px] uppercase tracking-widest">FREE</span>
                         </label>
                       </div>
                     </div>
@@ -974,7 +1001,7 @@ export const Checkout = () => {
                     {user && (
                       <label className="flex items-center gap-3 mt-6 cursor-pointer group">
                         <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} className="w-5 h-5 accent-[#E60000] rounded-lg" />
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] group-hover:text-white transition-colors">Save Address for Future Orders</span>
+                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] group-hover:text-[#E60000] transition-colors">Save Address for Future Orders</span>
                       </label>
                     )}
 
@@ -991,37 +1018,37 @@ export const Checkout = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="w-full bg-white/5 backdrop-blur-xl p-4 md:p-12 rounded-[2rem] shadow-2xl border border-white/10"
+                  className="w-full bg-amber-50 p-3 md:p-5 rounded-[2rem] shadow-xl shadow-amber-100/50 border border-amber-200"
                 >
-                  <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-[0.2em] flex items-center gap-3">
+                  <h2 className="text-sm font-black text-gray-800 mb-3 uppercase tracking-[0.2em] flex items-center gap-3">
                     <Icons.CreditCard className="text-[#E60000]" />
                     Payment Method
                   </h2>
                   <form id="checkout-payment-form" onSubmit={handlePayment}>
 
                     {/* UPI Option */}
-                    <div className={`mb-4 transition-all ${paymentMethod === 'upi' ? 'bg-white/10 rounded-2xl border border-[#E60000]/30 shadow-[0_0_20px_rgba(230,0,0,0.1)]' : 'bg-white/5 opacity-60 rounded-2xl border border-white/5 hover:opacity-80'}`}>
-                      <label className="flex items-center gap-3 p-5 cursor-pointer w-full">
+                    <div className={`mb-3 transition-all ${paymentMethod === 'upi' ? 'bg-amber-100 rounded-2xl border border-amber-300 shadow-sm' : 'bg-white rounded-2xl border border-amber-100 hover:border-amber-200'}`}>
+                      <label className="flex items-center gap-3 p-3 cursor-pointer w-full">
                         <input type="radio" name="payment" className="w-5 h-5 text-[#E60000] accent-[#E60000]" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} />
                         <div className="flex flex-col">
-                          <span className="font-black text-white flex items-center gap-2 text-lg tracking-tight uppercase"><Icons.Smartphone className="w-5 h-5 text-[#E60000]" /> UPI Payment</span>
-                          <span className="text-[10px] text-gray-500 font-black ml-7 uppercase tracking-widest">GPay, PhonePe, Paytm</span>
+                          <span className="font-black text-gray-900 flex items-center gap-2 text-sm tracking-tight uppercase"><Icons.Smartphone className="w-4 h-4 text-[#E60000]" /> UPI Payment</span>
+                          <span className="text-[9px] text-gray-500 font-bold ml-6 uppercase tracking-widest">GPay, PhonePe, Paytm</span>
                         </div>
                       </label>
 
                       {paymentMethod === 'upi' && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="px-4 pb-4 pt-1">
-                          <div className="h-px bg-white/10 mb-6" />
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="px-3 pb-3 pt-1">
+                          <div className="h-px bg-amber-200 mb-3" />
 
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">1. Select Destination</p>
-                          <div className="flex flex-col md:flex-row gap-3 mb-8">
-                            <label className={`flex-1 flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${upiOption === 'abhishek' ? 'border-[#E60000] bg-[#E60000]/10 shadow-[0_0_15px_rgba(230,0,0,0.2)]' : 'border-white/10 bg-white/5'}`}>
+                          <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2">1. Select Destination</p>
+                          <div className="flex flex-col md:flex-row gap-3 mb-4">
+                            <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${upiOption === 'abhishek' ? 'border-[#E60000] bg-[#E60000]/10 shadow-sm' : 'border-amber-200 bg-white'}`}>
                               <input type="radio" name="upiOption" value="abhishek" checked={upiOption === 'abhishek'} onChange={() => setUpiOption('abhishek')} className="w-4 h-4 accent-[#E60000]" />
-                              <span className="font-black text-white text-sm uppercase tracking-wider">Abhishek</span>
+                              <span className="font-bold text-gray-800 text-xs uppercase tracking-wider">Abhishek</span>
                             </label>
-                            <label className={`flex-1 flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${upiOption === 'raj' ? 'border-[#E60000] bg-[#E60000]/10 shadow-[0_0_15px_rgba(230,0,0,0.2)]' : 'border-white/10 bg-white/5'}`}>
+                            <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${upiOption === 'raj' ? 'border-[#E60000] bg-[#E60000]/10 shadow-sm' : 'border-amber-200 bg-white'}`}>
                               <input type="radio" name="upiOption" value="raj" checked={upiOption === 'raj'} onChange={() => setUpiOption('raj')} className="w-4 h-4 accent-[#E60000]" />
-                              <span className="font-black text-white text-sm uppercase tracking-wider">Raj</span>
+                              <span className="font-bold text-gray-800 text-xs uppercase tracking-wider">Raj</span>
                             </label>
                           </div>
 
@@ -1036,18 +1063,18 @@ export const Checkout = () => {
                             </div>
 
                             <div className="w-full space-y-4">
-                              <div className="bg-white/5 rounded-2xl p-5 border border-white/10 group">
+                              <div className="bg-white rounded-2xl p-5 border border-amber-200 group">
                                 <div className="flex items-center gap-4 mb-4">
                                   <div className="bg-[#E60000] p-2 rounded-lg">
                                     <Icons.Upload className="w-4 h-4 text-white" />
                                   </div>
                                   <div>
-                                    <p className="text-xs font-black text-white uppercase tracking-widest">3. Upload Receipt</p>
-                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Required for payment confirmation</p>
+                                    <p className="text-[11px] font-bold text-gray-800 uppercase tracking-widest">3. Upload Receipt</p>
+                                    <p className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Required for payment confirmation</p>
                                   </div>
                                 </div>
                                 <input type="file" id="screenshot-upload" accept="image/*" onChange={handleFileChange} className="hidden" />
-                                <label htmlFor="screenshot-upload" className="block w-full text-center py-4 px-6 rounded-xl bg-white/10 text-white font-black cursor-pointer hover:bg-[#E60000] transition-all active:scale-[0.98] text-xs uppercase tracking-[0.2em] border border-white/10">
+                                <label htmlFor="screenshot-upload" className="block w-full text-center py-4 px-6 rounded-xl bg-amber-50 text-gray-800 font-black cursor-pointer hover:bg-[#E60000] hover:text-white transition-all active:scale-[0.98] text-xs uppercase tracking-[0.2em] border border-amber-200">
                                   {screenshot ? 'Change Receipt' : 'Upload Payment Proof'}
                                 </label>
                               </div>
@@ -1068,21 +1095,21 @@ export const Checkout = () => {
                     </div>
 
                     {/* COD Option */}
-                    <div className={`mb-4 transition-all ${paymentMethod === 'cod' ? 'bg-white/10 rounded-2xl border border-[#E60000]/30 shadow-[0_0_20px_rgba(230,0,0,0.1)]' : 'bg-white/5 opacity-60 rounded-2xl border border-white/5 hover:opacity-80'}`}>
-                      <label className="flex items-center gap-3 p-5 cursor-pointer w-full">
+                    <div className={`mb-3 transition-all ${paymentMethod === 'cod' ? 'bg-amber-100 rounded-2xl border border-amber-300 shadow-sm' : 'bg-white rounded-2xl border border-amber-100 hover:border-amber-200'}`}>
+                      <label className="flex items-center gap-3 p-3 cursor-pointer w-full">
                         <input type="radio" name="payment" className="w-5 h-5 text-[#E60000] accent-[#E60000]" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
                         <div className="flex flex-col">
-                          <span className="font-black text-white flex items-center gap-2 text-lg tracking-tight uppercase"><Icons.Banknote className="w-5 h-5 text-[#E60000]" /> Cash on Delivery (COD)</span>
-                          <span className="text-[10px] text-gray-500 font-black ml-7 uppercase tracking-widest">Pay at your doorstep</span>
+                          <span className="font-black text-gray-900 flex items-center gap-2 text-sm tracking-tight uppercase"><Icons.Banknote className="w-4 h-4 text-[#E60000]" /> Cash on Delivery (COD)</span>
+                          <span className="text-[9px] text-gray-500 font-bold ml-6 uppercase tracking-widest">Pay at your doorstep</span>
                         </div>
                       </label>
                       {paymentMethod === 'cod' && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="px-6 pb-6 pt-1">
                           <div className="bg-green-500/10 p-5 rounded-2xl border border-green-500/20 flex items-start gap-4">
-                            <div className="bg-green-500/20 p-2 rounded-full"><Icons.ShieldCheck className="w-5 h-5 text-green-400" /></div>
+                            <div className="bg-green-500/20 p-2 rounded-full"><Icons.ShieldCheck className="w-5 h-5 text-green-600" /></div>
                             <div>
-                              <p className="text-sm text-white font-black uppercase tracking-widest">Safe Delivery</p>
-                              <p className="text-[10px] text-green-500/70 font-bold uppercase tracking-tight mt-1">Payment upon successful delivery.</p>
+                              <p className="text-sm text-gray-800 font-black uppercase tracking-widest">Safe Delivery</p>
+                              <p className="text-[10px] text-green-600 font-bold uppercase tracking-tight mt-1">Payment upon successful delivery.</p>
                             </div>
                           </div>
                         </motion.div>
@@ -1106,31 +1133,20 @@ export const Checkout = () => {
               {currentStep === 2 && (
                 <motion.div
                   key="confirmation"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white/5 backdrop-blur-xl p-10 md:p-16 rounded-[2.5rem] shadow-2xl border border-white/10 text-center flex flex-col items-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-amber-50 p-6 md:p-8 rounded-[2rem] shadow-xl shadow-amber-100/50 border border-amber-200 text-center flex flex-col items-center"
                 >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 10 }}
-                    className="w-32 h-32 bg-green-500/10 rounded-full flex items-center justify-center mb-10 shadow-[0_0_50px_rgba(34,197,94,0.2)]"
-                  >
-                    <Icons.CheckCircle className="w-16 h-16 text-green-500" />
-                  </motion.div>
-                  <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-[0.1em]">Order Placed!</h2>
-                  <p className="text-gray-400 font-medium italic mb-8">Your order has been placed. You will receive a confirmation email soon.</p>
-
-                  {/* Delivery Car Animation */}
-                  <div className="w-full max-w-xl mb-12 opacity-80">
-                    <DeliveryCarAnimation />
+                  <div className="w-14 h-14 bg-green-500/10 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-100">
+                    <Icons.CheckCircle className="w-8 h-8 text-green-600" />
                   </div>
+                  <h2 className="text-xl font-black text-gray-900 mb-1 uppercase tracking-[0.1em]">Order Placed!</h2>
+                  <p className="text-[10px] text-gray-500 font-medium italic mb-4">You will receive a confirmation email soon.</p>
 
-                  <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest mb-10">
-                    <p className="mb-1">Order Confirmed</p>
+                  <div className="bg-blue-500/5 border border-blue-500/10 text-blue-600 px-6 py-3 rounded-xl text-[9px] font-bold uppercase tracking-widest mb-4">
                     <p>Details sent to: {formData.email}</p>
                   </div>
-                  <button onClick={() => navigate('/account')} className="bg-white/5 text-white border border-white/10 px-12 py-5 rounded-2xl font-black uppercase tracking-[0.2em] hover:bg-[#E60000] hover:border-[#E60000] hover:shadow-[0_0_30px_rgba(230,0,0,0.4)] transition-all active:scale-95">
+                  <button onClick={() => navigate('/account')} className="bg-white text-gray-800 border border-amber-200 px-8 py-3 rounded-xl font-black uppercase tracking-[0.1em] text-xs hover:bg-[#E60000] hover:text-white transition-all active:scale-95">
                     My Orders
                   </button>
                 </motion.div>
@@ -1140,25 +1156,25 @@ export const Checkout = () => {
 
           {/* Order Summary Sidebar */}
           {currentStep < 2 && (
-            <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/10 h-fit shadow-2xl sticky top-28">
-              <h3 className="font-black text-white text-lg mb-8 uppercase tracking-[0.2em]">Order Summary</h3>
-              <div className="space-y-6 mb-8 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="bg-amber-50 p-4 rounded-[2.5rem] border border-amber-200 h-fit shadow-xl shadow-amber-100/50 sticky top-28">
+              <h3 className="font-black text-gray-800 text-sm mb-3 uppercase tracking-[0.2em]">Order Summary</h3>
+              <div className="space-y-3 mb-4 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
                 {cart.map(item => (
                   <div key={item.id} className="flex gap-4 items-center">
-                    <div className="relative w-16 h-16 bg-white/5 rounded-xl border border-white/10 overflow-hidden shrink-0 group">
+                    <div className="relative w-12 h-12 bg-white rounded-xl border border-amber-100 overflow-hidden shrink-0 group">
                       <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                      <span className="absolute top-0 right-0 bg-[#E60000] text-white text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-bl-xl shadow-lg">{item.quantity}</span>
+                      <span className="absolute top-0 right-0 bg-[#E60000] text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-bl-lg shadow-sm">{item.quantity}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-black text-white text-xs uppercase tracking-widest line-clamp-1">{item.name}</h4>
-                      <p className="text-gray-500 text-[10px] font-bold mt-1 uppercase tracking-tighter italic">{item.category}</p>
+                      <h4 className="font-black text-gray-800 text-xs uppercase tracking-widest line-clamp-1">{item.name}</h4>
+                      <p className="text-gray-400 text-[9px] font-bold mt-0.5 uppercase tracking-tighter italic">{item.category}</p>
                     </div>
-                    <span className="font-black text-white text-sm">&#8377;{(item.price * item.quantity).toLocaleString()}</span>
+                    <span className="font-black text-green-600 text-xs">&#8377;{(item.price * item.quantity).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-white/5 pt-6 space-y-4">
+              <div className="border-t border-amber-200 pt-3 space-y-2">
                 {(() => {
                   const marketPriceTotal = cart.reduce((sum, item) => {
                     const marketPrice = item.marketPrice || item.price;
@@ -1171,7 +1187,7 @@ export const Checkout = () => {
                     <>
                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
                         <span>Subtotal</span>
-                        <span>&#8377;{marketPriceTotal.toLocaleString()}</span>
+                        <span className="text-green-600">&#8377;{marketPriceTotal.toLocaleString()}</span>
                       </div>
 
                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-400">
@@ -1193,20 +1209,20 @@ export const Checkout = () => {
                         </div>
                       )}
 
-                      <div className="h-px bg-white/5 my-6"></div>
+                      <div className="h-px bg-amber-200 my-3"></div>
 
                       <div className="flex justify-between items-center">
-                        <span className="font-black text-white uppercase tracking-[0.25em] text-sm text-gray-400">Grand Total</span>
-                        <span className="font-black text-white text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">&#8377;{finalTotal.toLocaleString()}</span>
+                        <span className="font-black text-gray-500 uppercase tracking-[0.25em] text-[10px]">Grand Total</span>
+                        <span className="font-black text-green-600 text-lg">&#8377;{finalTotal.toLocaleString()}</span>
                       </div>
 
                       {hasDiscount && (
-                        <div className="bg-[#E60000]/10 border border-[#E60000]/20 rounded-2xl p-4 mt-8">
+                        <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 mt-8">
                           <div className="flex items-center justify-between">
-                            <span className="text-[#E60000] font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+                            <span className="text-green-700 font-bold text-[9px] uppercase tracking-widest flex items-center gap-2">
                               Total Savings
                             </span>
-                            <span className="text-[#E60000] font-black text-xl">&#8377;{totalSavings.toLocaleString()}</span>
+                            <span className="text-green-700 font-black text-lg">&#8377;{totalSavings.toLocaleString()}</span>
                           </div>
                         </div>
                       )}
@@ -1220,7 +1236,7 @@ export const Checkout = () => {
 
         {/* Mobile Submit Buttons */}
         {currentStep < 2 && (
-          <div className="lg:hidden mt-8 mb-20 px-2">
+          <div className="lg:hidden mt-3 mb-4 px-2">
             {currentStep === 0 && (
               <button
                 onClick={(e) => {

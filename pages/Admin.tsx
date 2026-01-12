@@ -22,7 +22,7 @@ export const Admin = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [leads, setLeads] = useState<any[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'leads' | 'reviews' | 'categories' | 'themes' | 'play' | 'users'>('inventory');
+    const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'leads' | 'reviews' | 'categories' | 'themes' | 'users'>('inventory');
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
     const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
 
@@ -325,8 +325,8 @@ export const Admin = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
-                        <h1 className="font-bold text-gray-900" style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}>Admin Dashboard</h1>
-                        <p className="text-gray-600 mt-1" style={{ fontSize: '10px', fontFamily: 'Times New Roman, serif' }}>Manage products and view orders</p>
+                        <h1 className="font-black text-xl text-textMain uppercase tracking-widest">Admin Dashboard</h1>
+                        <p className="text-textMuted mt-1 text-xs font-bold uppercase tracking-tight">Manage products and view orders</p>
                         <div className="text-xs text-gray-400 mt-2">
                             Debug: Products: {products.length}, Loading: {isLoadingAuth ? 'Yes' : 'No'}, Admin: {isAdmin ? 'Yes' : 'No'}
                             <br />User: {user?.email || 'None'}
@@ -334,13 +334,12 @@ export const Admin = () => {
                         </div>
                     </div>
                     <div className="flex gap-3 flex-wrap w-full md:w-auto">
-                        <button onClick={loadData} className="px-3 py-2 bg-gray-200 rounded-xl hover:bg-gray-300 transition-colors text-xs font-bold">
+                        <button onClick={loadData} className="px-3 py-2 bg-white border border-gray-200 text-black rounded-xl hover:bg-gray-50 transition-colors text-xs font-bold shadow-sm">
                             Force Refresh
                         </button>
                         <button
                             onClick={() => window.location.href = '/admin/sales'}
-                            className="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:from-purple-700 hover:to-pink-700 shadow-lg transition-all duration-200 active:scale-95 min-h-[36px]"
-                            style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
+                            className="flex-1 md:flex-none bg-black text-white px-4 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-gray-800 shadow-lg transition-all duration-200 active:scale-95 min-h-[40px]"
                         >
                             <Icons.TrendingUp className="w-4 h-4" />
                             <span className="hidden sm:inline">Sales Analytics</span>
@@ -348,26 +347,25 @@ export const Admin = () => {
                         </button>
                         <button
                             onClick={loadData}
-                            className="bg-white text-gray-700 px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 shadow-md border-2 border-gray-200 transition-all duration-200 active:scale-95 min-h-[36px]"
+                            className="bg-white text-black border border-gray-200 px-4 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-gray-50 shadow-sm transition-all duration-200 active:scale-95 min-h-[40px]"
                             title="Refresh Data"
-                            style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                         >
                             <Icons.RefreshCw className="w-4 h-4" />
                             <span className="hidden sm:inline">Refresh</span>
+                            <span className="sm:hidden">Refresh</span>
                         </button>
                         <button
                             onClick={handleLogout}
-                            className="bg-red-600 text-white px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-700 shadow-lg transition-all duration-200 active:scale-95 min-h-[36px]"
-                            style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
+                            className="bg-white text-red-600 border border-red-200 px-4 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-red-50 shadow-sm transition-all duration-200 active:scale-95 min-h-[40px]"
                         >
                             <Icons.LogOut className="w-4 h-4" />
                             <span className="hidden sm:inline">Logout</span>
+                            <span className="sm:hidden">Logout</span>
                         </button>
                         <button
                             onClick={handleSeed}
                             disabled={seeding}
-                            className="flex-1 md:flex-none bg-green-600 text-white px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-700 shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-h-[36px]"
-                            style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
+                            className="flex-1 md:flex-none bg-white text-green-700 border border-green-200 px-4 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-green-50 shadow-sm transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px]"
                         >
                             {seeding ? <Icons.RefreshCw className="w-4 h-4 animate-spin" /> : <Icons.Package className="w-4 h-4" />}
                             {seeding ? 'Seeding...' : <span className="hidden sm:inline">Seed Database</span>}
@@ -376,13 +374,7 @@ export const Admin = () => {
                         {activeTab === 'inventory' && (
                             <button
                                 onClick={() => navigate('/admin/products/new')}
-                                className="flex-1 md:flex-none px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all duration-200 active:scale-95 relative z-10 min-h-[36px]"
-                                style={{
-                                    fontSize: '12px',
-                                    fontFamily: 'Times New Roman, serif',
-                                    backgroundColor: '#000000',
-                                    color: '#ffffff'
-                                }}
+                                className="flex-1 md:flex-none px-4 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 bg-charcoal text-white hover:bg-black shadow-lg transition-all duration-200 active:scale-95 relative z-10 min-h-[40px]"
                             >
                                 <Icons.Plus className="w-4 h-4" /> Add Product
                             </button>
@@ -394,84 +386,68 @@ export const Admin = () => {
                 <div className="flex gap-2 md:gap-4 mb-6 border-b-2 border-gray-200 overflow-x-auto pb-0">
                     <button
                         onClick={() => setActiveTab('inventory')}
-                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'inventory'
-                            ? 'border-b-4 border-black text-black -mb-0.5'
-                            : 'text-gray-400 hover:text-gray-600'
+                        className={`pb-4 px-4 font-black uppercase tracking-widest text-[11px] transition-all duration-200 whitespace-nowrap ${activeTab === 'inventory'
+                            ? 'border-b-4 border-primary text-primary -mb-0.5'
+                            : 'text-textMuted hover:text-textMain'
                             }`}
-                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Product Inventory
                     </button>
                     <button
                         onClick={() => setActiveTab('orders')}
-                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'orders'
-                            ? 'border-b-4 border-black text-black -mb-0.5'
-                            : 'text-gray-400 hover:text-gray-600'
+                        className={`pb-4 px-4 font-black uppercase tracking-widest text-[11px] transition-all duration-200 whitespace-nowrap ${activeTab === 'orders'
+                            ? 'border-b-4 border-primary text-primary -mb-0.5'
+                            : 'text-textMuted hover:text-textMain'
                             }`}
-                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Order Management
                     </button>
                     <button
                         onClick={() => setActiveTab('users')}
-                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'users'
-                            ? 'border-b-4 border-black text-black -mb-0.5'
-                            : 'text-gray-400 hover:text-gray-600'
+                        className={`pb-4 px-4 font-black uppercase tracking-widest text-[11px] transition-all duration-200 whitespace-nowrap ${activeTab === 'users'
+                            ? 'border-b-4 border-primary text-primary -mb-0.5'
+                            : 'text-textMuted hover:text-textMain'
                             }`}
-                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Users & Rewards
                     </button>
                     <button
                         onClick={() => setActiveTab('leads')}
-                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'leads'
-                            ? 'border-b-4 border-black text-black -mb-0.5'
-                            : 'text-gray-400 hover:text-gray-600'
+                        className={`pb-4 px-4 font-black uppercase tracking-widest text-[11px] transition-all duration-200 whitespace-nowrap ${activeTab === 'leads'
+                            ? 'border-b-4 border-primary text-primary -mb-0.5'
+                            : 'text-textMuted hover:text-textMain'
                             }`}
-                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Leads & Messages
                     </button>
                     <button
                         onClick={() => setActiveTab('reviews')}
-                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'reviews'
-                            ? 'border-b-4 border-black text-black -mb-0.5'
-                            : 'text-gray-400 hover:text-gray-600'
+                        className={`pb-4 px-4 font-black uppercase tracking-widest text-[11px] transition-all duration-200 whitespace-nowrap ${activeTab === 'reviews'
+                            ? 'border-b-4 border-primary text-primary -mb-0.5'
+                            : 'text-textMuted hover:text-textMain'
                             }`}
-                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Reviews
                     </button>
                     <button
                         onClick={() => setActiveTab('categories')}
-                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'categories'
-                            ? 'border-b-4 border-black text-black -mb-0.5'
-                            : 'text-gray-400 hover:text-gray-600'
+                        className={`pb-4 px-4 font-black uppercase tracking-widest text-[11px] transition-all duration-200 whitespace-nowrap ${activeTab === 'categories'
+                            ? 'border-b-4 border-primary text-primary -mb-0.5'
+                            : 'text-textMuted hover:text-textMain'
                             }`}
-                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Categories
                     </button>
                     <button
                         onClick={() => setActiveTab('themes')}
-                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'themes'
-                            ? 'border-b-4 border-black text-black -mb-0.5'
-                            : 'text-gray-400 hover:text-gray-600'
+                        className={`pb-4 px-4 font-black uppercase tracking-widest text-[11px] transition-all duration-200 whitespace-nowrap ${activeTab === 'themes'
+                            ? 'border-b-4 border-primary text-primary -mb-0.5'
+                            : 'text-textMuted hover:text-textMain'
                             }`}
-                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
                     >
                         Themes
                     </button>
-                    <button
-                        onClick={() => setActiveTab('play')}
-                        className={`pb-4 px-4 font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'play'
-                            ? 'border-b-4 border-black text-black -mb-0.5'
-                            : 'text-gray-400 hover:text-gray-600'
-                            }`}
-                        style={{ fontSize: '12px', fontFamily: 'Times New Roman, serif' }}
-                    >
-                        Play Management
-                    </button>
+
                 </div>
 
                 {/* Content */}
@@ -1235,9 +1211,7 @@ export const Admin = () => {
                             </div>
                         </div>
                     </div>
-                ) : activeTab === 'play' ? (
-                    /* Play Management Tab */
-                    <PlayManagement />
+
                 ) : activeTab === 'users' ? (
                     /* Users Tab */
                     <UsersTab />
@@ -1262,377 +1236,7 @@ export const Admin = () => {
     );
 };
 
-// Play Management Component
-const PlayManagement = () => {
-    const [videos, setVideos] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [uploading, setUploading] = useState(false);
-    const [caption, setCaption] = useState('');
-    const [file, setFile] = useState<File | null>(null);
-    const [statusLogs, setStatusLogs] = useState<string[]>([]);
-    const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
-    const [comments, setComments] = useState<any[]>([]);
-    const [loadingComments, setLoadingComments] = useState(false);
-    const [confirmDelete, setConfirmDelete] = useState<{ show: boolean; commentId: string | null }>({ show: false, commentId: null });
-    const { user } = useAuth();
-    const { alertState, showAlert, closeAlert } = useCustomAlert();
 
-    const addLog = (msg: string) => {
-        console.log(msg);
-        setStatusLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`]);
-    };
-
-    useEffect(() => {
-        loadVideos();
-    }, []);
-
-    const loadVideos = async () => {
-        setLoading(true);
-        try {
-            const data = await store.getPlayVideos();
-            setVideos(data);
-        } catch (e) {
-            console.error('Failed to load videos:', e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleUpload = async () => {
-        addLog('--- Starting Upload Process ---');
-
-        if (!file) {
-            addLog('Error: No file selected');
-            showAlert('Error', 'Please select a video file', 'error');
-            return;
-        }
-
-        if (!user) {
-            addLog('Error: User not logged in');
-            showAlert('Error', 'You must be logged in', 'error');
-            return;
-        }
-
-        setUploading(true);
-        try {
-            addLog(`File selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
-
-            // 1. Upload File (Directly, skipping bucket check to avoid RLS issues)
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-            addLog(`Generated filename: ${fileName}`);
-
-            addLog('Uploading to Supabase Storage...');
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('videos')
-                .upload(fileName, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
-
-            if (uploadError) {
-                addLog(`Upload failed: ${uploadError.message}`);
-                if (uploadError.message.includes('Bucket not found')) {
-                    addLog('TIP: Please create a public bucket named "videos" in your Supabase dashboard.');
-                }
-                throw uploadError;
-            }
-            addLog('File uploaded successfully');
-
-            // 3. Get Public URL
-            const { data: urlData } = supabase.storage
-                .from('videos')
-                .getPublicUrl(fileName);
-
-            const publicUrl = urlData.publicUrl;
-            addLog(`Public URL generated: ${publicUrl}`);
-
-            // 4. Create DB Record
-            addLog('Creating database record...');
-            const { data: dbData, error: dbError } = await supabase
-                .from('play_videos')
-                .insert({
-                    video_url: publicUrl,
-                    caption,
-                    user_id: user.id
-                })
-                .select()
-                .single();
-
-            if (dbError) {
-                addLog(`Database insert failed: ${dbError.message}`);
-                throw dbError;
-            }
-
-            addLog('Database record created successfully!');
-            showAlert('Success', 'Video uploaded successfully!', 'success');
-
-            // Reset form
-            setCaption('');
-            setFile(null);
-            const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-            if (fileInput) fileInput.value = '';
-
-            loadVideos();
-
-        } catch (e: any) {
-            console.error('Upload process failed:', e);
-            addLog(`FATAL ERROR: ${e.message || JSON.stringify(e)}`);
-            showAlert('Error', 'Upload failed. Check logs below.', 'error');
-        } finally {
-            setUploading(false);
-            addLog('--- Process Finished ---');
-        }
-    };
-
-    const loadComments = async (videoId: string) => {
-        setSelectedVideoId(videoId);
-        setLoadingComments(true);
-        try {
-            const data = await store.getVideoComments(videoId);
-            setComments(data);
-        } catch (e) {
-            console.error('Failed to load comments:', e);
-            showAlert('Error', 'Failed to load comments', 'error');
-        } finally {
-            setLoadingComments(false);
-        }
-    };
-
-    const handleDeleteComment = async (commentId: string) => {
-        setConfirmDelete({ show: true, commentId });
-    };
-
-    const confirmDeleteComment = async () => {
-        if (!confirmDelete.commentId) return;
-
-        try {
-            await store.deleteComment(confirmDelete.commentId);
-            showAlert('Success', 'Comment deleted', 'success');
-            // Refresh comments list
-            if (selectedVideoId) {
-                loadComments(selectedVideoId);
-            }
-        } catch (e) {
-            showAlert('Error', 'Failed to delete comment', 'error');
-        } finally {
-            setConfirmDelete({ show: false, commentId: null });
-        }
-    };
-
-    const handleDeleteVideo = async (videoId: string) => {
-        showAlert(
-            'Delete Video?',
-            'Are you sure you want to delete this video? This will also remove all its likes and comments.',
-            'warning',
-            {
-                confirmText: 'Delete',
-                cancelText: 'Cancel',
-                onConfirm: async () => {
-                    try {
-                        await store.deletePlayVideo(videoId);
-                        showAlert('Success', 'Video deleted successfully', 'success');
-                        loadVideos();
-                    } catch (e) {
-                        console.error('Failed to delete video:', e);
-                        showAlert('Error', 'Failed to delete video', 'error');
-                    }
-                }
-            }
-        );
-    };
-
-    return (
-        <div className="space-y-8">
-            {/* Upload Section */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 className="text-lg font-bold mb-4">Upload New Video</h2>
-
-                {/* Status Logs */}
-                {statusLogs.length > 0 && (
-                    <div className="mb-4 p-3 bg-gray-900 text-green-400 text-xs font-mono rounded-lg max-h-40 overflow-y-auto">
-                        {statusLogs.map((log, i) => (
-                            <div key={i}>{log}</div>
-                        ))}
-                    </div>
-                )}
-
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Video File</label>
-                        <input
-                            type="file"
-                            accept="video/*"
-                            onChange={(e) => {
-                                const selectedFile = e.target.files?.[0] || null;
-                                setFile(selectedFile);
-                                if (selectedFile) addLog(`Selected file: ${selectedFile.name}`);
-                            }}
-                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Caption</label>
-                        <textarea
-                            value={caption}
-                            onChange={(e) => setCaption(e.target.value)}
-                            className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-transparent"
-                            rows={3}
-                            placeholder="Write a catchy caption..."
-                        />
-                    </div>
-                    <button
-                        type="button"
-                        onClick={handleUpload}
-                        disabled={uploading || !file}
-                        className="bg-black text-white px-6 py-2 rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2"
-                    >
-                        {uploading ? (
-                            <>
-                                <Icons.Loader2 className="w-5 h-5 animate-spin" />
-                                Uploading...
-                            </>
-                        ) : (
-                            <>
-                                <Icons.Upload className="w-5 h-5" />
-                                Post Video
-                            </>
-                        )}
-                    </button>
-                </div>
-            </div>
-
-
-            {/* Videos List */}
-            < div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100" >
-                <h2 className="text-lg font-bold mb-4">Manage Videos</h2>
-                {
-                    loading ? (
-                        <div className="text-center py-8">Loading...</div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {videos.map(video => (
-                                <div key={video.id} className="border rounded-lg overflow-hidden">
-                                    <video src={video.videoUrl} className="w-full h-48 object-cover bg-black" controls />
-                                    <div className="p-4">
-                                        <p className="font-medium truncate mb-2">{video.caption || 'No caption'}</p>
-                                        <div className="flex justify-between text-sm text-gray-500 mb-4">
-                                            <span>❤️ {video.likesCount}</span>
-                                            <span>💬 {video.commentsCount}</span>
-                                            <span>↗️ {video.sharesCount}</span>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <button
-                                                onClick={() => loadComments(video.id)}
-                                                className="border border-gray-200 py-2 rounded hover:bg-gray-50 text-xs font-medium flex items-center justify-center gap-1"
-                                            >
-                                                <Icons.MessageSquare className="w-3.5 h-3.5" />
-                                                Comments
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteVideo(video.id)}
-                                                className="border border-red-100 py-2 rounded bg-red-50 text-red-600 hover:bg-red-100 text-xs font-medium flex items-center justify-center gap-1"
-                                            >
-                                                <Icons.Trash2 className="w-3.5 h-3.5" />
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )
-                }
-            </div>
-
-            {/* Comments Modal */}
-            {selectedVideoId && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setSelectedVideoId(null)}>
-                    <div className="bg-white rounded-xl p-4 max-w-lg w-full mx-4 max-h-[70vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-3 pb-2 border-b">
-                            <h3 className="text-base font-bold">Manage Comments</h3>
-                            <button onClick={() => setSelectedVideoId(null)} className="text-gray-400 hover:text-gray-600">
-                                <Icons.X className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto">
-                            {loadingComments ? (
-                                <div className="text-center py-6 text-sm text-gray-500">Loading...</div>
-                            ) : comments.length === 0 ? (
-                                <div className="text-center py-6 text-sm text-gray-400">No comments yet</div>
-                            ) : (
-                                <div className="space-y-2">
-                                    {comments.map(comment => (
-                                        <div key={comment.id} className="flex gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                            <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center font-bold text-xs shrink-0">
-                                                {comment.userName?.[0]?.toUpperCase() || 'U'}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs leading-relaxed">
-                                                    <span className="font-bold">{comment.userName || 'User'}</span>
-                                                    <span className="ml-1.5 text-gray-700">{comment.content}</span>
-                                                </p>
-                                                <p className="text-[10px] text-gray-400 mt-0.5">
-                                                    {new Date(comment.createdAt).toLocaleString('en-US', {
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    })}
-                                                </p>
-                                            </div>
-                                            <button
-                                                onClick={() => handleDeleteComment(comment.id)}
-                                                className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded shrink-0 transition-colors"
-                                                title="Delete comment"
-                                            >
-                                                <Icons.Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Confirmation Dialog */}
-            {confirmDelete.show && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]" onClick={() => setConfirmDelete({ show: false, commentId: null })}>
-                    <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="text-lg font-bold mb-2">Delete Comment?</h3>
-                        <p className="text-gray-600 mb-6">Are you sure you want to delete this comment? This action cannot be undone.</p>
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setConfirmDelete({ show: false, commentId: null })}
-                                className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 font-medium"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmDeleteComment}
-                                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 font-medium"
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Alert Component */}
-            <CustomAlert
-                isOpen={alertState.isOpen}
-                type={alertState.type}
-                title={alertState.title}
-                message={alertState.message}
-                onClose={closeAlert}
-            />
-        </div>
-    );
-};
 
 // Reviews Tab Component
 const ReviewsTab = () => {

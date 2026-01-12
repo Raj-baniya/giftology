@@ -118,7 +118,7 @@ export const AIProductAssistant: React.FC<AIProductAssistantProps> = ({ products
     };
 
     return (
-        <section className="py-20 relative z-10">
+        <section className="pt-6 pb-20 relative z-10">
             <div className="max-w-4xl mx-auto px-4">
                 <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#1A1A2E] to-[#16213e] border border-[#F4E6D0]/20 shadow-2xl p-1 min-h-[500px] flex flex-col">
                     {/* BUBBLES ANIMATION (Background) */}
@@ -152,11 +152,11 @@ export const AIProductAssistant: React.FC<AIProductAssistantProps> = ({ products
                                                     onClick={() => { setAnswers({ ...answers, relation: rel.id }); setTimeout(handleNext, 300); }}
                                                     className={`p-6 rounded-xl border transition-all duration-300 flex flex-col items-center gap-3 group
                                                         ${answers.relation === rel.id
-                                                            ? 'bg-[#FFD700] border-[#FFD700] text-black scale-105 shadow-lg'
-                                                            : 'bg-[#1A1A2E] border-[#F4E6D0]/10 text-[#F4E6D0] hover:border-[#FFD700]/50 hover:bg-[#FFD700]/10'}`}
+                                                            ? 'bg-[#FFD700] border-[#FFD700] text-black scale-105 shadow-xl font-black'
+                                                            : 'bg-[#1A1A2E]/80 border-[#F4E6D0]/10 text-white hover:border-[#FFD700]/50 hover:bg-[#FFD700]/10 shadow-sm'}`}
                                                 >
-                                                    <Icon className="w-8 h-8" />
-                                                    <span className="font-medium">{rel.label}</span>
+                                                    <Icon className={`w-8 h-8 ${answers.relation === rel.id ? 'text-black' : 'text-[#FFD700]'}`} />
+                                                    <span className={`font-bold text-sm tracking-wide ${answers.relation === rel.id ? 'text-black' : 'text-white'}`}>{rel.label}</span>
                                                 </button>
                                             );
                                         })}
@@ -179,7 +179,7 @@ export const AIProductAssistant: React.FC<AIProductAssistantProps> = ({ products
                                                         ? 'bg-[#FFD700] border-[#FFD700] text-black shadow-lg scale-105'
                                                         : 'bg-[#1A1A2E] border-[#F4E6D0]/10 text-[#F4E6D0] hover:border-[#FFD700]/50 hover:bg-[#FFD700]/10'}`}
                                             >
-                                                <span className="font-medium text-lg">{age.label}</span>
+                                                <span className={`font-medium text-lg ${answers.age === age.id ? 'text-black' : 'text-[#F4E6D0]'}`}>{age.label}</span>
                                                 {answers.age === age.id && <Icons.CheckCircle className="w-6 h-6" />}
                                             </button>
                                         ))}
@@ -270,7 +270,7 @@ export const AIProductAssistant: React.FC<AIProductAssistantProps> = ({ products
                                                         <div className="p-4 flex flex-col flex-1 text-left">
                                                             <h4 className="text-[#F4E6D0] font-medium line-clamp-2 mb-2 group-hover:text-white">{product.name}</h4>
                                                             <div className="mt-auto pt-2 border-t border-[#F4E6D0]/5 flex justify-between items-center">
-                                                                <span className="text-[#FFD700] font-bold">₹{product.sale_price || product.price}</span>
+                                                                <span className="text-green-500 font-bold">₹{product.sale_price || product.price}</span>
                                                                 <Icons.ArrowRight className="w-4 h-4 text-[#F4E6D0]/50 group-hover:text-[#FFD700] group-hover:translate-x-1 transition-all" />
                                                             </div>
                                                         </div>
