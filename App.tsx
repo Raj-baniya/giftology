@@ -31,7 +31,7 @@ const AdminProductForm = lazy(() => import('./pages/AdminProductForm').then(modu
 const GiftGuide = lazy(() => import('./pages/GiftGuide').then(module => ({ default: module.GiftGuide })));
 const SalesAnalytics = lazy(() => import('./pages/SalesAnalytics').then(module => ({ default: module.SalesAnalytics })));
 const MobileCategories = lazy(() => import('./pages/MobileCategories'));
-const Play = lazy(() => import('./pages/Play'));
+
 const Cart = lazy(() => import('./pages/Cart').then(module => ({ default: module.Cart })));
 
 // Scroll to top component
@@ -57,7 +57,6 @@ const PageLoader = () => (
 
 const AppContent = () => {
   const location = useLocation();
-  const isPlayPage = location.pathname === '/play';
   const isAdminPage = location.pathname.startsWith('/admin');
   const { currentTheme } = useTheme();
   const { alertState, showAlert, closeAlert } = useCustomAlert();
@@ -108,7 +107,7 @@ const AppContent = () => {
         {/* Global Background (Light/Cream) */}
 
         {
-          !isPlayPage && (
+          true && (
             <>
               <div className="hidden md:block">
                 <Navbar />
@@ -131,7 +130,7 @@ const AppContent = () => {
           cancelText={alertState.cancelText}
         />
 
-        <main className={`flex-grow ${isPlayPage ? 'h-screen overflow-hidden' : ''}`}>
+        <main className={`flex-grow`}>
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Home />} />
@@ -149,13 +148,13 @@ const AppContent = () => {
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/product/:slug" element={<ProductDetail />} />
               <Route path="/categories" element={<MobileCategories />} />
-              <Route path="/play" element={<Play />} />
+
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
         </main>
         {
-          !isPlayPage && (
+          true && (
             <footer className="py-8 border-t border-black/5 relative z-10 bg-background">
               <div className="max-w-7xl mx-auto px-4 text-center text-textMuted text-xs font-semibold tracking-wide flex flex-col items-center gap-6">
                 <img src="/logo.png" alt="Giftology" className="h-10 w-auto hover:scale-110 transition-all duration-500" />
@@ -166,7 +165,7 @@ const AppContent = () => {
         }
       </div>
       {/* Mobile Navbar - Root Level for Z-Index Safety */}
-      {!isPlayPage && <MobileNavbar />}
+      {!isAdminPage && <MobileNavbar />}
     </>
   );
 };

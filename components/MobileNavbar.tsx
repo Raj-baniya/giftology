@@ -11,7 +11,6 @@ const MobileNavbar = () => {
 
     const navItems = [
         { name: 'Home', path: '/', icon: Icons.Compass },
-        { name: 'Play', path: '/play', icon: Icons.PlayCircle },
         { name: 'Categories', path: '/categories', icon: Icons.LayoutGrid },
         { name: 'Cart', path: '/cart', icon: Icons.ShoppingBag, badge: cartCount, isCart: true },
         { name: 'Account', path: '/account', icon: Icons.User },
