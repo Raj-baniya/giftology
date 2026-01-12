@@ -11,12 +11,12 @@ import { CustomAlert, useCustomAlert } from '../components/CustomAlert';
 const TabButton = ({ active, onClick, icon: Icon, label }: any) => (
   <button
     onClick={onClick}
-    className={`flex items-center justify-center md:justify-start gap-4 px-6 py-4 rounded-full transition-all flex-shrink-0 whitespace-nowrap text-xs md:text-sm font-black uppercase tracking-[0.2em] ${active
-      ? 'bg-white text-[#E60000] shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white relative z-10'
-      : 'text-gray-400 hover:text-white hover:bg-white/10 border border-transparent'
+    className={`flex items-center justify-center md:justify-start gap-3 px-5 py-3.5 rounded-2xl transition-all flex-shrink-0 whitespace-nowrap text-[10px] md:text-xs font-black uppercase tracking-[0.2em] ${active
+      ? 'bg-primary text-white shadow-[0_10px_25px_rgba(155,27,48,0.3)] border border-primary/20 relative z-10'
+      : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
       } ${window.innerWidth < 768 ? 'w-auto' : 'w-full text-left'}`}
   >
-    <Icon className={`w-4 h-4 md:w-5 md:h-5 ${active ? 'text-[#E60000]' : 'text-gray-400 group-hover:text-white'}`} />
+    <Icon className={`w-4 h-4 md:w-5 md:h-5 ${active ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} />
     {label}
   </button>
 );
@@ -599,10 +599,10 @@ export const Account = () => {
           <div className="md:col-span-3 space-y-6">
             {activeTab === 'overview' ? (
               <>
-                <div className="bg-white/40 backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] border border-charcoal/5 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full"></div>
-                  <h3 className="font-black text-xs text-textMain mb-8 uppercase tracking-[0.2em] flex items-center gap-3">
-                    <span className="w-2 h-2 bg-primary rounded-full animate-bounce"></span>
+                <div className="bg-[#030014]/40 backdrop-blur-3xl p-5 md:p-8 rounded-[2rem] border border-white/10 shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full"></div>
+                  <h3 className="font-black text-[11px] text-white/90 mb-6 uppercase tracking-[0.25em] flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(155,27,48,0.8)]"></span>
                     Recent Orders
                   </h3>
                   {ordersLoading ? (
@@ -612,41 +612,41 @@ export const Account = () => {
                   ) : orders.length > 0 ? (
                     <div className="space-y-4">
                       {orders.map((order) => (
-                        <div key={order.id} className="border border-white/5 rounded-xl overflow-hidden transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] bg-white/5 group">
+                        <div key={order.id} className="border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/20 bg-white/[0.03] group shadow-lg">
                           <div
                             onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
-                            className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4 p-3 md:p-4 cursor-pointer hover:bg-white/[0.02]"
+                            className="flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6 p-4 md:p-5 cursor-pointer hover:bg-white/[0.05]"
                           >
                             <div className="flex items-center gap-4 w-full sm:w-auto">
-                              <div className="w-12 h-12 md:w-16 md:h-16 bg-white/5 rounded-lg shrink-0 flex items-center justify-center text-gray-500 overflow-hidden border border-white/10 group-hover:border-[#E60000]/30 transition-colors">
+                              <div className="w-14 h-14 md:w-20 md:h-20 bg-white/5 rounded-xl shrink-0 flex items-center justify-center text-gray-500 overflow-hidden border border-white/10 group-hover:border-primary/40 transition-all duration-500 shadow-xl">
                                 {order.items?.[0]?.imageUrl ? (
                                   <img
                                     src={order.items[0].imageUrl}
                                     alt="Product"
-                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100"
+                                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
                                   />
                                 ) : (
-                                  <Icons.Package />
+                                  <Icons.Package className="w-8 h-8 opacity-50" />
                                 )}
                               </div>
                               <div className="flex-1 sm:hidden">
-                                <h4 className="font-black text-sm text-white">Order #{order.readableId || order.id.slice(0, 8)}</h4>
-                                <span className="font-black text-sm text-green-500" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
+                                <h4 className="font-black text-xs text-white uppercase tracking-wider mb-1">Order #{order.readableId || order.id.slice(0, 8)}</h4>
+                                <span className="font-black text-base text-accent" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
                               </div>
                             </div>
 
                             <div className="flex-1 hidden sm:block">
-                              <h4 className="font-black text-textMain uppercase tracking-wider">Order #{order.readableId || order.id.slice(0, 8)}</h4>
-                              <p className="text-sm text-textMuted font-medium">Placed on {new Date(order.date).toLocaleDateString()}</p>
+                              <h4 className="font-black text-sm text-white uppercase tracking-widest mb-1 group-hover:text-primary transition-colors">Order #{order.readableId || order.id.slice(0, 8)}</h4>
+                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Placed {new Date(order.date).toLocaleDateString()}</p>
                             </div>
-                            <div className="flex justify-between items-center w-full sm:w-auto gap-3">
-                              <span className={`px-3 py-1 text-[10px] md:text-xs font-black uppercase tracking-tighter rounded-full ${order.status === 'delivered' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                                order.status === 'shipped' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                  order.status === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                            <div className="flex justify-between items-center w-full sm:w-auto gap-4">
+                              <span className={`px-4 py-1.5 text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg ${order.status === 'delivered' ? 'bg-green-500 text-white' :
+                                order.status === 'shipped' ? 'bg-blue-500 text-white' :
+                                  order.status === 'cancelled' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-primary text-white'
                                 }`}>
                                 {order.status}
                               </span>
-                              <span className="font-black text-sm text-green-500 hidden sm:block" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
+                              <span className="font-black text-lg text-accent hidden sm:block" style={{ fontFamily: 'Arial, sans-serif' }}>&#8377;{order.total.toLocaleString()}</span>
 
                               {/* Cancel Button for User */}
                               {order.status === 'processing' && (
@@ -703,51 +703,51 @@ export const Account = () => {
                                       }
                                     );
                                   }}
-                                  className="px-3 py-1 text-xs font-bold text-red-600 border border-red-200 rounded hover:bg-red-50 transition-colors"
+                                  className="px-3 py-1.5 text-[9px] font-black text-white/50 border border-white/10 rounded-lg hover:bg-red-500 hover:text-white hover:border-red-500 transition-all uppercase tracking-widest"
                                 >
                                   Cancel
                                 </button>
                               )}
 
                               {/* Expand Chevron */}
-                              <div className="text-gray-400 ml-1">
-                                <Icons.ChevronDown className={`w-5 h-5 transition-transform duration-200 ${expandedOrderId === order.id ? 'rotate-180' : ''}`} />
+                              <div className="text-gray-500 ml-1">
+                                <Icons.ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expandedOrderId === order.id ? 'rotate-180 text-primary' : ''}`} />
                               </div>
                             </div>
                           </div>
 
                           {/* Expanded Details */}
                           {expandedOrderId === order.id && (
-                            <div className="bg-gray-50 p-4 border-t border-gray-100">
-                              <h5 className="font-bold text-sm mb-3 text-gray-700">Order Items</h5>
-                              <div className="space-y-3">
+                            <div className="bg-white/[0.05] p-5 border-t border-white/5 animate-slide-in-top">
+                              <h5 className="font-black text-[10px] text-gray-500 mb-4 uppercase tracking-[0.2em]">Order Items</h5>
+                              <div className="space-y-4">
                                 {order.items.map((item: any, idx: number) => (
-                                  <div key={idx} className="flex gap-3 items-start bg-white p-3 rounded-lg border border-gray-100">
+                                  <div key={idx} className="flex gap-4 items-start bg-white/[0.03] p-4 rounded-xl border border-white/5 group/item">
                                     {/* Product Image */}
-                                    <div className="w-16 h-16 shrink-0 border border-gray-200 rounded overflow-hidden">
+                                    <div className="w-16 h-16 shrink-0 border border-white/10 rounded-lg overflow-hidden shadow-lg">
                                       <img
                                         src={item.imageUrl || '/placeholder.png'}
                                         alt={item.name}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover group-hover/item:scale-110 transition-transform duration-500"
                                       />
                                     </div>
 
                                     {/* Product Details */}
                                     <div className="flex-1 min-w-0">
-                                      <p className="font-medium text-gray-900 text-sm mb-1">{item.name}</p>
-                                      <div className="flex flex-wrap gap-2 text-xs text-gray-600">
-                                        <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">Qty: {item.quantity}</span>
+                                      <p className="font-black text-white text-xs mb-1 uppercase tracking-wide">{item.name}</p>
+                                      <div className="flex flex-wrap gap-2 text-[9px] font-black uppercase tracking-widest text-gray-500">
+                                        <span className="bg-white/5 border border-white/10 px-2 py-0.5 rounded">Qty: {item.quantity}</span>
                                         {item.selectedSize && (
-                                          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">Size: {item.selectedSize}</span>
+                                          <span className="bg-white/5 border border-white/10 px-2 py-0.5 rounded">Size: {item.selectedSize}</span>
                                         )}
                                         {item.selectedColor && (
-                                          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">{item.selectedColor}</span>
+                                          <span className="bg-white/5 border border-white/10 px-2 py-0.5 rounded">{item.selectedColor}</span>
                                         )}
                                       </div>
                                     </div>
 
                                     {/* Price */}
-                                    <span className="font-bold text-gray-900 text-sm shrink-0" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                    <span className="font-black text-accent text-sm shrink-0" style={{ fontFamily: 'Arial, sans-serif' }}>
                                       &#8377;{(item.price * item.quantity).toLocaleString()}
                                     </span>
                                   </div>
@@ -755,18 +755,17 @@ export const Account = () => {
                               </div>
 
                               {/* Order Details */}
-                              <div className="mt-4 pt-3 border-t border-gray-200 space-y-2 text-sm">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-gray-500">Payment Method</span>
-                                  <span className="font-bold text-gray-900">
+                              <div className="mt-6 pt-5 border-t border-white/5 grid grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Payment Method</p>
+                                  <p className="text-[11px] font-black text-white uppercase tracking-wider">
                                     {order.paymentMethod === 'upi' ? 'UPI' : order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'N/A'}
-                                  </span>
+                                  </p>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-gray-500">Delivery Type</span>
-                                  <span className="font-bold text-gray-900">{order.deliveryType || 'Standard Delivery'}</span>
+                                <div>
+                                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Delivery Type</p>
+                                  <p className="text-[11px] font-black text-white uppercase tracking-wider">{order.deliveryType || 'Standard Delivery'}</p>
                                 </div>
-
                               </div>
                             </div>
                           )}

@@ -232,7 +232,7 @@ export const ProductDetail = () => {
             <div className="min-h-screen flex items-center justify-center bg-background relative">
                 <div className="relative z-10 flex flex-col items-center gap-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-                    <p className="text-charcoal font-black tracking-widest uppercase text-xs animate-pulse">Loading Product...</p>
+                    <p className="text-textMain font-black tracking-widest uppercase text-xs animate-pulse">Loading Product...</p>
                 </div>
             </div>
         );
@@ -276,13 +276,13 @@ export const ProductDetail = () => {
 
     return (
         <>
-            <div className="min-h-screen bg-background text-charcoal relative overflow-x-hidden font-sans">
+            <div className="min-h-screen bg-background text-textMain relative overflow-x-hidden font-sans">
                 <div className="max-w-7xl mx-auto px-3 py-4 md:py-8 relative z-10">
                     {/* Mobile Back Button - Redesigned for Space */}
                     <div className="lg:hidden fixed top-3 left-3 z-50">
                         <button
                             onClick={() => navigate(-1)}
-                            className="p-2.5 bg-white/80 backdrop-blur-md rounded-full text-charcoal border border-charcoal/10 shadow-xl active:scale-90 transition-all hover:bg-white"
+                            className="p-2.5 bg-white/80 backdrop-blur-md rounded-full text-textMain border border-textMain/10 shadow-xl active:scale-90 transition-all hover:bg-white"
                         >
                             <Icons.ChevronLeft className="w-4 h-4" />
                         </button>
@@ -297,7 +297,7 @@ export const ProductDetail = () => {
                                     {product.category.replace('-', ' ')}
                                 </span>
                             </div>
-                            <h1 className="font-serif text-lg lg:text-3xl font-black text-charcoal mb-1 uppercase tracking-wider leading-[1.1]">
+                            <h1 className="font-serif text-lg lg:text-3xl font-black text-textMain mb-1 uppercase tracking-wider leading-[1.1]">
                                 {product.name}
                             </h1>
                             <div className="h-1 w-16 bg-primary rounded-full mt-2"></div>
@@ -311,7 +311,7 @@ export const ProductDetail = () => {
                                 className="relative group lg:sticky lg:top-24 h-[50vh] sm:h-[60vh] lg:h-[70vh]"
                             >
                                 {/* Main Display Image */}
-                                <div className="w-full h-full relative overflow-hidden bg-white/40 backdrop-blur-sm lg:rounded-2xl border-b lg:border border-charcoal/5 shadow-sm">
+                                <div className="w-full h-full relative overflow-hidden bg-white/40 backdrop-blur-sm lg:rounded-2xl border-b lg:border border-textMain/5 shadow-sm">
                                     {images.length > 1 ? (
                                         <div
                                             className="relative w-full h-full"
@@ -395,7 +395,7 @@ export const ProductDetail = () => {
                             <div className="flex flex-col p-4 lg:p-0">
 
                                 {/* Price Section */}
-                                <div className="bg-white/80 backdrop-blur-md rounded-xl p-5 mb-4 border border-charcoal/5 shadow-xl">
+                                <div className="bg-white/80 backdrop-blur-md rounded-xl p-5 mb-4 border border-textMain/5 shadow-xl">
                                     <div className="flex items-baseline gap-3">
                                         <span className="text-2xl lg:text-4xl font-black text-green-600" style={{ fontFamily: 'Arial, sans-serif' }}>
                                             &#8377;{product.price.toLocaleString()}
@@ -434,7 +434,7 @@ export const ProductDetail = () => {
                                     transition={{ delay: 0.6 }}
                                     className="mb-3 sm:mb-6"
                                 >
-                                    <h3 className="text-sm sm:text-base font-black text-charcoal mb-2 flex items-center gap-2 uppercase tracking-widest">
+                                    <h3 className="text-sm sm:text-base font-black text-textMain mb-2 flex items-center gap-2 uppercase tracking-widest">
                                         <Icons.Package className="w-4 h-4 text-primary" />
                                         Product Information
                                     </h3>
@@ -452,12 +452,12 @@ export const ProductDetail = () => {
                                     transition={{ delay: 0.7 }}
                                     className="grid grid-cols-2 gap-1.5 sm:gap-3 mb-3 sm:mb-6"
                                 >
-                                    <div className="flex items-center gap-1.5 sm:gap-3 p-2 sm:p-3 bg-white rounded-lg border border-charcoal/5 shadow-sm transition-shadow">
+                                    <div className="flex items-center gap-1.5 sm:gap-3 p-2 sm:p-3 bg-white rounded-lg border border-textMain/5 shadow-sm transition-shadow">
                                         <div className={`p-2 rounded-full shadow-sm ${isOutOfStock ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>
                                             {isOutOfStock ? <Icons.X className="w-3 h-3 sm:w-4 sm:h-4" /> : <Icons.Check className="w-3 h-3 sm:w-4 sm:h-4" />}
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-xs sm:text-sm text-charcoal">
+                                            <span className="font-bold text-xs sm:text-sm text-textMain">
                                                 {isOutOfStock ? 'Out of Stock' : 'In Stock'}
                                             </span>
                                             {currentStock > 0 && currentStock < 10 && (
@@ -465,23 +465,23 @@ export const ProductDetail = () => {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-charcoal/5 shadow-sm transition-shadow">
+                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-textMain/5 shadow-sm transition-shadow">
                                         <div className="p-2 bg-blue-50 rounded-full text-blue-500 shadow-sm">
                                             <Icons.Truck className="w-3 h-3 sm:w-4 sm:h-4" />
                                         </div>
-                                        <span className="font-bold text-xs sm:text-sm text-charcoal">Free Delivery</span>
+                                        <span className="font-bold text-xs sm:text-sm text-textMain">Free Delivery</span>
                                     </div>
-                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-charcoal/5 shadow-sm transition-shadow">
+                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-textMain/5 shadow-sm transition-shadow">
                                         <div className="p-2 bg-purple-50 rounded-full text-purple-500 shadow-sm">
                                             <Icons.Shield className="w-3 h-3 sm:w-4 sm:h-4" />
                                         </div>
-                                        <span className="font-bold text-xs sm:text-sm text-charcoal">Secure Payment</span>
+                                        <span className="font-bold text-xs sm:text-sm text-textMain">Secure Payment</span>
                                     </div>
-                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-charcoal/5 shadow-sm transition-shadow">
+                                    <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border border-textMain/5 shadow-sm transition-shadow">
                                         <div className="p-2 bg-primary/10 rounded-full text-primary shadow-sm">
                                             <Icons.Gift className="w-3 h-3 sm:w-4 sm:h-4" />
                                         </div>
-                                        <span className="font-bold text-xs sm:text-sm text-charcoal">Gift Wrapping</span>
+                                        <span className="font-bold text-xs sm:text-sm text-textMain">Gift Wrapping</span>
                                     </div>
                                 </motion.div>
 
@@ -554,10 +554,10 @@ export const ProductDetail = () => {
                                                                 onClick={() => hasStock && handleColorSelect(color)}
                                                                 disabled={!hasStock}
                                                                 className={`relative w-16 h-20 rounded-xl border-2 transition-all overflow-hidden ${!hasStock
-                                                                    ? 'border-charcoal/5 opacity-40 cursor-not-allowed grayscale'
+                                                                    ? 'border-textMain/5 opacity-40 cursor-not-allowed grayscale'
                                                                     : selectedColor === color
                                                                         ? 'border-primary shadow-lg scale-105'
-                                                                        : 'border-charcoal/10 hover:border-charcoal/30 cursor-pointer'
+                                                                        : 'border-textMain/10 hover:border-textMain/30 cursor-pointer'
                                                                     }`}
                                                                 title={!hasStock ? `${color} - Out of Stock` : color}
                                                             >
@@ -610,7 +610,7 @@ export const ProductDetail = () => {
                                                                     ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
                                                                     : selectedSize === size
                                                                         ? 'bg-primary text-white border-primary shadow-lg scale-105 z-10'
-                                                                        : 'bg-white border-charcoal/10 text-charcoal hover:border-primary hover:text-primary'
+                                                                        : 'bg-white border-textMain/10 text-textMain hover:border-primary hover:text-primary'
                                                                     }`}
                                                             >
                                                                 <span>
@@ -708,9 +708,9 @@ export const ProductDetail = () => {
                 {/* Labels & Reviews */}
                 <div className="relative z-10">
                     {/* Reviews Section */}
-                    <div className="bg-white/80 backdrop-blur-md py-16 px-4 sm:px-6 lg:px-8 mt-12 border-t border-charcoal/5 shadow-2xl">
+                    <div className="bg-white/80 backdrop-blur-md py-16 px-4 sm:px-6 lg:px-8 mt-12 border-t border-textMain/5 shadow-2xl">
                         <div className="max-w-7xl mx-auto">
-                            <h2 className="text-3xl font-serif font-black text-charcoal mb-8 text-center uppercase tracking-widest">Customer Reviews</h2>
+                            <h2 className="text-3xl font-serif font-black text-textMain mb-8 text-center uppercase tracking-widest">Customer Reviews</h2>
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 {/* Review Form */}
                                 <div className="lg:col-span-1">

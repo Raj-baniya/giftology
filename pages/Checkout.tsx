@@ -752,7 +752,7 @@ export const Checkout = () => {
                         }}
                         className={`w-full p-3 rounded-2xl border-2 font-bold uppercase tracking-widest text-[9px] transition-all mb-3 ${formData.latitude && formData.longitude
                           ? 'bg-green-500/10 border-green-500 text-green-600 shadow-lg shadow-green-100'
-                          : 'bg-white border-charcoal/10 text-gray-400 hover:border-primary hover:text-primary'
+                          : 'bg-white border-textMain/10 text-gray-400 hover:border-primary hover:text-primary'
                           }`}
                       >
                         {formData.latitude && formData.longitude ? (

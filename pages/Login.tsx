@@ -195,9 +195,9 @@ export const Login = () => {
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gold/5 blur-[120px] rounded-full pointer-events-none"></div>
 
-      <div className="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-2xl border border-charcoal/5 relative overflow-hidden group z-10">
+      <div className="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-2xl border border-textMain/5 relative overflow-hidden group z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-serif font-black text-charcoal mb-2 uppercase tracking-widest">
+          <h1 className="text-3xl font-serif font-black text-textMain mb-2 uppercase tracking-widest">
             {isOtpLogin ? 'Verify OTP' : (isLogin ? 'Login' : 'Sign Up')}
           </h1>
           <p className="text-gray-500 font-bold uppercase tracking-tighter text-xs italic">
@@ -210,16 +210,16 @@ export const Login = () => {
         {/* Main Toggle (Sign In / Sign Up) - Hide in OTP mode */}
         {!isOtpLogin && (
           <div className="flex justify-center mb-8">
-            <div className="bg-gray-50 p-1 rounded-2xl inline-flex w-full border border-charcoal/5">
+            <div className="bg-gray-50 p-1 rounded-2xl inline-flex w-full border border-textMain/5">
               <button
                 onClick={() => { setIsLogin(true); resetState(); }}
-                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isLogin ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:text-charcoal'}`}
+                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isLogin ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:text-textMain'}`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => { setIsLogin(false); resetState(); }}
-                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isLogin ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:text-charcoal'}`}
+                className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!isLogin ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:text-textMain'}`}
               >
                 Sign Up
               </button>
@@ -250,7 +250,7 @@ export const Login = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-gray-50 border border-charcoal/5 rounded-2xl p-4 text-charcoal focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-gray-300 font-bold"
+                className="w-full bg-gray-50 border border-textMain/5 rounded-2xl p-4 text-textMain focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-gray-300 font-bold"
                 placeholder="Enter your name"
                 required={!isLogin}
               />
@@ -266,7 +266,7 @@ export const Login = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full bg-gray-50 border border-charcoal/5 rounded-2xl p-4 text-charcoal focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-gray-300 font-bold ${!email.includes('@') && !otpSent ? 'pr-28' : ''}`}
+                  className={`w-full bg-gray-50 border border-textMain/5 rounded-2xl p-4 text-textMain focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-gray-300 font-bold ${!email.includes('@') && !otpSent ? 'pr-28' : ''}`}
                   placeholder="email"
                   required
                   disabled={otpSent}
@@ -289,7 +289,7 @@ export const Login = () => {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-gray-50 border border-charcoal/5 rounded-2xl p-4 pr-12 text-charcoal focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-gray-300 font-bold"
+                  className="w-full bg-gray-50 border border-textMain/5 rounded-2xl p-4 pr-12 text-textMain focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-gray-300 font-bold"
                   placeholder="••••••••"
                   required
                   minLength={6}
@@ -313,7 +313,7 @@ export const Login = () => {
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full bg-gray-50 border border-primary/20 rounded-2xl p-5 text-charcoal focus:ring-2 focus:ring-primary outline-none text-center tracking-[1em] text-2xl font-black shadow-inner"
+                className="w-full bg-gray-50 border border-primary/20 rounded-2xl p-5 text-textMain focus:ring-2 focus:ring-primary outline-none text-center tracking-[1em] text-2xl font-black shadow-inner"
                 placeholder="000000"
                 required
                 autoFocus

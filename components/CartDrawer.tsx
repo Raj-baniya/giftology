@@ -54,26 +54,26 @@ export const CartDrawer = () => {
             className="fixed right-0 top-0 h-full w-full md:max-w-md bg-background z-[70] shadow-2xl flex flex-col"
           >
             {/* Header */}
-            <div className="bg-white/90 backdrop-blur-md p-4 flex items-center gap-4 shadow-sm z-10 border-b border-charcoal/5">
-              <button onClick={() => setCartOpen(false)} className="p-1">
+            <div className="bg-background md:bg-white p-3 md:p-4 flex items-center gap-4 shadow-lg z-10 border-b border-white/5 md:border-gray-100">
+              <button onClick={() => setCartOpen(false)} className="p-1 text-textMain hover:text-primary transition-colors">
                 <Icons.ChevronLeft className="w-6 h-6" />
               </button>
-              <h2 className="font-serif font-black text-lg text-charcoal uppercase tracking-widest">My Cart</h2>
+              <h2 className="font-serif font-black text-base md:text-lg text-textMain uppercase tracking-[0.2em]">My Cart</h2>
             </div>
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto pb-24">
               {/* Address Section */}
               {user && (
-                <div className="bg-white p-4 mb-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm text-gray-600">Deliver to:</span>
-                        <span className="font-bold text-sm">{user.displayName || 'User'}, {address?.zipCode || ''}</span>
-                        <span className="bg-gray-100 text-xs px-1 rounded text-gray-500">HOME</span>
+                <div className="bg-background p-3 md:p-4 mb-1 border-b border-white/5 md:border-gray-50">
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="text-sm text-gray-600 shrink-0">Deliver to:</span>
+                        <span className="font-bold text-sm truncate">{user.displayName || 'User'}</span>
+                        <span className="bg-gray-100 text-[10px] px-1.5 py-0.5 rounded text-gray-500 font-bold shrink-0">HOME</span>
                       </div>
-                      <p className="text-xs text-gray-500 truncate max-w-[250px]">
+                      <p className="text-xs text-gray-500 line-clamp-2">
                         {address ? `${address.address}, ${address.city}, ${address.state}` : 'Add an address to proceed'}
                       </p>
                     </div>
@@ -82,7 +82,7 @@ export const CartDrawer = () => {
                         setCartOpen(false);
                         navigate('/account');
                       }}
-                      className="text-primary text-sm font-bold border border-primary/20 px-3 py-1 rounded-full hover:bg-primary/5 transition-colors"
+                      className="text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20 px-3 py-1.5 rounded-lg hover:bg-primary/5 transition-all shrink-0"
                     >
                       Change
                     </button>
@@ -124,7 +124,7 @@ export const CartDrawer = () => {
                             opacity: { duration: 0.2 }
                           }}
                           layout
-                          className="bg-white p-4"
+                          className="bg-background p-3 md:p-4 mb-1 border-b border-white/5"
                         >
                           <div className="flex gap-4 mb-4">
                             {/* Image */}
@@ -132,7 +132,7 @@ export const CartDrawer = () => {
                               initial={{ scale: 0.5, rotate: -10 }}
                               animate={{ scale: 1, rotate: 0 }}
                               transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
-                              className="w-20 h-20 shrink-0 border border-gray-100 rounded p-1"
+                              className="w-20 h-20 shrink-0 border border-white/10 rounded-lg p-1 bg-white"
                             >
                               <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain" />
                             </motion.div>
@@ -142,12 +142,12 @@ export const CartDrawer = () => {
                               <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">{item.name}</h3>
                               <div className="flex flex-wrap gap-2 mb-2">
                                 {item.selectedColor && (
-                                  <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium border border-gray-200">
+                                  <span className="text-[10px] bg-white/5 text-gray-400 px-2 py-0.5 rounded font-black uppercase tracking-widest border border-white/10">
                                     {item.selectedColor}
                                   </span>
                                 )}
                                 {item.selectedSize && (
-                                  <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium border border-gray-200">
+                                  <span className="text-[10px] bg-white/5 text-gray-400 px-2 py-0.5 rounded font-black uppercase tracking-widest border border-white/10">
                                     Size: {item.selectedSize}
                                   </span>
                                 )}
@@ -176,11 +176,11 @@ export const CartDrawer = () => {
 
                           {/* Actions */}
                           <div className="flex border-t border-gray-100 pt-3 gap-4">
-                            <div className="flex items-center gap-3 border border-gray-200 rounded px-2 py-1">
+                            <div className="flex items-center gap-3 border border-white/10 rounded-lg px-2 py-1 bg-black/5">
                               <motion.button
                                 whileTap={{ scale: 0.8 }}
                                 onClick={() => updateQuantity(item.id, -1, item.selectedSize, item.selectedColor)}
-                                className="w-6 h-6 flex items-center justify-center font-bold text-gray-600"
+                                className="w-6 h-6 flex items-center justify-center font-black text-gray-400"
                               >
                                 -
                               </motion.button>
@@ -215,7 +215,7 @@ export const CartDrawer = () => {
                   </AnimatePresence>
 
                   {/* Price Details */}
-                  <div className="bg-white p-4 mt-2">
+                  <div className="bg-background p-4 mt-1 border-t border-white/5 md:border-gray-50">
                     <h3 className="font-bold text-gray-500 text-sm mb-4 uppercase">Price Details</h3>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
@@ -250,7 +250,7 @@ export const CartDrawer = () => {
                   </div>
 
                   {/* Continue to Checkout Button (In-list) */}
-                  <div className="p-4 bg-white mt-2">
+                  <div className="p-4 bg-background mt-1">
                     <button
                       onClick={() => {
                         setCartOpen(false);
@@ -264,7 +264,7 @@ export const CartDrawer = () => {
                   </div>
 
                   {/* Safe Payments Badge */}
-                  <div className="p-4 flex items-center gap-3 text-xs text-gray-500 bg-white mt-2">
+                  <div className="p-4 flex items-center gap-3 text-xs text-gray-500 bg-background mt-1">
                     <Icons.Shield className="w-8 h-8 text-gray-400" />
                     <p>Safe and secure payments. Easy returns. 100% Authentic products.</p>
                   </div>
@@ -274,7 +274,7 @@ export const CartDrawer = () => {
 
             {/* Sticky Bottom Bar */}
             {cart.length > 0 && (
-              <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 flex items-center justify-between shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+              <div className="absolute bottom-0 left-0 right-0 bg-background border-t border-white/5 p-3 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.3)] z-20">
                 <div>
                   <p className="text-xs text-gray-500 line-through">&#8377;{marketPriceTotal.toLocaleString()}</p>
                   <p className="font-bold text-lg text-green-600">&#8377;{finalAmount.toLocaleString()}</p>

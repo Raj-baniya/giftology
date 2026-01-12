@@ -42,10 +42,10 @@ export const Search = () => {
   }, [query]);
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 relative text-charcoal">
+    <div className="min-h-screen bg-background py-12 px-4 relative text-textMain">
       <div className="max-w-7xl mx-auto relative z-10">
         <header className="mb-16 text-center">
-          <h1 className="text-4xl font-serif font-black text-charcoal uppercase tracking-[0.2em] mb-4">
+          <h1 className="text-4xl font-serif font-black text-textMain uppercase tracking-[0.2em] mb-4">
             Search Results: <span className="text-primary">{query}</span>
           </h1>
           <div className="inline-block px-6 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10">
@@ -60,9 +60,9 @@ export const Search = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-32 bg-white rounded-[2.5rem] border border-charcoal/10 shadow-xl">
+          <div className="text-center py-32 bg-white rounded-[2.5rem] border border-textMain/10 shadow-xl">
             <Icons.Search className="w-20 h-20 text-gray-200 mx-auto mb-6" />
-            <h2 className="text-2xl font-black text-charcoal mb-3 uppercase tracking-widest">No Matches Found</h2>
+            <h2 className="text-2xl font-black text-textMain mb-3 uppercase tracking-widest">No Matches Found</h2>
             <p className="text-gray-400 font-bold uppercase tracking-tighter italic">Try different keywords or filters.</p>
           </div>
         ) : (
@@ -72,7 +72,7 @@ export const Search = () => {
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-[2rem] overflow-hidden border border-charcoal/5 group hover:shadow-xl transition-all duration-500"
+                className="bg-white rounded-[2rem] overflow-hidden border border-textMain/5 group hover:shadow-xl transition-all duration-500"
               >
                 <div className="relative aspect-square overflow-hidden bg-white/5">
                   <img
@@ -84,12 +84,12 @@ export const Search = () => {
                 </div>
                 <div className="p-8 flex flex-col h-56">
                   <div className="flex-1">
-                    <h3 className="font-serif font-black text-xl text-charcoal mb-2 uppercase tracking-tight leading-tight group-hover:text-primary transition-colors">{product.name}</h3>
+                    <h3 className="font-serif font-black text-xl text-textMain mb-2 uppercase tracking-tight leading-tight group-hover:text-primary transition-colors">{product.name}</h3>
                     <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{product.category.replace('-', ' ')}</p>
                   </div>
                   <div className="flex justify-between items-end mt-4">
                     <div className="flex flex-col">
-                      <span className="text-2xl font-black text-charcoal">&#8377;{product.price.toLocaleString()}</span>
+                      <span className="text-2xl font-black text-textMain">&#8377;{product.price.toLocaleString()}</span>
                       {product.marketPrice && product.marketPrice > product.price && (
                         <span className="text-[10px] text-gray-500 font-black line-through uppercase tracking-tighter">&#8377;{product.marketPrice.toLocaleString()}</span>
                       )}

@@ -37,7 +37,7 @@ const MobileCategories = () => {
     return (
         <div className="flex h-[calc(100vh-130px)] bg-background relative overflow-hidden">
             {/* Left Sidebar - Main Categories */}
-            <div className="w-1/3 bg-white/80 backdrop-blur-md overflow-y-auto border-r border-charcoal/5 no-scrollbar relative z-10">
+            <div className="w-1/3 bg-white/80 backdrop-blur-md overflow-y-auto border-r border-textMain/5 no-scrollbar relative z-10">
                 {categories.map((cat) => (
                     <button
                         key={cat.id}
@@ -65,8 +65,8 @@ const MobileCategories = () => {
 
             {/* Right Content - Subcategories */}
             <div className="w-2/3 p-4 overflow-y-auto relative z-10">
-                <div className="mb-6 sticky top-0 bg-background/90 backdrop-blur-md z-10 pb-2 border-b border-charcoal/5">
-                    <h2 className="text-xl font-black text-charcoal uppercase tracking-widest">{selectedCategory?.name}</h2>
+                <div className="mb-6 sticky top-0 bg-background/90 backdrop-blur-md z-10 pb-2 border-b border-textMain/5">
+                    <h2 className="text-xl font-black text-textMain uppercase tracking-widest">{selectedCategory?.name}</h2>
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Explore Premium Collection</p>
                 </div>
 
@@ -77,7 +77,7 @@ const MobileCategories = () => {
                             onClick={() => navigate(`/shop?category=${selectedCategory.slug}&subcategory=${sub.slug}`)}
                             className="flex flex-col items-center gap-2 cursor-pointer group"
                         >
-                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-gray-400 overflow-hidden border border-charcoal/5 group-hover:border-primary/50 group-hover:shadow-lg transition-all" >
+                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-gray-400 overflow-hidden border border-textMain/5 group-hover:border-primary/50 group-hover:shadow-lg transition-all" >
                                 {sub.imageUrl ? (
                                     <img src={sub.imageUrl} alt={sub.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" />
                                 ) : (

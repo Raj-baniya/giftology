@@ -374,7 +374,7 @@ export const Admin = () => {
                         {activeTab === 'inventory' && (
                             <button
                                 onClick={() => navigate('/admin/products/new')}
-                                className="flex-1 md:flex-none px-4 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 bg-charcoal text-white hover:bg-black shadow-lg transition-all duration-200 active:scale-95 relative z-10 min-h-[40px]"
+                                className="flex-1 md:flex-none px-4 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 bg-textMain text-white hover:bg-black shadow-lg transition-all duration-200 active:scale-95 relative z-10 min-h-[40px]"
                             >
                                 <Icons.Plus className="w-4 h-4" /> Add Product
                             </button>

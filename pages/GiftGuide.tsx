@@ -98,7 +98,7 @@ export const GiftGuide = () => {
     const isComplete = currentStep === questions.length - 1 && answers[currentQuestion.id];
 
     return (
-        <div className="min-h-screen bg-background py-12 px-4 relative overflow-hidden text-charcoal">
+        <div className="min-h-screen bg-background py-12 px-4 relative overflow-hidden text-textMain">
             {/* Background decorative elements */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gold/5 blur-[120px] rounded-full pointer-events-none"></div>
@@ -111,10 +111,10 @@ export const GiftGuide = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-16"
                 >
-                    <div className="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full mb-8 border border-charcoal/5 shadow-xl">
+                    <div className="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full mb-8 border border-textMain/5 shadow-xl">
                         <Icons.Sparkles className="w-12 h-12 text-primary" />
                     </div>
-                    <h1 className="font-serif font-black text-4xl md:text-6xl text-charcoal mb-4 uppercase tracking-[0.2em]">
+                    <h1 className="font-serif font-black text-4xl md:text-6xl text-textMain mb-4 uppercase tracking-[0.2em]">
                         AI Gift Guide
                     </h1>
                     <p className="text-gray-400 font-bold uppercase tracking-widest text-xs italic">
@@ -132,7 +132,7 @@ export const GiftGuide = () => {
                             {Math.round(progress)}% Experience
                         </span>
                     </div>
-                    <div className="h-1 bg-charcoal/5 rounded-full overflow-hidden">
+                    <div className="h-1 bg-textMain/5 rounded-full overflow-hidden">
                         <motion.div
                             className="h-full bg-primary"
                             initial={{ width: 0 }}
@@ -148,13 +148,13 @@ export const GiftGuide = () => {
                     initial={{ opacity: 0, x: 50 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -50 }}
-                    className="bg-white rounded-[3rem] border border-charcoal/5 p-8 md:p-14 mb-10 shadow-2xl relative overflow-hidden group"
+                    className="bg-white rounded-[3rem] border border-textMain/5 p-8 md:p-14 mb-10 shadow-2xl relative overflow-hidden group"
                 >
                     <div className="flex items-center gap-6 mb-12 relative z-10">
                         <div className="w-16 h-16 bg-primary/5 border border-primary/10 rounded-2xl flex items-center justify-center">
                             <currentQuestion.icon className="w-8 h-8 text-primary" />
                         </div>
-                        <h2 className="font-serif font-black text-2xl md:text-4xl text-charcoal uppercase tracking-wider">
+                        <h2 className="font-serif font-black text-2xl md:text-4xl text-textMain uppercase tracking-wider">
                             {currentQuestion.question}
                         </h2>
                     </div>
@@ -168,15 +168,15 @@ export const GiftGuide = () => {
                                 whileTap={{ scale: 0.98 }}
                                 className={`p-8 rounded-[2rem] border transition-all text-left flex items-center gap-6 group/btn ${answers[currentQuestion.id] === option.value
                                     ? 'border-primary bg-primary/5 shadow-md'
-                                    : 'border-charcoal/5 bg-gray-50 hover:border-primary/30 hover:bg-white'
+                                    : 'border-textMain/5 bg-gray-50 hover:border-primary/30 hover:bg-white'
                                     }`}
                             >
                                 <span className="text-4xl">{option.icon}</span>
                                 <span className={`font-black uppercase tracking-[0.15em] text-xs ${answers[currentQuestion.id] === option.value
-                                    ? 'text-charcoal'
+                                    ? 'text-textMain'
                                     : currentQuestion.id === 'budget'
                                         ? 'text-green-600'
-                                        : 'text-gray-400 group-hover/btn:text-charcoal'}`}>
+                                        : 'text-gray-400 group-hover/btn:text-textMain'}`}>
                                     {option.label}
                                 </span>
                             </motion.button>
@@ -189,7 +189,7 @@ export const GiftGuide = () => {
                     <button
                         onClick={handleBack}
                         disabled={currentStep === 0}
-                        className="flex items-center gap-2 text-gray-400 hover:text-charcoal disabled:opacity-0 transition-all font-black uppercase tracking-widest text-[10px]"
+                        className="flex items-center gap-2 text-gray-400 hover:text-textMain disabled:opacity-0 transition-all font-black uppercase tracking-widest text-[10px]"
                     >
                         <Icons.ChevronLeft className="w-4 h-4" />
                         Previous
@@ -223,7 +223,7 @@ export const GiftGuide = () => {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-12 bg-white/50 backdrop-blur-xl rounded-[2.5rem] p-8 border border-charcoal/5 shadow-xl"
+                        className="mt-12 bg-white/50 backdrop-blur-xl rounded-[2.5rem] p-8 border border-textMain/5 shadow-xl"
                     >
                         <h3 className="font-black text-[10px] text-gray-400 mb-8 uppercase tracking-[0.2em] flex items-center gap-3">
                             <Icons.CheckCircle className="w-4 h-4 text-primary" />
@@ -235,10 +235,10 @@ export const GiftGuide = () => {
                                 if (!answer) return null;
                                 const option = q.options.find(o => o.value === answer);
                                 return (
-                                    <div key={q.id} className="text-center p-4 bg-white rounded-2xl border border-charcoal/5 shadow-sm">
+                                    <div key={q.id} className="text-center p-4 bg-white rounded-2xl border border-textMain/5 shadow-sm">
                                         <div className="text-3xl mb-3">{option?.icon}</div>
                                         <div className="text-[10px] text-gray-400 mb-1 font-black uppercase tracking-widest">{q.question.replace('?', '').toUpperCase()}</div>
-                                        <div className="text-[10px] font-black text-charcoal uppercase tracking-widest">{option?.label}</div>
+                                        <div className="text-[10px] font-black text-textMain uppercase tracking-widest">{option?.label}</div>
                                     </div>
                                 );
                             })}

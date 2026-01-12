@@ -200,7 +200,7 @@ export const Cart = () => {
                                         <div className="flex gap-4 pt-4">
                                             <button type="button" onClick={() => setIsAddingNew(false)} className="flex-1 py-4 bg-white/5 text-white rounded-2xl font-black uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all">Cancel</button>
                                             <button type="submit" className="flex-1 py-4 bg-[#E60000] text-white rounded-2xl font-black uppercase tracking-widest shadow-[0_0_20px_rgba(230,0,0,0.3)] hover:scale-[1.02] transition-all">Save Address</button>
-                                            <button type="button" onClick={() => setIsAddingNew(false)} className="flex-1 py-4 bg-charcoal/5 text-charcoal rounded-2xl font-black uppercase tracking-widest border border-charcoal/10 hover:bg-charcoal/10 transition-all">Cancel</button>
+                                            <button type="button" onClick={() => setIsAddingNew(false)} className="flex-1 py-4 bg-textMain/5 text-textMain rounded-2xl font-black uppercase tracking-widest border border-textMain/10 hover:bg-textMain/10 transition-all">Cancel</button>
                                             <button type="submit" className="flex-1 py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:scale-[1.02] transition-all">Save Address</button>
                                         </div>
                                     </form>
@@ -212,10 +212,10 @@ export const Cart = () => {
                                                 onClick={() => handleAddressSelect(addr)}
                                                 className={`p-5 border-2 rounded-[1.5rem] cursor-pointer transition-all ${JSON.stringify(addr) === JSON.stringify(address)
                                                     ? 'border-primary bg-primary/5 shadow-md'
-                                                    : 'border-charcoal/5 bg-charcoal/5 hover:border-charcoal/20'}`}
+                                                    : 'border-textMain/5 bg-textMain/5 hover:border-textMain/20'}`}
                                             >
                                                 <div className="flex justify-between items-start mb-2">
-                                                    <span className="font-serif font-black text-charcoal uppercase tracking-widest">{addr.firstName} {addr.lastName}</span>
+                                                    <span className="font-serif font-black text-textMain uppercase tracking-widest">{addr.firstName} {addr.lastName}</span>
                                                     {JSON.stringify(addr) === JSON.stringify(address) && (
                                                         <span className="bg-primary text-white text-[9px] px-2 py-0.5 rounded font-black uppercase tracking-widest">Selected</span>
                                                     )}
@@ -227,7 +227,7 @@ export const Cart = () => {
 
                                         <button
                                             onClick={() => setIsAddingNew(true)}
-                                            className="w-full py-6 border-2 border-dashed border-charcoal/10 rounded-[1.5rem] text-gray-500 font-black uppercase tracking-widest hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-3"
+                                            className="w-full py-6 border-2 border-dashed border-textMain/10 rounded-[1.5rem] text-gray-500 font-black uppercase tracking-widest hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-3"
                                         >
                                             <Icons.Plus className="w-5 h-5" />
                                             Add New Address
@@ -243,14 +243,14 @@ export const Cart = () => {
                 {cart.length === 0 ? (
                     <div className="relative z-10 flex flex-col items-center justify-center pt-20 pb-32">
                         <div className="relative mb-8">
-                            <Icons.ShoppingBag className="w-24 h-24 text-charcoal/20" />
+                            <Icons.ShoppingBag className="w-24 h-24 text-textMain/20" />
                             <motion.div
                                 animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
                                 transition={{ duration: 3, repeat: Infinity }}
                                 className="absolute inset-0 bg-primary blur-3xl -z-10 rounded-full"
                             />
                         </div>
-                        <p className="text-xl font-serif font-black text-charcoal uppercase tracking-[0.2em] mb-4">Your Cart is Empty</p>
+                        <p className="text-xl font-serif font-black text-textMain uppercase tracking-[0.2em] mb-4">Your Cart is Empty</p>
                         <p className="text-gray-400 text-sm italic mb-8">Ready to find something special?</p>
                         <button
                             onClick={() => navigate('/shop')}
@@ -265,24 +265,24 @@ export const Cart = () => {
                             const discount = item.marketPrice ? Math.round(((item.marketPrice - item.price) / item.marketPrice) * 100) : 0;
 
                             return (
-                                <div key={item.id} className="bg-white p-4 border border-charcoal/5 rounded-2xl shadow-lg transition-all hover:shadow-xl">
+                                <div key={item.id} className="bg-white p-4 border border-textMain/5 rounded-2xl shadow-lg transition-all hover:shadow-xl">
                                     <div className="flex gap-4 mb-4 cursor-pointer" onClick={() => navigate(`/product/${item.slug}`)}>
                                         {/* Image */}
-                                        <div className="w-24 h-24 shrink-0 bg-gray-50 rounded-2xl border border-charcoal/5 p-2 shadow-inner group overflow-hidden">
+                                        <div className="w-24 h-24 shrink-0 bg-gray-50 rounded-2xl border border-textMain/5 p-2 shadow-inner group overflow-hidden">
                                             <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain transition-transform group-hover:scale-110" />
                                         </div>
 
                                         {/* Details */}
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="text-xs font-black text-charcoal uppercase tracking-wider line-clamp-2 mb-2">{item.name}</h3>
+                                            <h3 className="text-xs font-black text-textMain uppercase tracking-wider line-clamp-2 mb-2">{item.name}</h3>
                                             <div className="flex flex-wrap gap-2 mb-3">
                                                 {item.selectedColor && (
-                                                    <span className="text-[9px] bg-gray-50 text-gray-500 px-3 py-1 rounded-full font-black uppercase tracking-widest border border-charcoal/5">
+                                                    <span className="text-[9px] bg-gray-50 text-gray-500 px-3 py-1 rounded-full font-black uppercase tracking-widest border border-textMain/5">
                                                         {item.selectedColor}
                                                     </span>
                                                 )}
                                                 {item.selectedSize && (
-                                                    <span className="text-[9px] bg-gray-50 text-gray-500 px-3 py-1 rounded-full font-black uppercase tracking-widest border border-charcoal/5">
+                                                    <span className="text-[9px] bg-gray-50 text-gray-500 px-3 py-1 rounded-full font-black uppercase tracking-widest border border-textMain/5">
                                                         Size: {item.selectedSize}
                                                     </span>
                                                 )}
@@ -310,25 +310,25 @@ export const Cart = () => {
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-4 pt-4 border-t border-charcoal/5">
-                                        <div className="flex items-center bg-gray-50 rounded-xl border border-charcoal/5 p-1">
+                                    <div className="flex items-center gap-4 pt-4 border-t border-textMain/5">
+                                        <div className="flex items-center bg-gray-50 rounded-xl border border-textMain/5 p-1">
                                             <button
                                                 onClick={() => updateQuantity(item.id, -1, item.selectedSize, item.selectedColor)}
-                                                className="w-8 h-8 flex items-center justify-center font-black text-charcoal hover:bg-white rounded-lg transition-all"
+                                                className="w-8 h-8 flex items-center justify-center font-black text-textMain hover:bg-white rounded-lg transition-all"
                                             >
                                                 <Icons.Minus className="w-3 h-3" />
                                             </button>
-                                            <span className="w-10 text-center font-black text-charcoal text-sm">{item.quantity}</span>
+                                            <span className="w-10 text-center font-black text-textMain text-sm">{item.quantity}</span>
                                             <button
                                                 onClick={() => updateQuantity(item.id, 1, item.selectedSize, item.selectedColor)}
-                                                className="w-8 h-8 flex items-center justify-center font-black text-charcoal hover:bg-white rounded-lg transition-all"
+                                                className="w-8 h-8 flex items-center justify-center font-black text-textMain hover:bg-white rounded-lg transition-all"
                                             >
                                                 <Icons.Plus className="w-3 h-3" />
                                             </button>
                                         </div>
                                         <button
                                             onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor)}
-                                            className="flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-primary border border-charcoal/5 hover:border-primary/20 rounded-xl transition-all"
+                                            className="flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-primary border border-textMain/5 hover:border-primary/20 rounded-xl transition-all"
                                         >
                                             Remove Item
                                         </button>
@@ -338,7 +338,7 @@ export const Cart = () => {
                         })}
 
                         {/* Price Details */}
-                        <div className="bg-white p-6 border border-charcoal/5 rounded-[2.5rem] shadow-xl">
+                        <div className="bg-white p-6 border border-textMain/5 rounded-[2.5rem] shadow-xl">
                             <h3 className="font-black text-gray-400 text-[10px] mb-6 uppercase tracking-[0.3em]">Order Summary</h3>
                             <div className="space-y-4 text-sm">
                                 <div className="flex justify-between items-center">
@@ -353,9 +353,9 @@ export const Cart = () => {
                                     <span className="font-bold uppercase tracking-widest text-xs">Shipping</span>
                                     <span className="font-black uppercase tracking-widest text-[10px]">Complimentary</span>
                                 </div>
-                                <div className="h-px bg-charcoal/5 my-4"></div>
+                                <div className="h-px bg-textMain/5 my-4"></div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-charcoal font-black uppercase tracking-[0.2em] text-sm">Grand Total</span>
+                                    <span className="text-textMain font-black uppercase tracking-[0.2em] text-sm">Grand Total</span>
                                     <span className="text-green-600 font-black text-2xl tracking-tighter">&#8377;{finalAmount.toLocaleString()}</span>
                                 </div>
                             </div>
@@ -375,8 +375,8 @@ export const Cart = () => {
                         </button>
 
                         {/* Secure Badge */}
-                        <div className="p-4 flex items-center gap-4 bg-white border border-charcoal/5 rounded-2xl shadow-lg">
-                            <div className="p-2 bg-charcoal/5 rounded-full border border-charcoal/10">
+                        <div className="p-4 flex items-center gap-4 bg-white border border-textMain/5 rounded-2xl shadow-lg">
+                            <div className="p-2 bg-textMain/5 rounded-full border border-textMain/10">
                                 <Icons.Shield className="w-6 h-6 text-primary" />
                             </div>
                             <p className="text-[10px] text-gray-500 font-medium uppercase tracking-widest leading-relaxed">
@@ -389,7 +389,7 @@ export const Cart = () => {
 
             {/* Sticky Bottom Bar */}
             {cart.length > 0 && (
-                <div className="fixed bottom-0 left-0 right-0 bg-cream/90 backdrop-blur-3xl border-t border-charcoal/10 p-4 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-[100] md:hidden">
+                <div className="fixed bottom-0 left-0 right-0 bg-cream/90 backdrop-blur-3xl border-t border-textMain/10 p-4 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-[100] md:hidden">
                     <div className="flex flex-col">
                         <span className="text-[9px] text-gray-500 font-black uppercase tracking-widest line-through">&#8377;{marketPriceTotal.toLocaleString()}</span>
                         <span className="font-black text-xl text-green-600">&#8377;{finalAmount.toLocaleString()}</span>
