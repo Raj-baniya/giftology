@@ -79,7 +79,7 @@ export const DefaultHome = () => {
                         </h1>
 
                         <p className="text-gray-200 text-lg sm:text-xl md:text-2xl leading-relaxed mb-8 max-w-2xl mx-auto font-sans drop-shadow-md px-2">
-                            Whether it’s a birthday, wedding, or any special occasion, GiftGalaxy helps you find unique and thoughtful gifts for everyone on your list.
+                            Whether it’s a birthday, wedding, or any special occasion, Giftology helps you find unique and thoughtful gifts for everyone on your list.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center px-4 w-full sm:w-auto">
@@ -208,7 +208,7 @@ export const DefaultHome = () => {
                             <h2 className="font-serif text-5xl font-bold text-textMain mb-4 text-purple-900">About Us</h2>
                             <h3 className="font-sans text-2xl font-bold text-black mb-6">Think Different. Gift Different.</h3>
                             <p className="text-lg text-gray-700 leading-relaxed">
-                                In a world cluttered with ordinary gifts, we saw an opportunity for the extraordinary. At GiftGalaxy, we didn’t just want to revolutionize gifting; we wanted to redefine it. For us, a gift is not just a product but an experience, a moment, a connection.
+                                In a world cluttered with ordinary gifts, we saw an opportunity for the extraordinary. At Giftology, we didn’t just want to revolutionize gifting; we wanted to redefine it. For us, a gift is not just a product but an experience, a moment, a connection.
                             </p>
                         </motion.div>
                         <motion.div

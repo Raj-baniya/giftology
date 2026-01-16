@@ -86,7 +86,7 @@ export const SparklingHome = () => {
                                 fontFamily: '"Playfair Display", serif',
                                 color: '#9B1B30',
                             }}>
-                                GiftGalaxy
+                                Giftology
                             </h1>
                         </div>
                     </FadeInUp>

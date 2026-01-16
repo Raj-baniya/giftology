@@ -437,7 +437,7 @@ export const Checkout = () => {
               <!-- Brand Msg -->
               <div style="margin-top: 60px; text-align: center;">
                 <div style="background: #fff5f5; display: inline-block; padding: 15px 30px; border-radius: 50px; margin-bottom: 25px;">
-                  <p style="margin: 0; font-size: 14px; color: #9B1B30; font-weight: 800;">Thank you for trusting GiftGalaxy! ❤️</p>
+                  <p style="margin: 0; font-size: 14px; color: #9B1B30; font-weight: 800;">Thank you for trusting Giftology! ❤️</p>
                 </div>
                 <p style="margin: 0; color: #999; font-size: 12px; line-height: 1.8;">
                   We are carefully prepping your gift to make it special.<br>
