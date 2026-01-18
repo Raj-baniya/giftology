@@ -326,7 +326,7 @@ export const DefaultHome = () => {
                                 <Icons.Mail className="w-8 h-8 text-blue-600" />
                             </div>
                             <h3 className="font-serif text-xl font-bold mb-2">Email Us</h3>
-                            <p className="text-gray-600">giftology.in14@gmail.com</p>
+                            <p className="text-gray-600 text-xs sm:text-base">giftology.in01@gmail.com</p>
                         </div>
 
                         {/* Instagram */}

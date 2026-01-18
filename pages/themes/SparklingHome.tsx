@@ -323,6 +323,9 @@ export const SparklingHome = () => {
                             }}
                             className="grid md:grid-cols-2 gap-8"
                         >
+                            <div className="md:col-span-2 text-center mb-2">
+                                <h2 className="text-3xl font-bold text-textMain mb-2" style={{ fontFamily: '"Playfair Display", serif' }}>Contact Us</h2>
+                            </div>
                             <div className="space-y-3">
                                 <label className="text-xs font-black text-textMain uppercase tracking-widest ml-1">Full Name</label>
                                 <input
@@ -366,11 +369,12 @@ export const SparklingHome = () => {
                                     <div className="text-center group cursor-pointer">
                                         <div className="text-primary mb-3 flex justify-center group-hover:scale-110 transition-transform"><Icons.Phone className="w-6 h-6" /></div>
                                         <p className="text-xs font-bold text-textMain tracking-wide">+91 9137645161</p>
+                                        <p className="text-xs font-bold text-textMain tracking-wide">+91 8108303255</p>
                                         <p className="text-xs text-textMuted">Private Line</p>
                                     </div>
                                     <div className="text-center group cursor-pointer">
                                         <div className="text-primary mb-3 flex justify-center group-hover:scale-110 transition-transform"><Icons.Mail className="w-6 h-6" /></div>
-                                        <p className="text-xs font-bold text-textMain tracking-wide">concierge@giftology.in</p>
+                                        <p className="text-[10px] font-bold text-textMain">giftology.in01@gmail.com</p>
                                         <p className="text-xs text-textMuted">Priority Intake</p>
                                     </div>
                                     <div className="text-center col-span-2 md:col-span-1 group cursor-pointer">

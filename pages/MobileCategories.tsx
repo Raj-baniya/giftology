@@ -37,7 +37,7 @@ const MobileCategories = () => {
     return (
         <div className="flex h-[calc(100vh-130px)] bg-background relative overflow-hidden">
             {/* Left Sidebar - Main Categories */}
-            <div className="w-1/3 bg-white/80 backdrop-blur-md overflow-y-auto border-r border-textMain/5 no-scrollbar relative z-10">
+            <div className="w-1/3 bg-white overflow-y-auto border-r border-gray-100 no-scrollbar relative z-10">
                 {categories.map((cat) => (
                     <button
                         key={cat.id}
@@ -65,7 +65,7 @@ const MobileCategories = () => {
 
             {/* Right Content - Subcategories */}
             <div className="w-2/3 p-4 overflow-y-auto relative z-10">
-                <div className="mb-6 sticky top-0 bg-background/90 backdrop-blur-md z-10 pb-2 border-b border-textMain/5">
+                <div className="mb-6 sticky top-0 bg-white z-10 pb-2 border-b border-gray-100">
                     <h2 className="text-xl font-black text-textMain uppercase tracking-widest">{selectedCategory?.name}</h2>
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Explore Premium Collection</p>
                 </div>
