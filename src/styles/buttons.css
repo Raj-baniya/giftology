@@ -1,0 +1,2 @@
+.btn-copy { transition: all 0.2s ease-in-out; }
+.btn-copy:active { transform: scale(0.95); }
