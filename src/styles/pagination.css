@@ -1,0 +1,2 @@
+.pagination-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; }
+.pagination-btn.active { background: #6366f1; color: #fff; border-color: #6366f1; }
