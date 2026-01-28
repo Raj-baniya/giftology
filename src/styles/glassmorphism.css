@@ -1,0 +1,2 @@
+.glass-panel { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
+.dark .glass-panel { background: rgba(15, 23, 42, 0.75); border-color: rgba(255, 255, 255, 0.08); }
