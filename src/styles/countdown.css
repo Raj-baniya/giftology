@@ -1,0 +1,2 @@
+.flash-timer { display: flex; gap: 8px; font-weight: bold; font-family: monospace; }
+.timer-box { background: #1e1b4b; color: #a5b4fc; padding: 4px 8px; border-radius: 6px; }
