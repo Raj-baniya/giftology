@@ -1,5 +1,5 @@
 
-## [0.2.0] - 2026-01-29
+## [0.3.0] - 2026-05-15
 ### Added
-- Validation utilities, responsive hooks, cart summary calculation
-- Unit test fixtures for tax and coupon validations
+- Countdown timer, WhatsApp support links, Wishlist toggle helpers
+- Payment verification contracts and structured JSON-LD data
