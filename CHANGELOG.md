@@ -1,5 +1,5 @@
 
-## [0.3.0] - 2026-05-15
-### Added
-- Countdown timer, WhatsApp support links, Wishlist toggle helpers
-- Payment verification contracts and structured JSON-LD data
+## [1.0.0] - 2026-06-08
+### Released
+- Official v1.0.0 milestone sign-off
+- Production performance, SEO, PWA, and security validations completed
